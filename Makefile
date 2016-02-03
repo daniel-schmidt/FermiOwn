@@ -1,6 +1,6 @@
-CXXFLAGS =	-O2 -g -Wall -fmessage-length=0
+CXXFLAGS =	-std=c++11 -O2 -g -Wall -fmessage-length=0
 
-OBJS =		FermiOwn.o
+OBJS =		FermiOwn.o Lattice.o
 
 LIBS =
 
