@@ -92,5 +92,7 @@ int main(void) {
 	solution = {24,26,22,19,16,7};
 	test_neighbours(x, lat3d, solution);
 
+
+
 	return EXIT_SUCCESS;
 }
