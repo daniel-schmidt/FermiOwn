@@ -12,11 +12,11 @@ int main() {
 	size_t Nt = 3, Ns = 2, dim = 2;
 	Lattice lat(Nt, Ns, dim);
 
-	FieldScalar fs0(lat, zeroInit);
+	FieldScalar<Real> fs0(lat, zeroInit);
 	fs0.Print();
-	FieldScalar fs1(lat, oneInit);
+	FieldScalar<Complex> fs1(lat, oneInit);
 	fs1.Print();
-	FieldScalar fsrnd(lat, randomInit);
+	FieldScalar<Complex> fsrnd(lat, randomInit);
     fsrnd.Print();
 
 }
