@@ -1,7 +1,7 @@
 EIGENDIR=/work/libs/eigen3.2.7/
 CXXFLAGS =	-std=c++11 -O2 -g -Wall -fmessage-length=0 -I$(EIGENDIR)
 
-OBJS =		Lattice.o
+OBJS =		Lattice.o Action.o
 
 LIBS =
 

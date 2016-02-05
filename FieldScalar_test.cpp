@@ -7,6 +7,7 @@
 
 #include "FieldScalar.h"
 #include "Lattice.h"
+#include "Action.h"
 
 int main() {
 	size_t Nt = 2, Ns = 2, dim = 3;
@@ -49,5 +50,15 @@ int main() {
 	std::cout<<"Scalar product = " << fsmult2.dot(fsmult) << " should be (16,0)" << std::endl;
 	fsmult2 *= Complex(1.,0.5);
 	std::cout<<"Scalar product = " << fsmult.dot(fsmult2) << " should be (16,8)" << std::endl;
+
+	FieldScalar<Real> phi(lat, oneInit);
+	double lambda = 0.5;
+	double m = 0.1;
+	double Spot = m*phi.dot(phi) + lambda*(phi*phi).dot(phi*phi);
+	std::cout << "Potential is: " << Spot  << " and should be 4.8" << std::endl;
+
+	Action act( phi, m, lambda);
+	std::cout << "Potential is: " << act.getAction()  << " and should be 4.8" << std::endl;
+
 
 }
