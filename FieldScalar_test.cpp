@@ -53,16 +53,20 @@ int main() {
 
 	FieldScalar<Real> phi(lat, oneInit);
 	double lambda = 0.5;
-	double m = 0.1;
-	double Spot = m*phi.dot(phi) + lambda*(phi*phi).dot(phi*phi);
+	double kappa = 0.1;
+	double Spot = kappa*phi.dot(phi) + lambda*(phi*phi).dot(phi*phi);
 	std::cout << "Potential is: " << Spot  << " and should be 4.8" << std::endl;
 
-	Action act( phi, m, lambda);
+	Action act( phi, kappa, lambda);
 	std::cout << "Action is: " << act.getAction()  << " and should be 3.2" << std::endl;
+	std::cout << "Force is: ";
+	act.getForce().Print();
+	std::cout<< " and should be vector of 14.8s." << std::endl;
 	lambda = 0.9;
-	m = 0.3;
-	Action act2( phi, m, lambda );
+	kappa = 0.3;
+	Action act2( phi, kappa, lambda );
 	std::cout << "Action is: " << act2.getAction()  << " and should be -6.4" << std::endl;
+
 
 
 }

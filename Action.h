@@ -17,7 +17,11 @@ public:
 	virtual ~Action();
 
 	double getAction();
-	double getForce();
+	/**
+	 * @brief calculates the force for the scalar field
+	 * @return a field with the force at every lattice point
+	 */
+	FieldScalar<Real> getForce();
 
 private:
 	FieldScalar<Real>& phi;

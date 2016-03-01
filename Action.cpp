@@ -32,7 +32,17 @@ double Action::getAction() {
 	return S;
 }
 
-double Action::getForce() {
-	//TODO implement force
-	return 0;
+FieldScalar<Real> Action::getForce() {
+	FieldScalar<Real> force = ( 2. + 4.*lambda*(phi.dot(phi)-1.) )*phi;
+
+	for( size_t x = 0; x < lat.getVol(); x++ ) {
+		double kinetic = 0;
+		std::vector<size_t> nnIndex = lat.getNeighbours(x);
+		for( size_t nn:nnIndex ) {
+			kinetic += phi(nn);
+		}
+		force(x) -= 2 * kappa * kinetic;
+	}
+
+	return force;
 }

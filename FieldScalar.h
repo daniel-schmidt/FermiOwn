@@ -29,11 +29,11 @@ public:
 	virtual ~FieldScalar();
 
 	/**
-	 * get the value of the field at point x
+	 * get the value of the field at point x, can be modified
 	 * @param x is the position to get the value from
-	 * @return field value at x
+	 * @return reference to field value at x
 	 */
-	ScalarType operator()( const size_t x );
+	ScalarType& operator()( const size_t x );
 
 	/**
 	 * add a field to this field
@@ -134,7 +134,7 @@ template<class ScalarType> FieldScalar<ScalarType>::FieldScalar(const Lattice& n
 
 template<class ScalarType> FieldScalar<ScalarType>::~FieldScalar() {}
 
-template<class ScalarType> ScalarType FieldScalar<ScalarType>::operator()( const size_t x ) {
+template<class ScalarType> ScalarType& FieldScalar<ScalarType>::operator()( const size_t x ) {
 	return data(x);
 }
 
@@ -215,26 +215,45 @@ template<class ScalarType> inline FieldScalar<ScalarType> operator/( FieldScalar
 	return lhs;
 }
 
-template<class ScalarType> FieldScalar<ScalarType>& operator+( FieldScalar<ScalarType> lhs, const ScalarType& rhs ) {
+template<class ScalarType> inline FieldScalar<ScalarType> operator+( FieldScalar<ScalarType> lhs, const ScalarType& rhs ) {
 	lhs += rhs;
 	return lhs;
 }
 
-template<class ScalarType> FieldScalar<ScalarType>& operator-( FieldScalar<ScalarType> lhs, const ScalarType& rhs ) {
+template<class ScalarType> inline FieldScalar<ScalarType> operator-( FieldScalar<ScalarType> lhs, const ScalarType& rhs ) {
 	lhs -= rhs;
 	return lhs;
 }
 
-template<class ScalarType> FieldScalar<ScalarType>& operator*( FieldScalar<ScalarType> lhs, const ScalarType& rhs ) {
+template<class ScalarType> inline FieldScalar<ScalarType> operator*( FieldScalar<ScalarType> lhs, const ScalarType& rhs ) {
 	lhs *= rhs;
 	return lhs;
 }
 
-template<class ScalarType> FieldScalar<ScalarType>& operator/( FieldScalar<ScalarType> lhs, const ScalarType& rhs ) {
+template<class ScalarType> inline FieldScalar<ScalarType> operator/( FieldScalar<ScalarType> lhs, const ScalarType& rhs ) {
 	lhs /= rhs;
 	return lhs;
 }
 
+template<class ScalarType> inline FieldScalar<ScalarType> operator+( const ScalarType& lhs, FieldScalar<ScalarType> rhs ) {
+	rhs += lhs;
+	return rhs;
+}
+
+template<class ScalarType> inline FieldScalar<ScalarType> operator-( const ScalarType& lhs, FieldScalar<ScalarType> rhs ) {
+	rhs -= lhs;
+	return rhs;
+}
+
+template<class ScalarType> inline FieldScalar<ScalarType> operator*( const ScalarType& lhs, FieldScalar<ScalarType> rhs ) {
+	rhs *= lhs;
+	return rhs;
+}
+
+template<class ScalarType> inline FieldScalar<ScalarType> operator/( const ScalarType& lhs, FieldScalar<ScalarType> rhs ) {
+	rhs /= lhs;
+	return rhs;
+}
 /* Point-wise product of fields */
 //template<class ScalarType> FieldScalar<ScalarType>& operator*( FieldScalar<ScalarType> lhs, const FieldScalar<ScalarType>& rhs ) {
 //	lhs *= rhs;
