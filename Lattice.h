@@ -31,17 +31,23 @@ public:
   Lattice(const size_t lenTime, const size_t lenSpace, const size_t numDim);
   ~Lattice();
 
+  enum Dir {fwd, bwd};
+
   inline const size_t getDim() const;
   inline const size_t getTimeSize() const;
   inline const size_t getSpaceSize() const;
   inline const size_t getVol() const;
 
   inline const std::vector< size_t > getNeighbours( const size_t x ) const;
+  inline const std::vector< size_t > getNeighbours( const size_t x, Dir dir) const;
   inline const std::vector< std::vector<size_t> > & getLineIndex() const;
 
 
 private:
-
+  /**
+   * @brief Creates a list of nearest neighbours.
+   * The neighbours are sorted by (time-bwd, time-fwd, space1-bwd, space1-fwd,...)
+   */
   void makeNeighbourIndex();
   // creates a list of every point belonging to a line in time direction for every spatial point in the lattice
   void makeLineIndex();
@@ -50,7 +56,7 @@ private:
   const size_t Ns;    ///< lattice size in space direction
   const size_t dim;   ///< number of dimensions
   const size_t V;     ///< total amount of lattice points
-  std::vector< std::vector<size_t> > nnIndex;  ///< contains a list of nearest neighbours for every lattice point
+  std::vector< std::vector<size_t> > nnIndex;  ///< contains a list of nearest neighbours for every lattice point sorted by (time-bwd, time-fwd, space1-bwd, space1-fwd,...)
   std::vector< std::vector<size_t> > lineIndex;
 };
 
@@ -76,6 +82,22 @@ const size_t Lattice::getVol() const {
 
 const std::vector< size_t > Lattice::getNeighbours( const size_t x ) const {
 	return nnIndex[x];
+}
+
+const std::vector< size_t > Lattice::getNeighbours( const size_t x, Dir dir ) const {
+	// return only the first (bwd) or second point (bwd) for each direction, according to index layout
+	std::vector< size_t > result;
+	if( dir == fwd ) {
+		for( size_t i = 1; i < nnIndex[x].size(); i+=2 ) {
+			result.push_back(nnIndex[x][i]);
+		}
+	} else {
+		for( size_t i = 0; i < nnIndex[x].size(); i+=2 ) {
+			result.push_back(nnIndex[x][i]);
+		}
+	}
+
+	return result;
 }
 
 const std::vector< std::vector<size_t> > & Lattice::getLineIndex() const {

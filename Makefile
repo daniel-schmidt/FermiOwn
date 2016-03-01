@@ -2,13 +2,16 @@ EIGENDIR=/work/libs/eigen3.2.7/
 CXXFLAGS =	-std=c++11 -O2 -g -Wall -fmessage-length=0 -I$(EIGENDIR)
 
 OBJS =		Lattice.o Action.o
-
+INCL = Lattice.h FieldScalar.h Action.h
 LIBS =
 
 TARGET =	FermiOwn
 
+%.o: %.cpp $(INCL)
+	$(CXX) -c $< $(CXXFLAGS)
+
 $(TARGET):	$(OBJS) FermiOwn.o
-	$(CXX) -o $(TARGET) $(OBJS) $(LIBS)
+	$(CXX) FermiOwn.o $(OBJS) $(LIBS) -o $(TARGET)
 
 all:	$(TARGET)
 

@@ -31,6 +31,27 @@ bool test_neighbours( const size_t x, const Lattice & lat, const std::vector<siz
 	}
 }
 
+bool test_neighbours_dir( const size_t x, const Lattice & lat, const std::vector<size_t>& solution, Lattice::Dir dir ) {
+	std::vector<size_t> testNeighbours = lat.getNeighbours( x, dir );
+
+	if( testNeighbours.size() == solution.size() ) {
+		if( std::equal( solution.begin(), solution.end(), testNeighbours.begin() ) ) {
+			std::cout << "Test passed." << std::endl;
+			return true;
+		} else {
+			std::cout << "Content is not the same." << std::endl;
+			return false;
+		}
+	} else {
+		std::cout << "Size of neighbour list does not match solution. List is: " << std::endl;
+		for( size_t x : testNeighbours ) {
+			std::cout << x << std::endl;
+		}
+		return false;
+	}
+}
+
+
 int main(void) {
 	std::cout << "Testing a lattice object in 2 dimensions." << std::endl;
 
@@ -41,7 +62,7 @@ int main(void) {
 
 	if( lat2d.getDim() != dim )
 		std::cout << "Lattice returns wrong dimension." << std::endl;
-	if( lat2d.getVol() != Nt*Ns*Ns)
+	if( lat2d.getVol() != Nt*Ns)
 		std::cout << "Lattice returns wrong volume." << std::endl;
 	if( lat2d.getSpaceSize() != Ns)
 		std::cout << "Lattice returns wrong spatial size." << std::endl;
@@ -92,7 +113,10 @@ int main(void) {
 	solution = {24,26,22,19,16,7};
 	test_neighbours(x, lat3d, solution);
 
-
+	solution = {24,22,16};
+	test_neighbours_dir(x, lat3d, solution, Lattice::bwd);
+	solution = {26,19,7};
+	test_neighbours_dir(x, lat3d, solution, Lattice::fwd);
 
 	return EXIT_SUCCESS;
 }

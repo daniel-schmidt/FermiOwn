@@ -58,7 +58,11 @@ int main() {
 	std::cout << "Potential is: " << Spot  << " and should be 4.8" << std::endl;
 
 	Action act( phi, m, lambda);
-	std::cout << "Potential is: " << act.getAction()  << " and should be 4.8" << std::endl;
+	std::cout << "Action is: " << act.getAction()  << " and should be 3.2" << std::endl;
+	lambda = 0.9;
+	m = 0.3;
+	Action act2( phi, m, lambda );
+	std::cout << "Action is: " << act2.getAction()  << " and should be -6.4" << std::endl;
 
 
 }

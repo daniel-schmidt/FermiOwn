@@ -9,10 +9,11 @@
 #define ACTION_H_
 
 #include "FieldScalar.h"
+#include "Lattice.h"
 
 class Action {
 public:
-	Action( FieldScalar<Real>& field, double mass, double coupling );
+	Action( FieldScalar<Real>& field, double new_kappa, double new_lambda);
 	virtual ~Action();
 
 	double getAction();
@@ -20,7 +21,8 @@ public:
 
 private:
 	FieldScalar<Real>& phi;
-	double m;
+	const Lattice& lat;
+	double kappa;
 	double lambda;
 };
 
