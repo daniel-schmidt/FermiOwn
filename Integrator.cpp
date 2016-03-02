@@ -7,11 +7,10 @@
 
 #include "Integrator.h"
 
-Integrator::Integrator( FieldScalar<Real>& new_phi, const BasicAction& new_act, std::ranlux48& rndGen, const double new_t, const size_t new_nt ) :
-	x(new_phi),
-	p( FieldScalar<Real>(x.getLattice(), rndGen, gaussianInit) ),	//TODO: is randomInit the correct init type? uniform or gaussian?
+Integrator::Integrator( FieldScalar<Real>& position, FieldScalar<Real>& momentum, const BasicAction& new_act, const double new_t, const size_t new_nt ) :
+	x(position),
+	p(momentum),
 	act(new_act),
-	randomGenerator(rndGen),
 	t(new_t),
 	nt(new_nt),
 	dt(t/nt)
@@ -30,12 +29,4 @@ void Integrator::integrate() {
 	}
 	x += p * dt;
 	p -= dt/2.*act.getForce(x);
-}
-
-void Integrator::invertMomentum() {
-	p*= -1.;
-}
-
-void Integrator::setMomentum( const FieldScalar<Real>& new_p ) {
-//	p = new_p; // TODO: Implement this...
 }

@@ -36,6 +36,7 @@ int main() {
 	Lattice lat(Nt, Ns, dim);
 
 	FieldScalar<Real> fs0(lat, rndGen, zeroInit);
+	FieldScalar<Real> pRand(lat, rndGen, gaussianInit);
 	Action act(kappa, lambda);
 	fs0.Print();
 
@@ -43,7 +44,7 @@ int main() {
 	// TODO: automate this test
 	double t = 0.6;
 	double nt = 5;
-	Integrator integrator(fs0, act, rndGen, t, nt);
+	Integrator integrator(fs0, pRand, act, t, nt);
 	integrator.integrate();
 	std::cout << "After first trajectory:" << std::endl;
 	fs0.Print();
@@ -53,7 +54,7 @@ int main() {
 	fs0.Print();
 
 	std::cout << "Performing time reversal check, result should be the same as before." << std::endl;
-	integrator.invertMomentum();
+	pRand *= -1.;
 	integrator.integrate();
 	fs0.Print();
 
@@ -63,10 +64,11 @@ int main() {
 
 	std::cout << "Trying harmonic action..." << std::endl;
 	HarmonicAction hact;
+	FieldScalar<Real> pOnes(lat, rndGen, oneInit);
 	nt=100;
 	size_t imax = 50;
 	t=25.1327/imax; // 8 pi divided in imax parts, each nt integration steps inbetween
-	Integrator hint(fs0, hact, rndGen, t, nt);
+	Integrator hint(fs0, pOnes, hact, t, nt);
 	std::cout << "data={";
 	for( size_t i = 0; i < imax; i++ )
 	{

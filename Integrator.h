@@ -14,17 +14,15 @@
 
 class Integrator {
 public:
-	Integrator( FieldScalar<Real>& new_phi, const BasicAction& act, std::ranlux48& rndGen, const double new_t, const size_t new_nt );
+	Integrator( FieldScalar<Real>& position, FieldScalar<Real>& momentum, const BasicAction& act, const double new_t, const size_t new_nt );
 	virtual ~Integrator();
 
 	void integrate();
-	void invertMomentum();
-	void setMomentum( const FieldScalar<Real>& new_p );
+
 private:
 	FieldScalar<Real>& x;
-	FieldScalar<Real> p;
+	FieldScalar<Real>& p;
 	const BasicAction& act;	///< the action function to evaluate during integration
-	std::ranlux48& randomGenerator; ///< reference to random number generator engine
 	const double t;		///< value of fictious time to integrate up to
 	const size_t nt;	///< number of steps to take
 	const double dt; 	///< step size resulting from t and nt
