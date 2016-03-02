@@ -17,5 +17,7 @@ all:	$(TARGET)
 
 test:	$(OBJS) FieldScalar_test.o
 	$(CXX) FieldScalar_test.o $(OBJS) -o test $(CXXFLAGS)
+Integrator_test:	$(OBJS) Integrator_test.o
+	$(CXX) Integrator_test.o $(OBJS) -o test $(CXXFLAGS)
 clean:
 	rm -f $(OBJS) $(TARGET) test FieldScalar_test.o FermiOwn.o

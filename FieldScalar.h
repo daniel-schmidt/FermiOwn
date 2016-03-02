@@ -134,6 +134,7 @@ template<class ScalarType> FieldScalar<ScalarType>::FieldScalar(const Lattice& n
 				randomGenerator(rndGen)
 				{
 	data = Eigen::Matrix< ScalarType, Eigen::Dynamic, 1>(lat.getVol());
+	//TODO: move this switch to a general setter function.
 	switch( init ) {
 	case zeroInit:
 		data.setZero();

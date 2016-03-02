@@ -18,6 +18,7 @@ public:
 	virtual ~Integrator();
 
 	void integrate();
+	void invertMomentum();
 private:
 	FieldScalar<Real>& x;
 	FieldScalar<Real> p;

@@ -9,7 +9,7 @@
 
 Integrator::Integrator( FieldScalar<Real>& new_phi, const Action& new_act, std::ranlux48& rndGen, const double new_t, const size_t new_nt ) :
 	x(new_phi),
-	p( FieldScalar<Real>(x.getLattice(), rndGen, randomInit) ),	//TODO: is randomInit the correct init type? uniform or gaussian?
+	p( FieldScalar<Real>(x.getLattice(), rndGen, gaussianInit) ),	//TODO: is randomInit the correct init type? uniform or gaussian?
 	act(new_act),
 	randomGenerator(rndGen),
 	t(new_t),
@@ -24,10 +24,14 @@ Integrator::~Integrator() {
 
 void Integrator::integrate() {
 	p -= dt/2.*act.getForce(x);	//TODO: test if the sign is correct
-	for( size_t n = 0; n < t-1; n++ ) {
+	for( size_t n = 0; n < nt-1; n++ ) {
 		x += p * dt;
 		p -= dt*act.getForce(x);
 	}
 	x += p * dt;
 	p -= dt/2.*act.getForce(x);
+}
+
+void Integrator::invertMomentum() {
+	p*= -1.;
 }
