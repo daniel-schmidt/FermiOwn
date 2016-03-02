@@ -9,12 +9,15 @@
 #define FIELDSCALAR_H_
 
 #include <iostream>
+#include <fstream>
 #include <Eigen/Dense>
+#include <random>
 #include "Lattice.h"
 enum InitType {
 	zeroInit,
 	oneInit,
-	randomInit
+	randomInit,
+	gaussianInit
 };
 
 typedef std::complex< double > Complex;
@@ -25,15 +28,23 @@ typedef double Real;
  */
 template<class ScalarType> class FieldScalar {
 public:
-	FieldScalar( const Lattice & newLat, InitType init );
+	FieldScalar( const Lattice & newLat, std::ranlux48& rndGen, InitType init );
 	virtual ~FieldScalar();
 
+	void setGaussian();
 	/**
-	 * get the value of the field at point x, can be modified
+	 * get the value of the field at point x, can be modified!
 	 * @param x is the position to get the value from
 	 * @return reference to field value at x
 	 */
 	ScalarType& operator()( const size_t x );
+
+	/**
+	 * get a copy of value of the field at point x, cannot be modified!
+	 * @param x is the position to get the value from
+	 * @return field value at x
+	 */
+	ScalarType operator()( const size_t x ) const;
 
 	/**
 	 * add a field to this field
@@ -96,26 +107,31 @@ public:
 	 * @param rhs other vector to perform scalar product with
 	 * @return scalar product of this field with rhs
 	 */
-	ScalarType dot( const FieldScalar<ScalarType>& rhs );
+	ScalarType dot( const FieldScalar<ScalarType>& rhs ) const;
 
 	/**
 	 * @brief Returns the lattice associated with this field.
 	 * @return reference to the lattice used at creation of this field.
 	 */
 	inline const Lattice& getLattice() const;
-	void Print();
+	void Print() const; // TODO: replace Print() method by overloaded << operator.
+
+	void writeToFile( const std::string& filename ) const;
 
 private:
 	Eigen::Matrix< ScalarType, Eigen::Dynamic, 1> data;
 	const Lattice & lat;
+	std::ranlux48& randomGenerator;
+	std::normal_distribution<Real> normalDistribution01;	///< Gaussian (normal) distribution with mean 0 and standard deviation 1
 };
 
 /* ---------------------------------------------------------------------------------------------------
  * Implementation of member functions
  * ---------------------------------------------------------------------------------------------------*/
 
-template<class ScalarType> FieldScalar<ScalarType>::FieldScalar(const Lattice& newLat, InitType init) :
-				lat(newLat)
+template<class ScalarType> FieldScalar<ScalarType>::FieldScalar(const Lattice& newLat, std::ranlux48& rndGen, InitType init) :
+				lat(newLat),
+				randomGenerator(rndGen)
 				{
 	data = Eigen::Matrix< ScalarType, Eigen::Dynamic, 1>(lat.getVol());
 	switch( init ) {
@@ -128,13 +144,25 @@ template<class ScalarType> FieldScalar<ScalarType>::FieldScalar(const Lattice& n
 	case randomInit:
 		data.setRandom();
 		return;
+	case gaussianInit:
+		setGaussian();
+		return;
 	}
 
 				}
 
 template<class ScalarType> FieldScalar<ScalarType>::~FieldScalar() {}
 
+template<class ScalarType> void FieldScalar<ScalarType>::setGaussian() {
+	auto gaussian = [&] (Real) {return normalDistribution01(randomGenerator); };
+	data = Eigen::Matrix< ScalarType, Eigen::Dynamic, 1>::NullaryExpr( data.size(), gaussian );
+}
+
 template<class ScalarType> ScalarType& FieldScalar<ScalarType>::operator()( const size_t x ) {
+	return data(x);
+}
+
+template<class ScalarType> ScalarType FieldScalar<ScalarType>::operator()( const size_t x ) const {
 	return data(x);
 }
 
@@ -178,8 +206,7 @@ template<class ScalarType> FieldScalar<ScalarType>& FieldScalar<ScalarType>::ope
 	return *this;
 }
 
-template<class ScalarType> ScalarType FieldScalar<ScalarType>::dot( const FieldScalar<ScalarType>& rhs ) {
-//	ScalarType ret = data.dot(rhs.data);
+template<class ScalarType> ScalarType FieldScalar<ScalarType>::dot( const FieldScalar<ScalarType>& rhs ) const {
 	return data.dot(rhs.data);
 }
 
@@ -187,8 +214,16 @@ template<class ScalarType> const Lattice& FieldScalar<ScalarType>::getLattice() 
 	return lat;
 }
 
-template<class ScalarType> void FieldScalar<ScalarType>::Print() {
+template<class ScalarType> void FieldScalar<ScalarType>::Print() const {
 	std::cout << data << std::endl;
+}
+
+template<class ScalarType> void FieldScalar<ScalarType>::writeToFile( const std::string& filename ) const {
+	std::ofstream file(filename);
+	for( int i = 0; i < data.size(); i++ ) {
+		file << std::real(data(i)) << "\t" << std::imag(data(i)) << std::endl;
+	}
+	file.close();
 }
 
 /* ---------------------------------------------------------------------------------------------------
@@ -254,13 +289,5 @@ template<class ScalarType> inline FieldScalar<ScalarType> operator/( const Scala
 	rhs /= lhs;
 	return rhs;
 }
-/* Point-wise product of fields */
-//template<class ScalarType> FieldScalar<ScalarType>& operator*( FieldScalar<ScalarType> lhs, const FieldScalar<ScalarType>& rhs ) {
-//	lhs *= rhs;
-//	return lhs.cwise;
-//}
-//template<class ScalarType> ScalarType operator*( FieldScalar<ScalarType> lhs, FieldScalar<ScalarType> rhs) {
-//	return lhs.data.dot(rhs.data);
-//}
 
 #endif /* FIELDSCALAR_H_ */
