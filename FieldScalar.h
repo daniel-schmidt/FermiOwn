@@ -153,10 +153,10 @@ template<class ScalarType> FieldScalar<ScalarType>::FieldScalar(const Lattice& n
 
 template<class ScalarType> FieldScalar<ScalarType>::~FieldScalar() {}
 
-template<class ScalarType> void FieldScalar<ScalarType>::setGaussian() {
-	auto gaussian = [&] (Real) {return normalDistribution01(randomGenerator); };
-	data = Eigen::Matrix< ScalarType, Eigen::Dynamic, 1>::NullaryExpr( data.size(), gaussian );
-}
+//template<class ScalarType> void FieldScalar<ScalarType>::setGaussian() {
+//	auto gaussian = [&] (Real) {return normalDistribution01(randomGenerator); };
+//	data = Eigen::Matrix< ScalarType, Eigen::Dynamic, 1>::NullaryExpr( data.size(), gaussian );
+//}
 
 template<class ScalarType> ScalarType& FieldScalar<ScalarType>::operator()( const size_t x ) {
 	return data(x);

@@ -49,10 +49,14 @@ int main() {
 
 	FieldScalar<Real> fsGauss(latLarge, rndGen, gaussianInit);
 	fsGauss.writeToFile("randomGauss1.dat");
-	std::cout << "Writing data to randomGauss1.dat, check with Octave, if it looks uniformly distributed." << std::endl;
+	std::cout << "Writing data to randomGauss1.dat, check with Octave, if it looks gaussian distributed." << std::endl;
 	fsGauss.setGaussian();
 	fsGauss.writeToFile("randomGauss2.dat");
-	std::cout << "Writing data to randomGauss2.dat, check with Octave, if it looks uniformly distributed and is different from randomGauss1.dat." << std::endl;
+	std::cout << "Writing data to randomGauss2.dat, check with Octave, if it looks gaussian distributed and is different from randomGauss1.dat." << std::endl;
+	FieldScalar<Complex> fsGaussC(latLarge, rndGen, gaussianInit);
+	fsGaussC.writeToFile("randomGaussC.dat");
+	std::cout << "Writing complex data to randomGaussC.dat" << std::endl;
+	std::cout << "Check with Octave if both real and imaginary parts are gaussian distributed and independent from the other files." << std::endl;
 //	std::cout << std::endl << "Trying +=" << std::endl;
 //	fs1 += fsrnd;
 //	fs1.Print();
