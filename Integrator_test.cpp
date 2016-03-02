@@ -7,8 +7,24 @@
 
 #include <random>
 #include "Lattice.h"
+#include "BasicAction.h"
 #include "Action.h"
 #include "Integrator.h"
+
+class HarmonicAction : public BasicAction {
+public:
+	HarmonicAction(){};
+	~HarmonicAction(){};
+
+	double getAction( const FieldScalar<Real>& phi ) const {
+		return (-1.)*phi.dot(phi);
+	}
+
+	FieldScalar<Real> getForce( const FieldScalar<Real>& phi ) const {
+		return phi;
+	}
+};
+
 
 int main() {
 	std::cout << "Testing the integrator for the HMC algorithm..." << std::endl;
@@ -44,4 +60,19 @@ int main() {
 	std::cout << "Another step back should lead to zero: " << std::endl;
 	integrator.integrate();
 	fs0.Print();
+
+	std::cout << "Trying harmonic action..." << std::endl;
+	HarmonicAction hact;
+	nt=100;
+	size_t imax = 50;
+	t=25.1327/imax; // 8 pi divided in imax parts, each nt integration steps inbetween
+	Integrator hint(fs0, hact, rndGen, t, nt);
+	std::cout << "data={";
+	for( size_t i = 0; i < imax; i++ )
+	{
+		std::cout << "{" << i*t << ", " << fs0(0) << "}," << std::endl;
+		hint.integrate();
+	}
+	std::cout << "{" << imax*t << ", " << fs0(0) << "}}" << std::endl;
+
 }
