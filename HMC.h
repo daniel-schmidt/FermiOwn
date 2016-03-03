@@ -17,20 +17,19 @@
 
 class HMC {
 public:
-	HMC( std::ranlux48& rndGen );
+	HMC( double new_t, size_t new_nt, const BasicAction& naction, FieldScalar<Real>& nphi, std::ranlux48* rndGen );
 	virtual ~HMC();
 
-	void update();
-
+	bool update();
 private:
 
 	double Hamiltonian();
 
-	BasicAction& act;
-	Integrator& integrator;
+	std::ranlux48* randomGenerator;
+	const BasicAction& act;
 	FieldScalar<Real>& phi;
 	FieldScalar<Real> momentum;
-	std::ranlux48& randomGenerator;
+	Integrator integrator;
 	std::uniform_real_distribution<Real> uniformDistribution01;
 };
 

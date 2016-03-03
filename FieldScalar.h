@@ -114,11 +114,14 @@ public:
 	 * @return reference to the lattice used at creation of this field.
 	 */
 
+	size_t getSize() const;
+
 	void Print() const; // TODO: replace Print() method by overloaded << operator.
 
 	void writeToFile( const std::string& filename ) const;
 
 private:
+	size_t latVol;
 	Eigen::Matrix< ScalarType, Eigen::Dynamic, 1> data;
 	std::ranlux48 * randomGenerator;
 	std::normal_distribution<Real> normalDistribution01;	///< Gaussian (normal) distribution with mean 0 and standard deviation 1
@@ -129,7 +132,7 @@ private:
  * ---------------------------------------------------------------------------------------------------*/
 
 template<class ScalarType> FieldScalar<ScalarType>::FieldScalar(const size_t latticeVolume, std::ranlux48 * rndGen, InitType init) :
-//				lat(newLat),
+				latVol(latticeVolume),
 				randomGenerator(rndGen)
 				{
 	data = Eigen::Matrix< ScalarType, Eigen::Dynamic, 1>(latticeVolume);
@@ -203,6 +206,10 @@ template<class ScalarType> FieldScalar<ScalarType>& FieldScalar<ScalarType>::ope
 
 template<class ScalarType> ScalarType FieldScalar<ScalarType>::dot( const FieldScalar<ScalarType>& rhs ) const {
 	return data.dot(rhs.data);
+}
+
+template<class ScalarType> size_t FieldScalar<ScalarType>::getSize() const {
+	return latVol;
 }
 
 template<class ScalarType> void FieldScalar<ScalarType>::Print() const {

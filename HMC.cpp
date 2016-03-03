@@ -7,16 +7,19 @@
 
 #include "HMC.h"
 
-HMC::HMC() {
-	// TODO Auto-generated constructor stub
-
+HMC::HMC( double t, size_t nt, const BasicAction& naction, FieldScalar<Real>& nphi, std::ranlux48* rndGen ) :
+	randomGenerator(rndGen),
+	act(naction),
+	phi(nphi),
+	momentum(phi.getSize(), randomGenerator, gaussianInit),
+	integrator(phi, momentum, act, t, nt)
+{
 }
 
 HMC::~HMC() {
-	// TODO Auto-generated destructor stub
 }
 
-void HMC::update() {
+bool HMC::update() {
 
 	// integration
 	momentum.setGaussian();
@@ -29,12 +32,15 @@ void HMC::update() {
 
 	// accept/reject step
 	bool accepted = false;
-	double r = uniformDistribution01(randomGenerator);
+	double r = uniformDistribution01(*randomGenerator);
 	if( r < dH )
 		accepted = true;
 	else
 		phi = old;
+	return accepted;
 }
+
+// Private functions
 
 double HMC::Hamiltonian() {
 	double H = act.getAction(phi);
