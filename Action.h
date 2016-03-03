@@ -14,7 +14,7 @@
 
 class Action: public BasicAction {
 public:
-	Action( const double new_kappa, const double new_lambda);
+	Action( const Lattice& new_lat, const double new_kappa, const double new_lambda);
 	virtual ~Action();
 
 	double getAction( const FieldScalar<Real>& phi ) const;
@@ -22,6 +22,7 @@ public:
 	FieldScalar<Real> getForce( const FieldScalar<Real>& phi ) const;
 
 private:
+	const Lattice& lat;
 	const double kappa;
 	const double lambda;
 };

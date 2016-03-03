@@ -35,9 +35,9 @@ int main() {
 	double kappa = 0.5, lambda = 0.1;
 	Lattice lat(Nt, Ns, dim);
 
-	FieldScalar<Real> fs0(lat, rndGen, zeroInit);
-	FieldScalar<Real> pRand(lat, rndGen, gaussianInit);
-	Action act(kappa, lambda);
+	FieldScalar<Real> fs0(lat.getVol(), &rndGen, zeroInit);
+	FieldScalar<Real> pRand(lat.getVol(), &rndGen, gaussianInit);
+	Action act(lat, kappa, lambda);
 	fs0.Print();
 
 	// time reversal test
@@ -64,7 +64,7 @@ int main() {
 
 	std::cout << "Trying harmonic action..." << std::endl;
 	HarmonicAction hact;
-	FieldScalar<Real> pOnes(lat, rndGen, oneInit);
+	FieldScalar<Real> pOnes(lat.getVol(), &rndGen, oneInit);
 	nt=100;
 	size_t imax = 50;
 	t=25.1327/imax; // 8 pi divided in imax parts, each nt integration steps inbetween

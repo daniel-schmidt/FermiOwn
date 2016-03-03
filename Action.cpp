@@ -7,7 +7,8 @@
 
 #include "Action.h"
 
-Action::Action( const double new_kappa, const double new_lambda) :
+Action::Action( const Lattice& new_lat, const double new_kappa, const double new_lambda) :
+	lat(new_lat),
 	kappa(new_kappa),
 	lambda(new_lambda)
 {}
@@ -18,9 +19,9 @@ double Action::getAction( const FieldScalar<Real>& phi) const {
 	// potential part of the action
 	double S = phi.dot(phi) + lambda*(phi*phi-1.).dot(phi*phi-1.);
 
-	for( size_t x = 0; x < phi.getLattice().getVol(); x++ ) {
+	for( size_t x = 0; x < lat.getVol(); x++ ) {
 		double kinetic = 0;
-		std::vector<size_t> nnIndex = phi.getLattice().getNeighbours(x,Lattice::fwd);
+		std::vector<size_t> nnIndex = lat.getNeighbours(x,Lattice::fwd);
 		for( size_t nn:nnIndex ) {
 			kinetic += phi(nn);
 		}
@@ -33,9 +34,9 @@ double Action::getAction( const FieldScalar<Real>& phi) const {
 FieldScalar<Real> Action::getForce( const FieldScalar<Real>& phi) const {
 	FieldScalar<Real> force = ( 2. + 4.*lambda*(phi.dot(phi)-1.) )*phi;
 
-	for( size_t x = 0; x < phi.getLattice().getVol(); x++ ) {
+	for( size_t x = 0; x < lat.getVol(); x++ ) {
 		double kinetic = 0;
-		std::vector<size_t> nnIndex = phi.getLattice().getNeighbours(x);
+		std::vector<size_t> nnIndex = lat.getNeighbours(x);
 		for( size_t nn:nnIndex ) {
 			kinetic += phi(nn);
 		}

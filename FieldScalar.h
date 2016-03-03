@@ -28,7 +28,7 @@ typedef double Real;
  */
 template<class ScalarType> class FieldScalar {
 public:
-	FieldScalar( const Lattice & newLat, std::ranlux48& rndGen, InitType init );
+	FieldScalar( const size_t latticeVolume, std::ranlux48 * rndGen, InitType init );
 	virtual ~FieldScalar();
 
 	void setGaussian();
@@ -113,15 +113,14 @@ public:
 	 * @brief Returns the lattice associated with this field.
 	 * @return reference to the lattice used at creation of this field.
 	 */
-	inline const Lattice& getLattice() const;
+
 	void Print() const; // TODO: replace Print() method by overloaded << operator.
 
 	void writeToFile( const std::string& filename ) const;
 
 private:
 	Eigen::Matrix< ScalarType, Eigen::Dynamic, 1> data;
-	const Lattice & lat;
-	std::ranlux48& randomGenerator;
+	std::ranlux48 * randomGenerator;
 	std::normal_distribution<Real> normalDistribution01;	///< Gaussian (normal) distribution with mean 0 and standard deviation 1
 };
 
@@ -129,11 +128,11 @@ private:
  * Implementation of member functions
  * ---------------------------------------------------------------------------------------------------*/
 
-template<class ScalarType> FieldScalar<ScalarType>::FieldScalar(const Lattice& newLat, std::ranlux48& rndGen, InitType init) :
-				lat(newLat),
+template<class ScalarType> FieldScalar<ScalarType>::FieldScalar(const size_t latticeVolume, std::ranlux48 * rndGen, InitType init) :
+//				lat(newLat),
 				randomGenerator(rndGen)
 				{
-	data = Eigen::Matrix< ScalarType, Eigen::Dynamic, 1>(lat.getVol());
+	data = Eigen::Matrix< ScalarType, Eigen::Dynamic, 1>(latticeVolume);
 	//TODO: move this switch to a general setter function.
 	switch( init ) {
 	case zeroInit:
@@ -153,11 +152,6 @@ template<class ScalarType> FieldScalar<ScalarType>::FieldScalar(const Lattice& n
 				}
 
 template<class ScalarType> FieldScalar<ScalarType>::~FieldScalar() {}
-
-//template<class ScalarType> void FieldScalar<ScalarType>::setGaussian() {
-//	auto gaussian = [&] (Real) {return normalDistribution01(randomGenerator); };
-//	data = Eigen::Matrix< ScalarType, Eigen::Dynamic, 1>::NullaryExpr( data.size(), gaussian );
-//}
 
 template<class ScalarType> ScalarType& FieldScalar<ScalarType>::operator()( const size_t x ) {
 	return data(x);
@@ -209,10 +203,6 @@ template<class ScalarType> FieldScalar<ScalarType>& FieldScalar<ScalarType>::ope
 
 template<class ScalarType> ScalarType FieldScalar<ScalarType>::dot( const FieldScalar<ScalarType>& rhs ) const {
 	return data.dot(rhs.data);
-}
-
-template<class ScalarType> const Lattice& FieldScalar<ScalarType>::getLattice() const {
-	return lat;
 }
 
 template<class ScalarType> void FieldScalar<ScalarType>::Print() const {
