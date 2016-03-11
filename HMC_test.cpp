@@ -17,18 +17,18 @@ int main() {
 	std::ranlux48 rndGen;
 
 	// initialize lattice
-	size_t Nt = 2, Ns = 2, dim = 3;
+	size_t Nt = 4, Ns = 4, dim = 3;
 	Lattice lat(Nt, Ns, dim);
 
 	// initialize action
-	double kappa = 0.5, lambda = 0.1;
+	double kappa = 0.10, lambda = 1.145;
 	Action act(lat, kappa, lambda);
 
 	// initialize field
-	FieldScalar<Real> phi(lat.getVol(), &rndGen, zeroInit);
+	FieldScalar<Real> phi(lat.getVol(), &rndGen, gaussianInit);
 
-	double HMCt = 0.6;
-	size_t HMCnt = 8;
+	double HMCt = 1.;
+	size_t HMCnt = 30;
 	// initialize HMC
 	HMC updater( HMCt, HMCnt, act, phi, &rndGen );
 

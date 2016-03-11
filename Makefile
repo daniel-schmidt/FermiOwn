@@ -1,8 +1,8 @@
 EIGENDIR=/work/libs/eigen3.2.7/
 CXXFLAGS =	-std=c++11 -O2 -g -Wall -fmessage-length=0 -I$(EIGENDIR)
 
-OBJS =		Lattice.o FieldScalar.o Action.o Integrator.o HMC.o
-INCL = Lattice.h FieldScalar.h BasicAction.h Action.h Integrator.h HMC.h
+OBJS =		Lattice.o FieldScalar.o Action.o Integrator.o HMC.o Metropolis.o
+INCL = Lattice.h FieldScalar.h BasicAction.h Action.h Integrator.h HMC.h Metropolis.h
 LIBS =
 
 TARGET =	FermiOwn
@@ -21,5 +21,7 @@ Integrator_test:	$(OBJS) Integrator_test.o
 	$(CXX) Integrator_test.o $(OBJS) -o test $(CXXFLAGS)
 HMC_test:	$(OBJS) HMC_test.o
 	$(CXX) HMC_test.o $(OBJS) -o test $(CXXFLAGS)
+Metropolis_test:	$(OBJS) Metropolis_test.o
+	$(CXX) Metropolis_test.o $(OBJS) -o test $(CXXFLAGS)
 clean:
 	rm -f $(OBJS) $(TARGET) test FieldScalar_test.o Integrator_test.o HMC_test.o FermiOwn.o *.dat

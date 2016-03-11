@@ -17,7 +17,7 @@ public:
 	~HarmonicAction(){};
 
 	double getAction( const FieldScalar<Real>& phi ) const {
-		return (-1.)*phi.dot(phi);
+		return phi.dot(phi);
 	}
 
 	FieldScalar<Real> getForce( const FieldScalar<Real>& phi ) const {
@@ -65,16 +65,18 @@ int main() {
 	std::cout << "Trying harmonic action..." << std::endl;
 	HarmonicAction hact;
 	FieldScalar<Real> pOnes(lat.getVol(), &rndGen, oneInit);
-	nt=100;
-	size_t imax = 50;
+	nt=5;
+	size_t imax = 200;
 	t=25.1327/imax; // 8 pi divided in imax parts, each nt integration steps inbetween
 	Integrator hint(fs0, pOnes, hact, t, nt);
 	std::cout << "data={";
 	for( size_t i = 0; i < imax; i++ )
 	{
-		std::cout << "{" << i*t << ", " << fs0(0) << "}," << std::endl;
+//		std::cout << "{" << i*t << ", " << fs0(0) << "}," << std::endl;
+		std::cout << (pOnes.dot(pOnes)+hact.getAction(fs0)) << "," << std::endl;
 		hint.integrate();
 	}
-	std::cout << "{" << imax*t << ", " << fs0(0) << "}}" << std::endl;
+//	std::cout << "{" << imax*t << ", " << fs0(0) << "}}" << std::endl;
+	std::cout << pOnes.dot(pOnes) + hact.getAction(fs0) << "};" << std::endl;
 
 }

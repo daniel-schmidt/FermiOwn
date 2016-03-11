@@ -37,6 +37,9 @@ bool HMC::update() {
 		accepted = true;
 	else
 		phi = old;
+	std::cout << "H_old: " << H_old << " H_new: "<< H_new << " dH: " << dH << " r: " << r << " accepted: " << accepted << std::endl;
+	phi.Print();
+
 	return accepted;
 }
 
