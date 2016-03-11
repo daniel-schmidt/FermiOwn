@@ -5,10 +5,10 @@
  *      Author: dschmidt
  */
 
-#include "FieldScalar.h"
 #include "Action.h"
-#include "Lattice.h"
 #include "HMC.h"
+#include "FieldScalar.h"
+#include "Lattice.h"
 
 int main() {
 	std::cout << "Testing the HMC algorithm..." << std::endl;

@@ -8,7 +8,8 @@
 #include <random>
 #include "FieldScalar.h"
 #include "Lattice.h"
-#include "Action.h"
+
+//#include "Action.h"
 
 int main() {
 

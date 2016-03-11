@@ -5,7 +5,7 @@
  *      Author: dschmidt
  */
 
-#include "FieldScalar.h"
+#include "../Data/FieldScalar.h"
 
 // template specialization for real numbers
 template<> void FieldScalar<Real>::setGaussian() {

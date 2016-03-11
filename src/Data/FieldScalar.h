@@ -12,7 +12,8 @@
 #include <fstream>
 #include <Eigen/Dense>
 #include <random>
-#include "Lattice.h"
+
+#include "../Data/Lattice.h"
 enum InitType {
 	zeroInit,
 	oneInit,

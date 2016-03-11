@@ -8,9 +8,9 @@
 #ifndef ACTION_H_
 #define ACTION_H_
 
-#include "BasicAction.h"
 #include "FieldScalar.h"
 #include "Lattice.h"
+#include "BasicAction.h"
 
 class Action: public BasicAction {
 public:

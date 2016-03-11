@@ -5,9 +5,10 @@
  *      Author: dschmidt
  */
 
+#include "../Data/Lattice.h"
+
 #include <iostream>
 
-#include "Lattice.h"
 
 Lattice::Lattice(size_t lenTime, size_t lenSpace, size_t numDim) :
 Nt(lenTime),
