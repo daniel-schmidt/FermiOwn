@@ -10,6 +10,8 @@
 
 #include "FieldScalar.h"
 
+namespace FermiOwn {
+
 class BasicAction {
 public:
 	BasicAction(){};
@@ -25,5 +27,7 @@ public:
 	virtual FieldScalar<Real> getForce( const FieldScalar<Real>& phi ) const =0;
 
 };
+
+} // namespace FermiOwn
 
 #endif /* BASICACTION_H_ */

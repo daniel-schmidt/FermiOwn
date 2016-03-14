@@ -7,6 +7,8 @@
 
 #include "Action.h"
 
+namespace FermiOwn {
+
 Action::Action( const Lattice& new_lat, const double new_kappa, const double new_lambda) :
 	lat(new_lat),
 	kappa(new_kappa),
@@ -45,3 +47,5 @@ FieldScalar<Real> Action::getForce( const FieldScalar<Real>& phi) const {
 
 	return force;
 }
+
+} // namespace FermiOwn

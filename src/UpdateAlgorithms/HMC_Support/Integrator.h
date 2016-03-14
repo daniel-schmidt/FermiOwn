@@ -13,6 +13,8 @@
 #include "FieldScalar.h"
 #include "BasicAction.h"
 
+namespace FermiOwn {
+
 class Integrator {
 public:
 	Integrator( FieldScalar<Real>& position, FieldScalar<Real>& momentum, const BasicAction& act, const double new_t, const size_t new_nt );
@@ -28,5 +30,7 @@ private:
 	const size_t nt;	///< number of steps to take
 	const double dt; 	///< step size resulting from t and nt
 };
+
+} // namespace FermiOwn
 
 #endif /* INTEGRATOR_H_ */

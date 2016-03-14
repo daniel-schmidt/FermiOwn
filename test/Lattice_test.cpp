@@ -14,6 +14,9 @@
 
 #include "Lattice.h"
 
+namespace FermiOwnTest {
+	using namespace FermiOwn;
+
 bool test_neighbours( const size_t x, const Lattice & lat, const std::vector<size_t>& solution ) {
 	std::vector<size_t> testNeighbours = lat.getNeighbours( x );
 
@@ -51,8 +54,11 @@ bool test_neighbours_dir( const size_t x, const Lattice & lat, const std::vector
 	}
 }
 
+} // namespace FermiOwnTest
 
 int main(void) {
+	using namespace FermiOwn;
+	using namespace FermiOwnTest;
 	std::cout << "Testing a lattice object in 2 dimensions." << std::endl;
 
 	size_t Nt = 2;
@@ -120,3 +126,4 @@ int main(void) {
 
 	return EXIT_SUCCESS;
 }
+

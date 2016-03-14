@@ -12,6 +12,8 @@
 #include "Lattice.h"
 #include "BasicAction.h"
 
+namespace FermiOwn {
+
 class Action: public BasicAction {
 public:
 	Action( const Lattice& new_lat, const double new_kappa, const double new_lambda);
@@ -26,5 +28,7 @@ private:
 	const double kappa;
 	const double lambda;
 };
+
+} // namespace FermiOwn
 
 #endif /* ACTION_H_ */

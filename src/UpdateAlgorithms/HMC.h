@@ -15,6 +15,7 @@
 #include "BasicAction.h"
 #include "Integrator.h"
 
+namespace FermiOwn {
 
 class HMC {
 public:
@@ -33,5 +34,7 @@ private:
 	Integrator integrator;
 	std::uniform_real_distribution<Real> uniformDistribution01;
 };
+
+} // namespace FermiOwn
 
 #endif /* HMC_H_ */

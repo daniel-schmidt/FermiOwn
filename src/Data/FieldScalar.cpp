@@ -7,6 +7,8 @@
 
 #include "../Data/FieldScalar.h"
 
+namespace FermiOwn {
+
 // template specialization for real numbers
 template<> void FieldScalar<Real>::setGaussian() {
 	auto gaussian = [&] (Real) {return normalDistribution01(*randomGenerator); };
@@ -20,4 +22,4 @@ template<> void FieldScalar<Complex>::setGaussian() {
 	data.imag() = Eigen::Matrix< Real, Eigen::Dynamic, 1>::NullaryExpr( data.size(), gaussian );
 }
 
-
+} // namespace FermiOwn

@@ -13,6 +13,7 @@
 #include <cstddef>
 #include <vector>
 
+namespace FermiOwn {
 
 /**
  * @brief Representation of the lattice, holding informations about the geometry
@@ -103,5 +104,7 @@ const std::vector< size_t > Lattice::getNeighbours( const size_t x, Dir dir ) co
 const std::vector< std::vector<size_t> > & Lattice::getLineIndex() const {
   return lineIndex;
 }
+
+} // namespace FermiOwn
 
 #endif /* LATTICE_H_ */

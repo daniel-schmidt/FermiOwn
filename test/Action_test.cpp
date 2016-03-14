@@ -13,6 +13,7 @@
 // TODO: rewrite as true test, include in makefile
 
 bool Action_test(){
+	using namespace FermiOwn;
 	size_t Nt = 2, Ns = 2, dim = 3;
 	Lattice lat(Nt, Ns, dim);
 

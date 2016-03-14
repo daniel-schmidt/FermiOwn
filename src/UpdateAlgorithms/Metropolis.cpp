@@ -7,6 +7,8 @@
 
 #include "Metropolis.h"
 
+namespace FermiOwn {
+
 Metropolis::Metropolis( const double ndelta, const BasicAction& naction, FieldScalar<Real>& nphi, std::ranlux48* rndGen) :
 	delta(ndelta),
 	randomGenerator(rndGen),
@@ -46,3 +48,5 @@ double Metropolis::update() {
 	}
 	return double(accepted)/phi.getSize();
 }
+
+} // namespace FermiOwn

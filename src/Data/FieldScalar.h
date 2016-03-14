@@ -14,6 +14,9 @@
 #include <random>
 
 #include "../Data/Lattice.h"
+
+namespace FermiOwn {
+
 enum InitType {
 	zeroInit,
 	oneInit,
@@ -288,5 +291,7 @@ template<class ScalarType> inline FieldScalar<ScalarType> operator/( const Scala
 	rhs /= lhs;
 	return rhs;
 }
+
+} // namespace FermiOwn
 
 #endif /* FIELDSCALAR_H_ */

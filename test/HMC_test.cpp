@@ -11,6 +11,7 @@
 #include "Lattice.h"
 
 int main() {
+	using namespace FermiOwn;
 	std::cout << "Testing the HMC algorithm..." << std::endl;
 
 	// initialize random number generator

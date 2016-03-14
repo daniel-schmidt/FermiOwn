@@ -13,6 +13,9 @@
 
 #include "FieldScalar.h"
 #include "BasicAction.h"
+
+namespace FermiOwn {
+
 class Metropolis {
 public:
 	/**
@@ -38,5 +41,7 @@ private:
 	FieldScalar<Real>& phi;
 	std::uniform_real_distribution<Real> uniformDistribution01;
 };
+
+} // namespace FermiOwn
 
 #endif /* METROPOLIS_H_ */

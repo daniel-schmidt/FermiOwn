@@ -7,6 +7,8 @@
 
 #include "Integrator.h"
 
+namespace FermiOwn {
+
 Integrator::Integrator( FieldScalar<Real>& position, FieldScalar<Real>& momentum, const BasicAction& new_act, const double new_t, const size_t new_nt ) :
 	x(position),
 	p(momentum),
@@ -30,3 +32,5 @@ void Integrator::integrate() {
 	x += p * dt;
 	p -= dt/2.*act.getForce(x);
 }
+
+} // namespace FermiOwn

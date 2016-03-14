@@ -11,7 +11,9 @@
 #include "Action.h"
 #include "Integrator.h"
 
+namespace FermiOwn {
 class HarmonicAction : public BasicAction {
+
 public:
 	HarmonicAction(){};
 	~HarmonicAction(){};
@@ -24,9 +26,10 @@ public:
 		return phi;
 	}
 };
-
+} // namespace FermiOwn
 
 int main() {
+	using namespace FermiOwn;
 	std::cout << "Testing the integrator for the HMC algorithm..." << std::endl;
 
 	std::ranlux48 rndGen;

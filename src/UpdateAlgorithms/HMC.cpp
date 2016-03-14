@@ -7,6 +7,8 @@
 
 #include "HMC.h"
 
+namespace FermiOwn {
+
 HMC::HMC( double t, size_t nt, const BasicAction& naction, FieldScalar<Real>& nphi, std::ranlux48* rndGen ) :
 	randomGenerator(rndGen),
 	act(naction),
@@ -50,3 +52,5 @@ double HMC::Hamiltonian() {
 	H += 0.5 * momentum.dot(momentum);
 	return H;
 }
+
+} // namespace FermiOwn

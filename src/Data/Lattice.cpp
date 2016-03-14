@@ -9,6 +9,7 @@
 
 #include <iostream>
 
+namespace FermiOwn {
 
 Lattice::Lattice(size_t lenTime, size_t lenSpace, size_t numDim) :
 Nt(lenTime),
@@ -83,3 +84,5 @@ void Lattice::makeLineIndex() {
   }
 #endif
 }
+
+} // namespace FermiOwn
