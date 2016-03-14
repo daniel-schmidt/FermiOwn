@@ -23,7 +23,7 @@ SlacOperatorMatrix::SlacOperatorMatrix(size_t Nt, size_t Ns, size_t dim) :
 		exit(1);
 	}
 	std::vector< Matrix2cd > gamma = cliff.getGammas();
-	int dimSpinor = 2;
+	dimSpinor = 2;
 	std::vector< MatrixXcd > Gammas;
 	for( auto gammaMu : gamma) {
 		MatrixXcd GammaMu = KroneckerProduct<Matrix2cd, MatrixXcd>( gammaMu, MatrixXcd::Identity(N,N) );
@@ -36,6 +36,7 @@ SlacOperatorMatrix::SlacOperatorMatrix(size_t Nt, size_t Ns, size_t dim) :
 	MatrixXcd dz( KroneckerProduct<MatrixXcd, MatrixXd>( make1D(Ns), MatrixXd::Identity(Ns*Nt, Ns*Nt) ) );
 	dz = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor,dimSpinor), dz ).eval();
 	dslac = Gammas[0]*dx+Gammas[1]*dy+Gammas[2]*dz;
+	fullSlac = dslac;
 }
 
 SlacOperatorMatrix::~SlacOperatorMatrix() {
@@ -45,6 +46,22 @@ SlacOperatorMatrix::~SlacOperatorMatrix() {
 
 const Eigen::MatrixXcd SlacOperatorMatrix::getMatrix() const {
 	return dslac;
+}
+
+const Complex SlacOperatorMatrix::det() const {
+	return dslac.determinant();
+}
+
+void SlacOperatorMatrix::deletePoint(size_t x) {
+	dslac.row(x) = Eigen::RowVectorXcd::Zero( dslac.cols() );
+	dslac.col(x) = Eigen::VectorXcd::Zero( dslac.rows() );
+	dslac(x,x) = 1.;
+	dslac.row(x+N) = Eigen::RowVectorXcd::Zero( dslac.cols() );
+	dslac.col(x+N) = Eigen::VectorXcd::Zero( dslac.rows() );
+	dslac(x+N,x+N) = 1.;
+}
+
+void SlacOperatorMatrix::addPoint(size_t x) {
 }
 
 Eigen::MatrixXcd SlacOperatorMatrix::make1D( size_t size) {

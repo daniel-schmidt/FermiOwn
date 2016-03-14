@@ -55,7 +55,13 @@ int main( int argc, char** argv ) {
 	std::cout << dslac.getMatrix() << " should be " << sol << std::endl;
 	if(dslac.getMatrix().isApprox(sol, 1e-5) ) std::cout << "Size " << N << " works!" << std::endl;
 
-	std::cout << std::endl << "Testing 2d initialization:" << std::endl;
-	SlacOperatorMatrix dslac2d( N, N-1, 3 );
-	std::cout << dslac2d.getMatrix() << std::endl;
+	std::cout << std::endl << "Testing 3d initialization:" << std::endl;
+	SlacOperatorMatrix dslac3d( N, N-1, 3 );
+	std::cout << "Det=" << dslac3d.det() << std::endl;
+
+	dslac3d.deletePoint( 5 );
+	std::cout << dslac3d.getMatrix() << std::endl;
+	std::cout << dslac3d.det() << std::endl;
+	dslac3d.deletePoint( 6 );
+	std::cout << dslac3d.det() << std::endl;
 }

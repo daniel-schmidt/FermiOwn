@@ -24,13 +24,17 @@ public:
 	virtual ~SlacOperatorMatrix();
 
 	const Eigen::MatrixXcd getMatrix() const;
-
+	const Complex det() const;
+	void deletePoint( size_t x );
+	void addPoint( size_t x );
 private:
 
 	Eigen::MatrixXcd make1D( size_t size );
 
 	size_t N;
+	size_t dimSpinor;
 	Eigen::MatrixXcd dslac;
+	Eigen::MatrixXcd fullSlac;
 	CliffordAlgebra cliff;
 };
 

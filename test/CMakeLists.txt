@@ -38,3 +38,7 @@ do_slac_test( 2, "Size 2 works!" )
 do_slac_test( 3, "Size 3 works!" )
 do_slac_test( 4, "Size 4 works!" )
 do_slac_test( 5, "Size 5 works!" )
+
+# TODO: refine regex to find whole det, not just decimal places...
+add_test( SlacOperatorMatrix_testDet SlacOperatorMatrix_test 4 )
+set_tests_properties( SlacOperatorMatrix_testDet PROPERTIES PASS_REGULAR_EXPRESSION "69524" )
