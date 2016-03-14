@@ -1,3 +1,8 @@
+add_executable( CliffordAlgebra_test "CliffordAlgebra_test.cpp" )
+add_test( CliffordAlgebra_testAlgebra CliffordAlgebra_test )
+set_tests_properties( CliffordAlgebra_testAlgebra PROPERTIES PASS_REGULAR_EXPRESSION  "3 matrices squared to unity." )
+set_tests_properties( CliffordAlgebra_testAlgebra PROPERTIES PASS_REGULAR_EXPRESSION  "3  correct products." )
+set_tests_properties( CliffordAlgebra_testAlgebra PROPERTIES PASS_REGULAR_EXPRESSION  "3 commutator relations worked." )
 
 add_executable( Lattice_test "Lattice_test.cpp" )
 target_link_libraries( Lattice_test Data )

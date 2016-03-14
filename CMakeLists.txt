@@ -9,6 +9,7 @@ set(CMAKE_CXX_FLAGS "-O3 -std=c++11")
 #set( EIGEN3_INCLUDE_DIR "/work/libs/eigen3.2.7/install/include/eigen3" )
 
 include_directories($ENV{EIGEN3_INCLUDE_DIR})
+include_directories("src/Math")
 include_directories("src/Data")
 include_directories("src/Actions")
 include_directories("src/UpdateAlgorithms")
