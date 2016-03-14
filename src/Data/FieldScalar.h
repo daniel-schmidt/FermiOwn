@@ -13,7 +13,8 @@
 #include <Eigen/Dense>
 #include <random>
 
-#include "../Data/Lattice.h"
+#include "Constants.h"
+#include "Lattice.h"
 
 namespace FermiOwn {
 
@@ -23,9 +24,6 @@ enum InitType {
 	randomInit,
 	gaussianInit
 };
-
-typedef std::complex< double > Complex;
-typedef double Real;
 
 /**
  * Every Field class is associated with a lattice that is passed to it at construction.

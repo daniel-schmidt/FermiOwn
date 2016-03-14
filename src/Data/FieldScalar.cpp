@@ -5,7 +5,7 @@
  *      Author: dschmidt
  */
 
-#include "../Data/FieldScalar.h"
+#include "FieldScalar.h"
 
 namespace FermiOwn {
 
