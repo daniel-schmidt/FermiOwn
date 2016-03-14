@@ -16,4 +16,4 @@ add_executable( Integrator_test "Integrator_test.cpp" )
 target_link_libraries( Integrator_test Actions Data HMC_Support )
 
 add_executable(HMC_test "HMC_test.cpp")
-target_link_libraries( HMC_test Actions Data UpdateAlgorithms)
+target_link_libraries( HMC_test Actions Data UpdateAlgorithms HMC_Support)
