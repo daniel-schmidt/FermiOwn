@@ -8,21 +8,30 @@
 #ifndef SRC_ACTIONS_SLACOPERATORMATRIX_H_
 #define SRC_ACTIONS_SLACOPERATORMATRIX_H_
 
+#include <vector>
+#include <iostream>
 #include <Eigen/Dense>
+#include <unsupported/Eigen/KroneckerProduct>
 #include "Constants.h"
+#include "CliffordAlgebra.h"
 
 namespace FermiOwn {
 
 class SlacOperatorMatrix {
 public:
 	SlacOperatorMatrix( size_t size );
+	SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim );
 	virtual ~SlacOperatorMatrix();
 
-	const Eigen::MatrixXd getMatrix() const;
+	const Eigen::MatrixXcd getMatrix() const;
 
 private:
+
+	Eigen::MatrixXcd make1D( size_t size );
+
 	size_t N;
-	Eigen::MatrixXd dslac;
+	Eigen::MatrixXcd dslac;
+	CliffordAlgebra cliff;
 };
 
 } /* namespace FermiOwn */

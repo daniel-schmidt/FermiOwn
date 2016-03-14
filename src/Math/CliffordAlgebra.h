@@ -17,8 +17,8 @@ namespace FermiOwn {
 // TODO: make this templated by the dimenson of the algebra
 class CliffordAlgebra {
 public:
-	CliffordAlgebra();
-	virtual ~CliffordAlgebra();
+	inline CliffordAlgebra();
+	virtual inline ~CliffordAlgebra();
 
 	inline const std::vector< Eigen::Matrix2cd > getGammas() const;
 

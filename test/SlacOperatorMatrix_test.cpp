@@ -25,26 +25,26 @@ int main( int argc, char** argv ) {
 
 	SlacOperatorMatrix dslac( N );
 
-	Eigen::Matrix2d sol2;
+	Eigen::Matrix2cd sol2;
 	sol2 << 0., 1.5708, -1.5708, 0.;
 
-	Eigen::Matrix3d sol3;
+	Eigen::Matrix3cd sol3;
 	sol3 << 0., 1.2092, -1.2092, -1.2092, 0., 1.2092, 1.2092, -1.2092, 0.;
 
-	Eigen::Matrix4d sol4;
+	Eigen::Matrix4cd sol4;
 	sol4 << 0., 1.11072, -0.785398, 1.11072,
 		  -1.11072, 0., 1.11072, -0.785398,
 		   0.785398, -1.11072, 0., 1.11072,
 		  -1.11072, 0.785398, -1.11072, 0.;
 
-	Eigen::MatrixXd sol5(5,5);
+	Eigen::MatrixXcd sol5(5,5);
 	sol5 << 0., 1.06896, -0.660653, 0.660653, -1.06896,
 		-1.06896, 0., 1.06896, -0.660653, 0.660653,
 		 0.660653, -1.06896, 0., 1.06896, -0.660653,
 		 -0.660653, 0.660653, -1.06896, 0., 1.06896,
 		 1.06896, -0.660653, 0.660653, -1.06896, 0.;
 
-	Eigen::MatrixXd sol(N,N);
+	Eigen::MatrixXcd sol(N,N);
 	switch ( N ) {
 	case 2: sol = sol2; break;
 	case 3: sol = sol3; break;
@@ -52,7 +52,10 @@ int main( int argc, char** argv ) {
 	case 5: sol = sol5; break;
 	}
 
-
 	std::cout << dslac.getMatrix() << " should be " << sol << std::endl;
 	if(dslac.getMatrix().isApprox(sol, 1e-5) ) std::cout << "Size " << N << " works!" << std::endl;
+
+	std::cout << std::endl << "Testing 2d initialization:" << std::endl;
+	SlacOperatorMatrix dslac2d( N, N-1, 3 );
+	std::cout << dslac2d.getMatrix() << std::endl;
 }
