@@ -62,7 +62,7 @@ int main( int argc, char** argv ) {
 	dslac3d.deletePoint( 5 );
 	std::cout << "without 5: "<< dslac3d.det() << std::endl;
 	dslac3d.deletePoint( 6 );
-	std::cout << dslac3d.getMatrix() << std::endl;
+//	std::cout << dslac3d.getMatrix() << std::endl;
 	std::cout << "without 5 and 6: "<< dslac3d.det() << std::endl;
 
 	dslac.setFull();

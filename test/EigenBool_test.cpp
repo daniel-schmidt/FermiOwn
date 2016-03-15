@@ -40,4 +40,5 @@ int main( int argc, char** argv ) {
 	std::cout << vecTrue.count() << std::endl;
 	vecTrue(0) = false;
 	std::cout << vecTrue.count() << std::endl;
+	std::cout << vecTrue.size() << std::endl;
 }
