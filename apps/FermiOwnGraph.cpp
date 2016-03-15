@@ -21,27 +21,27 @@ Complex calcDet( SlacOperatorMatrix& dslac, VectorXb kx ) {
 			dslac.deletePoint(x);
 		}
 	}
-	return pow(I,dslac.getMatrix().size())*dslac.det();
+	return pow(I,dslac.getMatrix().rows())*dslac.det();
 }
 
 }
 
 int main( int argc, char** argv ) {
-	using namespace Eigen;
+
 	using namespace FermiOwn;
 
-
-	if( argc != 5 ) {
-		std::cerr << "Need 4 arguments: lattice size, numMeasures, upPerMeasure, coupling" << std::endl;
+	if( argc != 6 ) {
+		std::cerr << "Need 5 arguments: lattice size, numThermal, numMeasures, upPerMeasure, coupling" << std::endl;
 		exit(1);
 	}
 
 	size_t N = atoi( argv[1] );
 	size_t V = N*(N-1)*(N-1);
-	int numMeasures = atoi( argv[2] );
-	int upPerMeasure = atoi( argv[3] );
+	int numThermal = atoi( argv[2] );
+	int numMeasures = atoi( argv[3] );
+	int upPerMeasure = atoi( argv[4] );
 	size_t dim = 3;
-	double lambda = atof( argv[4] );
+	double lambda = atof( argv[5] );
 
 	Lattice lat( N, N-1, dim );
 	SlacOperatorMatrix dslac3d( N, N-1, dim );
@@ -53,40 +53,47 @@ int main( int argc, char** argv ) {
 
 	for( int step = 0; step < 10; step++ ) {
 		lambda += 0.1;
+		double kappa = 2./lambda;
 		VectorXb kx = VectorXb::Constant( V, true );
 		double av_k = 0.;
 		double accrate = 0;
-		for( int measure = 0; measure < numMeasures; measure++) {
+		Complex detOld = calcDet(dslac3d, kx);
+		int count = 0;
+		for( int measure = 0; measure < numMeasures+numThermal; measure++) {
 			for( int i = 0; i < upPerMeasure; i++ ) {
 				int x = intV_dist(gen);
 				int mu = int2mu_dist(gen);
 				int y = lat.getNeighbours(x)[mu];
+				int dk = -kx.count();
 				kx(x) = !kx(x);
 				kx(y) = !kx(y);
 				int k = kx.count();
-
-//				std::cout << "x=" << x << "\ty=" << y << "\tk=" << k;
+				dk += k;
 
 				Complex det = calcDet(dslac3d, kx);
-				double weight = std::pow(-1.5/lambda, k) * real(det);
+//				std::cout << "x=" << x << "\ty=" << y << "\tk=" << k << "\tdk=" << dk << "\tdet: " << detOld-det;
+				double dw = std::pow(-1.5*kappa, dk);
+				Complex weight =  dw*(det/detOld);
 
 				double r = uni_real_dist(gen);
 				bool accepted = false;
-				if( weight > r ) {
+				if( std::fabs(weight) > r ) {
 					accepted = true;
 					accrate++;
+					detOld = det;
 				} else {
 					kx(x) = !kx(x);
 					kx(y) = !kx(y);
 				}
+//				std::cout << "\tdw: " << dw << "\tweight: " << weight << "\taccepted: " << accepted << std::endl;
 
-//				std::cout << "\tdet: " << det << "\tweight: " << weight << "\taccepted: " << accepted << std::endl;
+				count ++;
 				dslac3d.setFull();
 			}
-			av_k += kx.count();
+			if( measure >= numThermal ) av_k += kx.count()/double(V);
 		}
-		av_k/=numMeasures*V;
-		accrate /= numMeasures*upPerMeasure;
+		av_k/=double(numMeasures);
+		accrate /= double((numMeasures+numThermal)*upPerMeasure);
 		std::cout << lambda << "\t" << av_k << "\t" << accrate << std::endl;
 	}
 }
