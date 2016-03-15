@@ -60,8 +60,19 @@ int main( int argc, char** argv ) {
 	std::cout << "Det=" << dslac3d.det() << std::endl;
 
 	dslac3d.deletePoint( 5 );
-	std::cout << dslac3d.getMatrix() << std::endl;
-	std::cout << dslac3d.det() << std::endl;
+	std::cout << "without 5: "<< dslac3d.det() << std::endl;
 	dslac3d.deletePoint( 6 );
-	std::cout << dslac3d.det() << std::endl;
+	std::cout << dslac3d.getMatrix() << std::endl;
+	std::cout << "without 5 and 6: "<< dslac3d.det() << std::endl;
+
+	dslac.setFull();
+	for( size_t x = 0; x < N*(N-1)*(N-1); x++ ) {
+		dslac3d.deletePoint(x);
+	}
+	std::cout << "Deleted everything, det=" << dslac3d.det() << std::endl;
+//	dslac3d.addPoint( 5 );
+//	std::cout << dslac3d.getMatrix() << std::endl;
+//	std::cout << "without 6: " << dslac3d.det() << std::endl;
+//	dslac3d.addPoint( 6 );
+//	std::cout << "full: " << dslac3d.det() << std::endl;
 }

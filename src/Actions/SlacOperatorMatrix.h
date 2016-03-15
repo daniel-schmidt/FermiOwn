@@ -26,7 +26,8 @@ public:
 	const Eigen::MatrixXcd getMatrix() const;
 	const Complex det() const;
 	void deletePoint( size_t x );
-	void addPoint( size_t x );
+	void setFull();
+//	void addPoint( size_t x );
 private:
 
 	Eigen::MatrixXcd make1D( size_t size );

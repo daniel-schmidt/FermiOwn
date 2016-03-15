@@ -61,8 +61,16 @@ void SlacOperatorMatrix::deletePoint(size_t x) {
 	dslac(x+N,x+N) = 1.;
 }
 
-void SlacOperatorMatrix::addPoint(size_t x) {
+void SlacOperatorMatrix::setFull() {
+	dslac = fullSlac;
 }
+
+//void SlacOperatorMatrix::addPoint(size_t x) {
+//	dslac.row(x) = fullSlac.row(x);
+//	dslac.row(x+N) = fullSlac.row(x+N);
+//	dslac.col(x) = fullSlac.col(x);
+//	dslac.col(x+N) = fullSlac.col(x+N);
+//}
 
 Eigen::MatrixXcd SlacOperatorMatrix::make1D( size_t size) {
 	Eigen::MatrixXcd ret( size, size );

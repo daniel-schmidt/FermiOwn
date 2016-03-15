@@ -4,6 +4,8 @@ set_tests_properties( CliffordAlgebra_testAlgebra PROPERTIES PASS_REGULAR_EXPRES
 set_tests_properties( CliffordAlgebra_testAlgebra PROPERTIES PASS_REGULAR_EXPRESSION  "3  correct products." )
 set_tests_properties( CliffordAlgebra_testAlgebra PROPERTIES PASS_REGULAR_EXPRESSION  "3 commutator relations worked." )
 
+add_executable( EigenBool_test "EigenBool_test.cpp" )
+
 add_executable( Lattice_test "Lattice_test.cpp" )
 target_link_libraries( Lattice_test Data )
 
