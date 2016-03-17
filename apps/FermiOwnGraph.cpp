@@ -25,21 +25,6 @@ Complex calcDet( SlacOperatorMatrix& dslac, const VectorXb& kx ) {
 	}
 	return pow(I,dslac.getMatrix().rows())*dslac.det();
 }
-
-Complex calcDet( std::vector<SlacOperatorMatrix> dslac, const MatrixXb& kxab ) {
-	Complex det = 1.;
-	for( size_t a = 0; a < dslac.size(); a++ ) {
-		//		for( int x = 0; x < kxab.rows(); x++ ) {
-		//			if( kxab( x, a ) ) {
-		//				dslac[a].deletePoint(x);
-		//			}
-		//		}
-		//		det *= pow(I,dslac[a].getMatrix().rows())*dslac[a].det();
-		det *= calcDet( dslac[a], kxab.col(a) );
-	}
-	return det;
-}
-
 int linIndex(int N, int i, int j) {
 	if( i == j) {
 		return i;
@@ -52,6 +37,30 @@ int linIndex(int N, int i, int j) {
 		return N+N*(N-1)/2 - (N-i)*(N-i-1)/2+j-i-1;
 	}
 }
+
+Complex calcDet( std::vector<SlacOperatorMatrix> dslac, const MatrixXb& kxab, int Nf ) {
+	Complex det = 1.;
+	for( size_t b = 0; b < Nf; b++ ) {
+		for( size_t a = 0; a < b; a++ ) {
+			for( int x = 0; x < kxab.rows(); x++ ) {
+				if( kxab( x, linIndex( Nf, a, b ) ) ) {
+					dslac[a].deletePoint(x);
+					dslac[b].deletePoint(x);
+				}
+			}
+		}
+	}
+	for( size_t a = 0; a < Nf; a++ ) {
+		for( int x = 0; x < kxab.rows(); x++ ) {
+			if( kxab( x, a ) ) {
+				dslac[a].deletePoint(x);
+			}
+		}
+		det *= pow(I,dslac[a].getMatrix().rows())*dslac[a].det();
+	}
+	return det;
+}
+
 
 double getHypergeometricFactor( int flavour ) {
 	switch( flavour ){
@@ -124,7 +133,7 @@ int main( int argc, char** argv ) {
 
 		double av_k = 0.;
 		double accrate = 0;
-		Complex detOld = calcDet(slacNf, kxab);
+		Complex detOld = calcDet(slacNf, kxab, Nf);
 
 		for( int measure = 0; measure < numMeasures+numThermal; measure++) {
 			for( int i = 0; i < upPerMeasure; i++ ) {
@@ -162,21 +171,8 @@ int main( int argc, char** argv ) {
 					kxab(x,linIndex(Nf,a, b)) = !kxab(x,linIndex(Nf,a, b));
 					kxab(y,linIndex(Nf,a, b)) = !kxab(y,linIndex(Nf,a, b));
 					dk += kxab.rightCols( Nf*(Nf-1)/2 ).count();
-					factor *= pow( 2, dk );
+					factor *= pow( 2., double(dk) );
 					dk *= 2;
-					//				if( constraintViolated( kxab, Nf, x ) ) {
-					//					dk = -kxab.leftCols(Nf).count();
-					//					kxab( x, linIndex( Nf, a, a ) ) = !kxab( x, linIndex( Nf, a, a ) );
-					//					kxab( x, linIndex( Nf, b, b ) ) = !kxab( x, linIndex( Nf, b, b ) );
-					//					dk += kxab.leftCols(Nf).count();
-					//				}
-					//
-					//				if( constraintViolated( kxab, Nf, y ) ) {
-					//					dk = -kxab.leftCols(Nf).count();
-					//					kxab( y, linIndex(Nf, a, a) ) = !kxab( y, linIndex( Nf,a, a) );
-					//					kxab( y, linIndex(Nf, b, b) ) = !kxab( y, linIndex( Nf,b, b) );
-					//					dk += kxab.leftCols(Nf).count();
-					//				}
 				}
 
 				//			std::cout << "Constraint after update:" << std::endl;
@@ -187,7 +183,7 @@ int main( int argc, char** argv ) {
 					//				std::cout << "violated! Reset and continue loop..." << std::endl;
 					continue;
 				}
-				Complex det = calcDet(slacNf, kxab);
+				Complex det = calcDet(slacNf, kxab, Nf);
 
 				// calculate change in na
 				kx = kxab.leftCols(Nf).rowwise().count().cast<int>();
