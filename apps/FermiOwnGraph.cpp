@@ -67,6 +67,19 @@ double getHypergeometricFactor( int flavour ) {
 	}
 }
 
+bool constraintViolated( const MatrixXb& kxab, int Nf, int x ) {
+	bool violated = false;
+	for( int m = 0; m < Nf; m++ ) {
+		int constrSum = 0;
+		for( int n = 0; n < Nf; n++ )
+		{
+			constrSum += kxab( x, linIndex( Nf, m, n ) );
+		}
+		//		std::cout << "constraint for a=" << m << " is " << constrSum << std::endl;
+		if( constrSum > 1 ) violated = true;
+	}
+	return violated;
+}
 }
 
 int main( int argc, char** argv ) {
@@ -105,9 +118,9 @@ int main( int argc, char** argv ) {
 		double kappa = 2./lambda;
 
 		// Data layout: first Nf columns hold kxaa for a=1,..,Nf, then kxab with a<b orderd (1,2), (1,3), (2,3), ...
-
-		//		std::cout << "Nf*(Nf+1)/2="<<Nf*(Nf+1)/2 << std::endl;
-		MatrixXb kxab = MatrixXb::Constant( V, Nf*(Nf+1)/2, true );
+		// initialize single-flavour part to true, the rest to false
+		MatrixXb kxab = MatrixXb::Constant( V, Nf*(Nf+1)/2, false );
+		kxab.leftCols(Nf) = MatrixXb::Constant( V, Nf, true);
 
 		double av_k = 0.;
 		double accrate = 0;
@@ -125,12 +138,18 @@ int main( int argc, char** argv ) {
 				double factor = 1.;
 				int dk = 0;		// change in kxab
 
+				// calculate old value of na
 				Eigen::VectorXi kx = kxab.leftCols(Nf).rowwise().count().cast<int>();
 				Eigen::VectorXi na(Nf+1);
 				for( int n = 0; n <= Nf; n++ ) {
 					na(n) = -(kx.array() == n).count();
 				}
 
+				//			std::cout << "Constraint before update: " << std::endl;
+				//			constraintViolated( kxab, Nf, x );
+				//			constraintViolated( kxab, Nf, y );
+				//			std::cout << "updating..." << std::endl;
+				MatrixXb kxabOld = kxab;
 				if( a == b ) {
 					// switching link with same flavour
 					dk = -kxab.leftCols(Nf).count();
@@ -143,40 +162,61 @@ int main( int argc, char** argv ) {
 					kxab(x,linIndex(Nf,a, b)) = !kxab(x,linIndex(Nf,a, b));
 					kxab(y,linIndex(Nf,a, b)) = !kxab(y,linIndex(Nf,a, b));
 					dk += kxab.rightCols( Nf*(Nf-1)/2 ).count();
+					factor *= pow( 2, dk );
 					dk *= 2;
-					//					factor = sqrt(2);
+					//				if( constraintViolated( kxab, Nf, x ) ) {
+					//					dk = -kxab.leftCols(Nf).count();
+					//					kxab( x, linIndex( Nf, a, a ) ) = !kxab( x, linIndex( Nf, a, a ) );
+					//					kxab( x, linIndex( Nf, b, b ) ) = !kxab( x, linIndex( Nf, b, b ) );
+					//					dk += kxab.leftCols(Nf).count();
+					//				}
+					//
+					//				if( constraintViolated( kxab, Nf, y ) ) {
+					//					dk = -kxab.leftCols(Nf).count();
+					//					kxab( y, linIndex(Nf, a, a) ) = !kxab( y, linIndex( Nf,a, a) );
+					//					kxab( y, linIndex(Nf, b, b) ) = !kxab( y, linIndex( Nf,b, b) );
+					//					dk += kxab.leftCols(Nf).count();
+					//				}
 				}
 
+				//			std::cout << "Constraint after update:" << std::endl;
+				//			constraintViolated( kxab, Nf, x );
+				//			constraintViolated( kxab, Nf, y );
+				if( constraintViolated( kxab, Nf, x ) || constraintViolated( kxab, Nf, y ) ) {
+					kxab = kxabOld;
+					//				std::cout << "violated! Reset and continue loop..." << std::endl;
+					continue;
+				}
 				Complex det = calcDet(slacNf, kxab);
 
+				// calculate change in na
 				kx = kxab.leftCols(Nf).rowwise().count().cast<int>();
 				for( int n = 0; n <= Nf; n++ ) {
 					na(n) += (kx.array() == n).count();
 					factor *= std::pow( getHypergeometricFactor( n ), double(na(n)) );
-//					std::cout << "n=" << n << "\tfactor=" << factor << "\thyperFactor=" << getHypergeometricFactor(n) << std::endl;
+					//					std::cout << "n=" << n << "\tfactor=" << factor << "\thyperFactor=" << getHypergeometricFactor(n) << std::endl;
 				}
 
-				//				std::cout << slacNf[0].getMatrix() << std::endl << std::endl;
-//								std::cout << "kxab=" << std::endl << kxab << std::endl << std::endl;
-//								std::cout << "kx=" << std::endl << kx << std::endl;
-//								std::cout << "na=" << std::endl << na << std::endl;
-//								std::cout << "x=" << x << "\ty=" << y << "\ta=" << a << "\tb=" << b;
-//								std::cout << "\tka=" << kxab.leftCols(Nf).count() << "\tkab="<< kxab.rightCols( Nf*(Nf-1)/2 ).count() << "\tdk=" << dk;
-//								std::cout << "\tdetOld: " << detOld << "\tdet: " << det;
+				//			std::cout << slacNf[0].getMatrix() << std::endl << std::endl;
+				//			std::cout << "kxab=" << std::endl << kxab << std::endl << std::endl;
+				//			std::cout << "kx=" << std::endl << kx << std::endl;
+				//			std::cout << "na=" << std::endl << na << std::endl;
+				//			std::cout << "x=" << x << "\ty=" << y << "\ta=" << a << "\tb=" << b;
+				//			std::cout << "\tka=" << kxab.leftCols(Nf).count() << "\tkab="<< kxab.rightCols( Nf*(Nf-1)/2 ).count() << "\tdk=" << dk;
+				//			std::cout << "\tdetOld: " << detOld << "\tdet: " << det;
 				double dw = std::pow(kappa, dk);
 				Complex weight =  factor*dw*(det/detOld);
 
 				double r = uni_real_dist(gen);
-//				bool accepted = false;
+				//			bool accepted = false;
 				if( std::fabs(weight) > r ) {
-//					accepted = true;
+					//				accepted = true;
 					accrate++;
 					detOld = det;
 				} else {
-					kxab(x,linIndex(Nf,a, b)) = !kxab(x,linIndex(Nf,a, b));
-					kxab(y,linIndex(Nf,a, b)) = !kxab(y,linIndex(Nf,a, b));
+					kxab = kxabOld;
 				}
-//				std::cout << "\tdw: " << dw << "\tweight: " << weight << "\taccepted: " << accepted << std::endl;
+				//			std::cout << "\tdw: " << dw << "\tweight: " << weight << "\taccepted: " << accepted << std::endl;
 			}
 			if( measure >= numThermal ) av_k += ( kxab.leftCols(Nf).count()+2.*kxab.rightCols( Nf*(Nf-1)/2 ).count() )/double(V);
 		}
