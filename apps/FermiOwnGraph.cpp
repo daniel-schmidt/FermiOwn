@@ -130,7 +130,7 @@ int main( int argc, char** argv ) {
 		// initialize single-flavour part to true, the rest to false
 		MatrixXb kxab = MatrixXb::Constant( V, Nf*(Nf+1)/2, false );
 		kxab.leftCols(Nf) = MatrixXb::Constant( V, Nf, true);
-
+//		kxab.rightCols(Nf*(Nf-1)/2) = MatrixXb::Constant( V, Nf*(Nf-1)/2, true);
 		double av_k = 0.;
 		double accrate = 0;
 		Complex detOld = calcDet(slacNf, kxab, Nf);
@@ -146,7 +146,7 @@ int main( int argc, char** argv ) {
 
 				double factor = 1.;
 				int dk = 0;		// change in kxab
-
+				int dkt = 0;	// change in tilde kxab
 				// calculate old value of na
 				Eigen::VectorXi kx = kxab.leftCols(Nf).rowwise().count().cast<int>();
 				Eigen::VectorXi na(Nf+1);
@@ -167,12 +167,20 @@ int main( int argc, char** argv ) {
 					dk += kxab.leftCols(Nf).count();
 				} else {
 					// switching flavour at two positions
-					dk = -kxab.rightCols( Nf*(Nf-1)/2 ).count();
-					kxab(x,linIndex(Nf,a, b)) = !kxab(x,linIndex(Nf,a, b));
-					kxab(y,linIndex(Nf,a, b)) = !kxab(y,linIndex(Nf,a, b));
-					dk += kxab.rightCols( Nf*(Nf-1)/2 ).count();
+					dkt = -kxab.rightCols( Nf*(Nf-1)/2 ).count();
+					dk = -kxab.leftCols(Nf).count();
+					if( 0.5 > uni_real_dist(gen) ) {
+						kxab(x,linIndex(Nf,a, b)) = !kxab(x,linIndex(Nf,a, b));
+						kxab(y,linIndex(Nf,a, b)) = !kxab(y,linIndex(Nf,a, b));
+					} else {
+						kxab(x,linIndex(Nf,a, b)) = !kxab(x,linIndex(Nf,a, b));
+						kxab(x,a) = !kxab(x,a);
+						kxab(x,b) = !kxab(x,b);
+					}
+					dkt += kxab.rightCols( Nf*(Nf-1)/2 ).count();
+					dk += kxab.leftCols(Nf).count();
 					factor *= pow( 2., double(dk) );
-					dk *= 2;
+					dk += 2*dkt;
 				}
 
 				//			std::cout << "Constraint after update:" << std::endl;
