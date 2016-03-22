@@ -70,6 +70,24 @@ int main( int argc, char** argv ) {
 		dslac3d.deletePoint(x);
 	}
 	std::cout << "Deleted everything, det=" << dslac3d.det() << std::endl;
+
+	std::cout << std::endl << "Truely erasing cols from slac matrix:" << std::endl;
+	VectorXb kx0 = VectorXb::Constant(N*(N-1)*(N-1), true );
+	VectorXb kx1 = VectorXb::Constant(N*(N-1)*(N-1), true );
+
+	kx0( 2 ) = false;
+	kx0( 4 ) = false;
+
+	dslac3d.setFull();
+	std::cout << "before:" << std::endl << dslac3d.getMatrix() << std::endl;
+	dslac3d.eraseCols( kx0, kx1 );
+	std::cout << "after erasing cols:" << std::endl << dslac3d.getMatrix() << std::endl;
+	kx0( 2 ) = true;
+	kx0( 4 ) = true;
+	kx0( 15 ) = false;
+	kx0( 16 ) = false;
+	dslac3d.eraseRows( kx0, kx1 );
+	std::cout << "after erasing rows:" << std::endl << dslac3d.getMatrix() << std::endl;
 //	dslac3d.addPoint( 5 );
 //	std::cout << dslac3d.getMatrix() << std::endl;
 //	std::cout << "without 6: " << dslac3d.det() << std::endl;

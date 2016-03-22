@@ -14,8 +14,6 @@
 #include "Lattice.h"
 
 namespace FermiOwn {
-typedef Eigen::Matrix< bool, Eigen::Dynamic, 1 > VectorXb;
-typedef Eigen::Matrix< bool, Eigen::Dynamic, Eigen::Dynamic > MatrixXb;
 
 Complex calcDet( SlacOperatorMatrix& dslac, const VectorXb& kx ) {
 	for( int x = 0; x < kx.size(); x++ ) {
@@ -128,12 +126,14 @@ int main( int argc, char** argv ) {
 
 		// Data layout: first Nf columns hold kxaa for a=1,..,Nf, then kxab with a<b orderd (1,2), (1,3), (2,3), ...
 		// initialize single-flavour part to true, the rest to false
-		MatrixXb kxab = MatrixXb::Constant( V, Nf*(Nf+1)/2, false );
-		kxab.leftCols(Nf) = MatrixXb::Constant( V, Nf, true);
-//		kxab.rightCols(Nf*(Nf-1)/2) = MatrixXb::Constant( V, Nf*(Nf-1)/2, true);
+		MatrixXb kxab0 = MatrixXb::Constant( V, Nf*(Nf+1)/2, false );
+		MatrixXb kxab1 = MatrixXb::Constant( V, Nf*(Nf+1)/2, false );
+		kxab0.leftCols(Nf) = MatrixXb::Constant( V, Nf, true);
+		kxab1.leftCols(Nf) = MatrixXb::Constant( V, Nf, true);
+
 		double av_k = 0.;
 		double accrate = 0;
-		Complex detOld = calcDet(slacNf, kxab, Nf);
+		Complex detOld = calcDet(slacNf, kxab0, Nf);
 
 		for( int measure = 0; measure < numMeasures+numThermal; measure++) {
 			for( int i = 0; i < upPerMeasure; i++ ) {

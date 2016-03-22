@@ -10,12 +10,16 @@
 
 #include <vector>
 #include <iostream>
+#include <assert.h>
 #include <Eigen/Dense>
 #include <unsupported/Eigen/KroneckerProduct>
 #include "Constants.h"
 #include "CliffordAlgebra.h"
 
 namespace FermiOwn {
+
+typedef Eigen::Matrix< bool, Eigen::Dynamic, 1 > VectorXb;
+typedef Eigen::Matrix< bool, Eigen::Dynamic, Eigen::Dynamic > MatrixXb;
 
 class SlacOperatorMatrix {
 public:
@@ -26,13 +30,15 @@ public:
 	const Eigen::MatrixXcd getMatrix() const;
 	const Complex det() const;
 	void deletePoint( size_t x );
+	void eraseCols( VectorXb kx0, VectorXb kx1 );
+	void eraseRows( VectorXb kx0, VectorXb kx1 );
 	void setFull();
 //	void addPoint( size_t x );
 private:
 
 	Eigen::MatrixXcd make1D( size_t size );
 
-	size_t N;
+	size_t N;					///< total number of physical points
 	size_t dimSpinor;
 	Eigen::MatrixXcd dslac;
 	Eigen::MatrixXcd fullSlac;

@@ -10,12 +10,12 @@
 namespace FermiOwn {
 
 SlacOperatorMatrix::SlacOperatorMatrix( size_t size ) :
-		N(size),
-		dslac(make1D(size))
+				N(size),
+				dslac(make1D(size))
 {}
 
 SlacOperatorMatrix::SlacOperatorMatrix(size_t Nt, size_t Ns, size_t dim) :
-		N(Nt*Ns*Ns)
+				N(Nt*Ns*Ns)
 {
 	using namespace Eigen;
 	if( dim != 3 ) {
@@ -87,6 +87,53 @@ Eigen::MatrixXcd SlacOperatorMatrix::make1D( size_t size) {
 	return ret;
 }
 
-} /* namespace FermiOwn */
+void SlacOperatorMatrix::eraseCols( VectorXb kx0, VectorXb kx1 ) {
+	assert( kx0.size() == N && kx1.size() == N );
 
+	int cols = kx0.size() - kx0.count() + kx1.size() - kx1.count(); // new number of columns
+	Eigen::MatrixXcd newSlac( dslac.rows(), cols );
+
+	int colIndex = 0;
+
+	for( size_t x = 0; x < N; x++ ) {
+		if( !kx0(x) ) {
+			newSlac.col( colIndex ) = dslac.col( x );
+			colIndex++;
+		}
+	}
+	for( size_t x = 0; x < N; x++ ) {
+		if( !kx1(x) ) {
+			newSlac.col( colIndex ) = dslac.col( x + N );
+			colIndex++;
+		}
+	}
+	dslac = newSlac;
+}
+
+void SlacOperatorMatrix::eraseRows( VectorXb kx0, VectorXb kx1 ) {
+	assert( kx0.size() == N && kx1.size() == N );
+
+	int rows = kx0.size() - kx0.count() + kx1.size() - kx1.count(); // new number of rows
+	Eigen::MatrixXcd newSlac( rows, dslac.cols() );
+
+	int rowIndex = 0;
+
+	// first spinor component
+	for( size_t x = 0; x < N; x++ ) {
+		if( !kx0(x) ) {
+			newSlac.row( rowIndex ) = dslac.row( x );
+			rowIndex++;
+		}
+	}
+	// second spinor component
+	for( size_t x = 0; x < N; x++ ) {
+		if( !kx1(x) ) {
+			newSlac.row( rowIndex ) = dslac.row( x + N );
+			rowIndex++;
+		}
+	}
+	dslac = newSlac;
+}
+
+} /* namespace FermiOwn */
 
