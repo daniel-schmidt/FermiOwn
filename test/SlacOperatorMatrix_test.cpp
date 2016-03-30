@@ -56,38 +56,49 @@ int main( int argc, char** argv ) {
 	if(dslac.getMatrix().isApprox(sol, 1e-5) ) std::cout << "Size " << N << " works!" << std::endl;
 
 	std::cout << std::endl << "Testing 3d initialization:" << std::endl;
-	SlacOperatorMatrix dslac3d( N, N-1, 3 );
-	std::cout << "Det=" << dslac3d.det() << std::endl;
-
-	dslac3d.deletePoint( 5 );
-	std::cout << "without 5: "<< dslac3d.det() << std::endl;
-	dslac3d.deletePoint( 6 );
-//	std::cout << dslac3d.getMatrix() << std::endl;
-	std::cout << "without 5 and 6: "<< dslac3d.det() << std::endl;
-
-	dslac.setFull();
-	for( size_t x = 0; x < N*(N-1)*(N-1); x++ ) {
-		dslac3d.deletePoint(x);
+	size_t Nf = 1;
+	size_t dim = 3;
+	SlacOperatorMatrix dslac3d( N, N+1, dim, Nf );
+	std::cout << "Full determinant:" << dslac3d.det() << std::endl;
+//	dslac.setFull();
+	for( size_t x = 0; x < N*(N+1)*(N+1); x++ ) {
+		dslac3d.erase( x, 0, 0, 0);
+		dslac3d.erase( x, 1, 0, 0);
 	}
+	std::cout << "Deleted everything:" << dslac3d.getMatrix().isIdentity() << std::endl;
 	std::cout << "Deleted everything, det=" << dslac3d.det() << std::endl;
 
-	std::cout << std::endl << "Truely erasing cols from slac matrix:" << std::endl;
-	VectorXb kx0 = VectorXb::Constant(N*(N-1)*(N-1), true );
-	VectorXb kx1 = VectorXb::Constant(N*(N-1)*(N-1), true );
-
-	kx0( 2 ) = false;
-	kx0( 4 ) = false;
-
-	dslac3d.setFull();
-	std::cout << "before:" << std::endl << dslac3d.getMatrix() << std::endl;
-	dslac3d.eraseCols( kx0, kx1 );
-	std::cout << "after erasing cols:" << std::endl << dslac3d.getMatrix() << std::endl;
-	kx0( 2 ) = true;
-	kx0( 4 ) = true;
-	kx0( 15 ) = false;
-	kx0( 16 ) = false;
-	dslac3d.eraseRows( kx0, kx1 );
-	std::cout << "after erasing rows:" << std::endl << dslac3d.getMatrix() << std::endl;
+	SlacOperatorMatrix dslacNf1( N, N+1, dim, 1 );
+	std::cout << "Single Flavour: " << std::endl << dslacNf1.getMatrix() << std::endl;
+	SlacOperatorMatrix dslacNf2( N, N+1, dim, 2 );
+	std::cout << "Two Flavour: " << std::endl << dslacNf2.getMatrix() << std::endl;
+	std::cout << "Two Flavour determinant: " << std::endl << dslacNf2.det() << std::endl;
+	dslacNf2.erase( 0, 0, 0, 1 );
+	dslacNf2.erase( 0, 0, 1, 0 );
+	std::cout << "Two Flavour deleted: " << std::endl << dslacNf2.getMatrix() << std::endl;
+	std::cout << "Two Flavour deleted determinant: " << std::endl << dslacNf2.det() << std::endl;
+	dslacNf2.setFull();
+	dslacNf2.erase( 0, 0, 0, 0 );
+	dslacNf2.erase( 0, 0, 1, 1 );
+	std::cout << "Two Flavour deleted: " << std::endl << dslacNf2.getMatrix() << std::endl;
+	std::cout << "Two Flavour deleted determinant: " << std::endl << dslacNf2.det() << std::endl;
+//	std::cout << std::endl << "Truely erasing cols from slac matrix:" << std::endl;
+//	VectorXb kx0 = VectorXb::Constant(N*(N-1)*(N-1), true );
+//	VectorXb kx1 = VectorXb::Constant(N*(N-1)*(N-1), true );
+//
+//	kx0( 2 ) = false;
+//	kx0( 4 ) = false;
+//
+//	dslac3d.setFull();
+//	std::cout << "before:" << std::endl << dslac3d.getMatrix() << std::endl;
+//	dslac3d.eraseCols( kx0, kx1 );
+//	std::cout << "after erasing cols:" << std::endl << dslac3d.getMatrix() << std::endl;
+//	kx0( 2 ) = true;
+//	kx0( 4 ) = true;
+//	kx0( 15 ) = false;
+//	kx0( 16 ) = false;
+//	dslac3d.eraseRows( kx0, kx1 );
+//	std::cout << "after erasing rows:" << std::endl << dslac3d.getMatrix() << std::endl;
 //	dslac3d.addPoint( 5 );
 //	std::cout << dslac3d.getMatrix() << std::endl;
 //	std::cout << "without 6: " << dslac3d.det() << std::endl;
