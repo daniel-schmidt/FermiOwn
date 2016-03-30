@@ -10,16 +10,16 @@
 namespace FermiOwn {
 
 SlacOperatorMatrix::SlacOperatorMatrix( size_t size ) :
-												N(size),
-												dslac(make1D(size))
+														N(size),
+														dslac(make1D(size))
 {}
 
 SlacOperatorMatrix::SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t numFlavours ) :
-												N(Nt*Ns*Ns),
-												dimSpinor(2),
-												Nf(numFlavours),
-												rowMap(N*numFlavours*dimSpinor),
-												colMap(N*numFlavours*dimSpinor)
+														N(Nt*Ns*Ns),
+														dimSpinor(2),
+														Nf(numFlavours),
+														rowMap(N*numFlavours*dimSpinor),
+														colMap(N*numFlavours*dimSpinor)
 {
 	using namespace Eigen;
 	if( dim != 3 ) {
@@ -54,7 +54,7 @@ const Eigen::MatrixXcd SlacOperatorMatrix::getMatrix() const {
 }
 
 const Complex SlacOperatorMatrix::det() const {
-	return dslac.determinant();
+	return (dslac*I).determinant();
 }
 
 //void SlacOperatorMatrix::deletePoint(size_t x) {
@@ -65,6 +65,20 @@ const Complex SlacOperatorMatrix::det() const {
 //	dslac.col(x+N) = Eigen::VectorXcd::Zero( dslac.rows() );
 //	dslac(x+N,x+N) = 1.;
 //}
+
+void SlacOperatorMatrix::erase( const FieldBoolean& kxiab ) {
+	for( size_t flavour1 = 0; flavour1 < Nf; flavour1++ ) {
+		for( size_t flavour2 = 0; flavour2 < Nf; flavour2++ ) {
+			for( size_t spin = 0; spin < dimSpinor; spin++ ) {
+				for( size_t x = 0; x < N; x++ ) {
+					if( kxiab.getValue( x, spin, flavour1, flavour2 ) ) {
+						erase( x, spin, flavour1, flavour2 );
+					}
+				}
+			}
+		}
+	}
+}
 
 void SlacOperatorMatrix::erase( size_t x, size_t spin, size_t flavour1, size_t flavour2 ) {
 	// check for correct input

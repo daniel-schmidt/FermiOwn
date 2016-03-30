@@ -13,7 +13,7 @@
 #include <assert.h>
 #include <Eigen/Dense>
 #include <unsupported/Eigen/KroneckerProduct>
-#include "Constants.h"
+#include "FieldBoolean.h"
 #include "CliffordAlgebra.h"
 
 namespace FermiOwn {
@@ -27,6 +27,7 @@ public:
 	const Eigen::MatrixXcd getMatrix() const;
 	const Complex det() const;
 //	void deletePoint( size_t x );
+	void erase( const FieldBoolean& kxiab );
 	void erase( size_t x, size_t spin, size_t flavour1, size_t flavour2 );
 
 //	void eraseCol( size_t x, size_t spin );
