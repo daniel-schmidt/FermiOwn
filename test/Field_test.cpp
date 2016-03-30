@@ -97,5 +97,9 @@ int main() {
 	std::cout << "Inverting, should be at row 7, col 2..." << std::endl;
 	fbool0.invert(6,0,1,1);
 	fbool0.Print();
+
+	std::cout << std::endl << "Testing copy assignment:" << std::endl;
+	fbool1 = fbool0;
+	fbool1.Print();
 	return 0;
 }

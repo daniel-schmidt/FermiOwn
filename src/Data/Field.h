@@ -123,7 +123,7 @@ public:
 	void writeToFile( const std::string& filename ) const;
 
 protected:
-	size_t latVol;
+	size_t latVol;		//TODO: make this (and similar things in derived class) const and implement sensible copy constructor/assignment
 	Eigen::Matrix< ScalarType, Eigen::Dynamic, Eigen::Dynamic > data;
 	std::ranlux48 * randomGenerator;
 	std::normal_distribution<Real> normalDistribution01;	///< Gaussian (normal) distribution with mean 0 and standard deviation 1
