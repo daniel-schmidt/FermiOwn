@@ -102,9 +102,20 @@ int main( int argc, char** argv ) {
 		// initialize single-flavour part to true, the rest to false
 		FieldBoolean kxab( lat.getVol(), numSpin, Nf, &gen, zeroInit );
 
+		for( int a = 0; a < Nf; a++ ) {
+			for( int spin = 0; spin < numSpin; spin++ ) {
+				for( size_t x = 0; x < lat.getVol(); x++ ) {
+					kxab.setValue( true, x, spin, a, a );
+				}
+			}
+		}
+
 		double av_k = 0.;
 		double accrate = 0;
+		slac.erase( kxab );
+//		std::cout << "Initial matrix: " << std::endl << slac.getMatrix() << std::endl << std::endl;
 		Complex detOld = slac.det();
+		slac.setFull();
 
 		for( int measure = 0; measure < numMeasures+numThermal; measure++) {
 			for( int i = 0; i < upPerMeasure; i++ ) {
@@ -121,16 +132,16 @@ int main( int argc, char** argv ) {
 				//				int dkt = 0;	// change in tilde kxab
 				// calculate old value of na
 
-//				Eigen::VectorXi kxSpinSum = kxab[0].leftCols(Nf).cast<int>() + kxab[1].leftCols(Nf).cast<int>();
-//				int n1 = 0;
-//				int n2 = 0;
-//
-//				n1 = -(kxSpinSum.array() == 1).count();
-//				n2 = -(kxSpinSum.array() == 2).count();
+				//				Eigen::VectorXi kxSpinSum = kxab[0].leftCols(Nf).cast<int>() + kxab[1].leftCols(Nf).cast<int>();
+				//				int n1 = 0;
+				//				int n2 = 0;
+				//
+				//				n1 = -(kxSpinSum.array() == 1).count();
+				//				n2 = -(kxSpinSum.array() == 2).count();
 
-//				for( int n = 0; n <= Nf; n++ ) {
-//					na(n) = -(kx.array() == n).count();
-//				}
+				//				for( int n = 0; n <= Nf; n++ ) {
+				//					na(n) = -(kx.array() == n).count();
+				//				}
 
 				//			std::cout << "Constraint before update: " << std::endl;
 				//			constraintViolated( kxab, Nf, x );
@@ -138,12 +149,14 @@ int main( int argc, char** argv ) {
 				//			std::cout << "updating..." << std::endl;
 
 				FieldBoolean kxabOld(kxab);
-
+//				std::cout << "Field before update:" << std::endl;
+//				kxab.Print();
 				// update at the drawn index
 				dk = -kxab.sumAll();
 				kxab.invert( x, spin, a, b );
-				dk += kxab.sumAll();
-
+				int dk2 = dk + kxab.sumAll();
+//				std::cout << "Field after first update:" << std::endl;
+//				kxab.Print();
 				if( a == b ) {
 					// updating with same flavour,
 					// choose, if we update another spin (setting a kxaa=2) or another point (setting two kxaa=1, keeping n1 even)
@@ -156,14 +169,14 @@ int main( int argc, char** argv ) {
 						kxab.invert( y, spin, a, a );
 						if( kxab.constraintViolated( y ) ) {
 							kxab = kxabOld;
-//							std::cout << "violated! Reset and continue loop..." << std::endl;
+							std::cout << "violated! Reset and continue loop..." << std::endl;
 							continue;
 						}
 					}
 				} else {
 					// updating with two different flavours, enforce kxab = kxba
 					int spin2 = intSpin_dist(gen);
-					if( dk < 0 ) {
+					if( dk2 < 0 ) {
 						// we have to delete another spin in kxba, choose one randomly and check,
 						// if it is set, otherwise the other one must be set, since we have only two spins.
 						if( kxab.getValue( x, spin2, b, a ) ) {
@@ -192,48 +205,51 @@ int main( int argc, char** argv ) {
 				}
 				dk += kxab.sumAll();
 
+//				std::cout << "Field after second update:" << std::endl;
+//				kxab.Print();
 				if( kxab.constraintViolated( x ) ) {
 					kxab = kxabOld;
-					//				std::cout << "violated! Reset and continue loop..." << std::endl;
+					std::cout << "violated! Reset and continue loop..." << std::endl;
 					continue;
 				}
+//				std::cout << "Matrix before erase: " << std::endl << slac.getMatrix() << std::endl << std::endl;
 				slac.erase( kxab );
+//				std::cout << "Matrix: " << std::endl << slac.getMatrix() << std::endl << std::endl;
 				Complex det = slac.det();
-
+				slac.setFull();
 				// TODO: calculate change in na
 
-//				kxSpinSum = kxab[0].leftCols(Nf).cast<int>() + kxab[1].leftCols(Nf).cast<int>();
-//				n1 += (kxSpinSum.array() == 1).count();
-//				n2 += (kxSpinSum.array() == 2).count();
+				//				kxSpinSum = kxab[0].leftCols(Nf).cast<int>() + kxab[1].leftCols(Nf).cast<int>();
+				//				n1 += (kxSpinSum.array() == 1).count();
+				//				n2 += (kxSpinSum.array() == 2).count();
 
-//				kx0 = kxab[0].leftCols(Nf).rowwise().count().cast<int>();
-//				for( int n = 0; n <= Nf; n++ ) {
-//					na(n) += (kx.array() == n).count();
-//					factor *= std::pow( getHypergeometricFactor( n ), double(na(n)) );
-//					//					std::cout << "n=" << n << "\tfactor=" << factor << "\thyperFactor=" << getHypergeometricFactor(n) << std::endl;
-//				}
+				//				kx0 = kxab[0].leftCols(Nf).rowwise().count().cast<int>();
+				//				for( int n = 0; n <= Nf; n++ ) {
+				//					na(n) += (kx.array() == n).count();
+				//					factor *= std::pow( getHypergeometricFactor( n ), double(na(n)) );
+				//					//					std::cout << "n=" << n << "\tfactor=" << factor << "\thyperFactor=" << getHypergeometricFactor(n) << std::endl;
+				//				}
 
-				//			std::cout << slacNf[0].getMatrix() << std::endl << std::endl;
 				//			std::cout << "kxab=" << std::endl << kxab << std::endl << std::endl;
 				//			std::cout << "kx=" << std::endl << kx << std::endl;
 				//			std::cout << "na=" << std::endl << na << std::endl;
 				//			std::cout << "x=" << x << "\ty=" << y << "\ta=" << a << "\tb=" << b;
 				//			std::cout << "\tka=" << kxab.leftCols(Nf).count() << "\tkab="<< kxab.rightCols( Nf*(Nf-1)/2 ).count() << "\tdk=" << dk;
-				//			std::cout << "\tdetOld: " << detOld << "\tdet: " << det;
+//				std::cout << "dk: " << dk << "\tdetOld: " << detOld << "\tdet: " << det;
 				double factor = 1.;	//TODO: implement correct factor for Nf > 1
 				double dw = std::pow(kappa, dk);
 				Complex weight =  factor*dw*(det/detOld);
 
 				double r = uni_real_dist(gen);
-				//			bool accepted = false;
+				bool accepted = false;
 				if( std::fabs(weight) > r ) {
-					//				accepted = true;
+					accepted = true;
 					accrate++;
 					detOld = det;
 				} else {
 					kxab = kxabOld;
 				}
-				//			std::cout << "\tdw: " << dw << "\tweight: " << weight << "\taccepted: " << accepted << std::endl;
+//				std::cout << "\tdw: " << dw << "\tweight: " << weight << "\taccepted: " << accepted << std::endl;
 			}
 			if( measure >= numThermal ) av_k += kxab.sumAll()/double(V);
 		}
