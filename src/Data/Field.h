@@ -122,7 +122,7 @@ public:
 
 	void writeToFile( const std::string& filename ) const;
 
-private:
+protected:
 	size_t latVol;
 	Eigen::Matrix< ScalarType, Eigen::Dynamic, Eigen::Dynamic > data;
 	std::ranlux48 * randomGenerator;

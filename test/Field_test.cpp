@@ -8,6 +8,7 @@
 #include <random>
 
 #include "Field.h"
+#include "FieldBoolean.h"
 #include "Lattice.h"
 
 int main() {
@@ -83,5 +84,18 @@ int main() {
 	fsGaussC.writeToFile("randomGaussC.dat");
 	std::cout << "Writing complex data to randomGaussC.dat" << std::endl;
 	std::cout << "Check with Octave if both real and imaginary parts are gaussian distributed and independent from the other files." << std::endl;
+
+	std::cout << std::endl << "Testing boolean field..." << std::endl;
+	FieldBoolean fbool1( 2*3*3, 2, 3, &rndGen, oneInit );
+	fbool1.Print();
+	FieldBoolean fbool0( 2*3*3, 2, 3, &rndGen, zeroInit );
+	fbool0.Print();
+	std::cout << "Inverting, should be at row 3, col 6 and 10..." << std::endl;
+	fbool1.setValue( false, 2, 1, 0, 1 );
+	fbool1.setValue( false, 2, 0, 2, 1 );
+	fbool1.Print();
+	std::cout << "Inverting, should be at row 7, col 2..." << std::endl;
+	fbool0.invert(6,0,1,1);
+	fbool0.Print();
 	return 0;
 }

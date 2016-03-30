@@ -15,7 +15,75 @@
 
 namespace FermiOwn {
 
+Complex calcDet( SlacOperatorMatrix& dslac, const VectorXb& kx ) {
+	for( int x = 0; x < kx.size(); x++ ) {
+		if( kx(x) ) {
+			dslac.deletePoint(x);
+		}
+	}
+	return pow(I,dslac.getMatrix().rows())*dslac.det();
+}
+int linIndex(int N, int i, int j) {
+	if( i == j) {
+		return i;
+	} else {
+		if( i > j ) {
+			int tmp = j;
+			j = i;
+			i = tmp;
+		}
+		return N+N*(N-1)/2 - (N-i)*(N-i-1)/2+j-i-1;
+	}
+}
 
+Complex calcDet( std::vector<SlacOperatorMatrix> dslac, const MatrixXb& kxab0, const MatrixXb& kxab1, int Nf ) {
+	Complex det = 1.;
+	for( size_t b = 0; b < Nf; b++ ) {
+		for( size_t a = 0; a < b; a++ ) {
+			VectorXb kx0 = kxab0.col( linIndex( Nf, a, b ) );
+			VectorXb kx1 = kxab1.col( linIndex( Nf, a, b ) );
+			dslac[a].eraseCols( kx0, kx1 );
+			dslac[b].eraseRows( kx0, kx1 );
+		}
+	}
+	for( size_t a = 0; a < Nf; a++ ) {
+		VectorXb kx0 = kxab0.col( a );
+		VectorXb kx1 = kxab1.col( a );
+		dslac[a].eraseCols( kx0, kx1 );
+		dslac[a].eraseRows( kx0, kx1 );
+		det *= pow(I,dslac[a].getMatrix().rows())*dslac[a].det();
+	}
+	return det;
+}
+
+
+double getHypergeometricFactor( int flavour ) {
+	switch( flavour ){
+	case 0: return 1.;
+	case 1: return 1.5;
+	case 2: return 2.75;
+	case 3: return 53./8.;
+	case 4: return 345./16.;
+	case 5: return 2947./32.;
+	case 6: return 31411./64.;
+	default: std::cout << "Value of the confluent hypergeometric function for a=" << flavour << " not implemented!" << std::endl;
+	return -1.;
+	}
+}
+
+bool constraintViolated( const MatrixXb& kxab0, const MatrixXb& kxab1, int Nf, int x ) {
+	bool violated = false;
+	for( int m = 0; m < Nf; m++ ) {
+		int constrSum = 0;
+		for( int n = 0; n < Nf; n++ )
+		{
+			constrSum += kxab0( x, linIndex( Nf, m, n ) ) + kxab1( x, linIndex( Nf, m, n ) );
+		}
+		//		std::cout << "constraint for a=" << m << " is " << constrSum << std::endl;
+		if( constrSum > 1 ) violated = true;
+	}
+	return violated;
+}
 }
 
 int main( int argc, char** argv ) {

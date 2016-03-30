@@ -22,4 +22,8 @@ template<> void Field<Complex>::setGaussian() {
 	data.imag() = Eigen::Matrix< Real, Eigen::Dynamic, 1>::NullaryExpr( data.size(), gaussian );
 }
 
+template<> void Field<bool>::setGaussian() {
+	data.setRandom(); //TODO: remove setGaussian from general field since its not very sensible for bool field
+}
+
 } // namespace FermiOwn
