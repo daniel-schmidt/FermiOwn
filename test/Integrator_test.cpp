@@ -19,7 +19,7 @@ public:
 	~HarmonicAction(){};
 
 	double getAction( const Field<Real>& phi ) const {
-		return phi.dot(phi);
+		return phi.cwiseMultAndSum(phi);
 	}
 
 	Field<Real> getForce( const Field<Real>& phi ) const {
@@ -38,8 +38,8 @@ int main() {
 	double kappa = 0.5, lambda = 0.1;
 	Lattice lat(Nt, Ns, dim);
 
-	Field<Real> fs0(lat.getVol(), &rndGen, zeroInit);
-	Field<Real> pRand(lat.getVol(), &rndGen, gaussianInit);
+	Field<Real> fs0(lat.getVol(), 1, &rndGen, zeroInit);
+	Field<Real> pRand(lat.getVol(), 1, &rndGen, gaussianInit);
 	Action act(lat, kappa, lambda);
 	fs0.Print();
 
@@ -67,7 +67,7 @@ int main() {
 
 	std::cout << "Trying harmonic action..." << std::endl;
 	HarmonicAction hact;
-	Field<Real> pOnes(lat.getVol(), &rndGen, oneInit);
+	Field<Real> pOnes(lat.getVol(), 1, &rndGen, oneInit);
 	nt=5;
 	size_t imax = 200;
 	t=25.1327/imax; // 8 pi divided in imax parts, each nt integration steps inbetween
@@ -76,10 +76,10 @@ int main() {
 	for( size_t i = 0; i < imax; i++ )
 	{
 //		std::cout << "{" << i*t << ", " << fs0(0) << "}," << std::endl;
-		std::cout << (pOnes.dot(pOnes)+hact.getAction(fs0)) << "," << std::endl;
+		std::cout << (pOnes.cwiseMultAndSum(pOnes)+hact.getAction(fs0)) << "," << std::endl;
 		hint.integrate();
 	}
 //	std::cout << "{" << imax*t << ", " << fs0(0) << "}}" << std::endl;
-	std::cout << pOnes.dot(pOnes) + hact.getAction(fs0) << "};" << std::endl;
+	std::cout << pOnes.cwiseMultAndSum(pOnes) + hact.getAction(fs0) << "};" << std::endl;
 
 }

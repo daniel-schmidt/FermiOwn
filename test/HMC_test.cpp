@@ -27,7 +27,7 @@ int main() {
 	Action act(lat, kappa, lambda);
 
 	// initialize field
-	Field<Real> phi(lat.getVol(), &rndGen, gaussianInit);
+	Field<Real> phi(lat.getVol(), 1, &rndGen, gaussianInit);
 
 	double HMCt = 1.;
 	size_t HMCnt = 30;

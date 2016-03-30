@@ -30,7 +30,7 @@ enum InitType {
  */
 template<class ScalarType> class Field {
 public:
-	Field( const size_t latticeVolume, std::ranlux48 * rndGen, InitType init );
+	Field( const size_t latticeVolume, const size_t DoF_per_Point, std::ranlux48 * rndGen, InitType init );
 	virtual ~Field();
 
 	void setGaussian();
@@ -109,7 +109,7 @@ public:
 	 * @param rhs other vector to perform scalar product with
 	 * @return scalar product of this field with rhs
 	 */
-	ScalarType dot( const Field<ScalarType>& rhs ) const;
+	ScalarType cwiseMultAndSum( const Field<ScalarType>& rhs ) const;
 
 	/**
 	 * @brief Returns the lattice associated with this field.
@@ -124,7 +124,7 @@ public:
 
 private:
 	size_t latVol;
-	Eigen::Matrix< ScalarType, Eigen::Dynamic, 1> data;
+	Eigen::Matrix< ScalarType, Eigen::Dynamic, Eigen::Dynamic > data;
 	std::ranlux48 * randomGenerator;
 	std::normal_distribution<Real> normalDistribution01;	///< Gaussian (normal) distribution with mean 0 and standard deviation 1
 };
@@ -133,11 +133,11 @@ private:
  * Implementation of member functions
  * ---------------------------------------------------------------------------------------------------*/
 
-template<class ScalarType> Field<ScalarType>::Field(const size_t latticeVolume, std::ranlux48 * rndGen, InitType init) :
+template<class ScalarType> Field<ScalarType>::Field(const size_t latticeVolume, const size_t DoF_per_Point, std::ranlux48 * rndGen, InitType init) :
 				latVol(latticeVolume),
 				randomGenerator(rndGen)
 				{
-	data = Eigen::Matrix< ScalarType, Eigen::Dynamic, 1>(latticeVolume);
+	data = Eigen::Matrix< ScalarType, Eigen::Dynamic, Eigen::Dynamic >(latticeVolume, DoF_per_Point);
 	//TODO: move this switch to a general setter function.
 	switch( init ) {
 	case zeroInit:
@@ -206,8 +206,8 @@ template<class ScalarType> Field<ScalarType>& Field<ScalarType>::operator/=( con
 	return *this;
 }
 
-template<class ScalarType> ScalarType Field<ScalarType>::dot( const Field<ScalarType>& rhs ) const {
-	return data.dot(rhs.data);
+template<class ScalarType> ScalarType Field<ScalarType>::cwiseMultAndSum( const Field<ScalarType>& rhs ) const {
+	return data.cwiseProduct(rhs.data).sum();
 }
 
 template<class ScalarType> size_t Field<ScalarType>::getSize() const {

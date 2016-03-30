@@ -26,7 +26,7 @@ int main() {
 	double lambda = 1.145;
 
 	// initialize field
-	Field<Real> phi(lat.getVol(), &rndGen, gaussianInit);
+	Field<Real> phi(lat.getVol(), 1, &rndGen, gaussianInit);
 
 
 	// initialize Monte Carlo Algorithm

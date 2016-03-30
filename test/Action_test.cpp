@@ -19,11 +19,11 @@ bool Action_test(){
 
 	std::ranlux48 rndGen;
 
-	Field<Real> phi(lat.getVol(), &rndGen, oneInit);
+	Field<Real> phi(lat.getVol(), 1, &rndGen, oneInit);
 
 	double lambda = 0.5;
 	double kappa = 0.1;
-	double Spot = kappa*phi.dot(phi) + lambda*(phi*phi).dot(phi*phi);
+	double Spot = kappa*phi.cwiseMultAndSum(phi) + lambda*(phi*phi).cwiseMultAndSum(phi*phi);
 	std::cout << "Potential is: " << Spot  << " and should be 4.8" << std::endl;
 
 	Action act( lat, kappa, lambda );

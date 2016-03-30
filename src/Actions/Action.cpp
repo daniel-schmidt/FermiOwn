@@ -19,7 +19,7 @@ Action::~Action() {}
 
 double Action::getAction( const Field<Real>& phi) const {
 	// potential part of the action
-	double S = phi.dot(phi) + lambda*(phi*phi-1.).dot(phi*phi-1.);
+	double S = phi.cwiseMultAndSum(phi) + lambda*(phi*phi-1.).cwiseMultAndSum(phi*phi-1.);
 
 	for( size_t x = 0; x < lat.getVol(); x++ ) {
 		double kinetic = 0;
@@ -34,7 +34,7 @@ double Action::getAction( const Field<Real>& phi) const {
 }
 
 Field<Real> Action::getForce( const Field<Real>& phi) const {
-	Field<Real> force = ( 2. + 4.*lambda*(phi.dot(phi)-1.) )*phi;
+	Field<Real> force = ( 2. + 4.*lambda*(phi.cwiseMultAndSum(phi)-1.) )*phi;
 
 	for( size_t x = 0; x < lat.getVol(); x++ ) {
 		double kinetic = 0;

@@ -13,7 +13,7 @@ HMC::HMC( double t, size_t nt, const BasicAction& naction, Field<Real>& nphi, st
 	randomGenerator(rndGen),
 	act(naction),
 	phi(nphi),
-	momentum(phi.getSize(), randomGenerator, gaussianInit),
+	momentum(phi.getSize(), 1, randomGenerator, gaussianInit),
 	integrator(phi, momentum, act, t, nt)
 {
 }
@@ -49,7 +49,7 @@ bool HMC::update() {
 
 double HMC::Hamiltonian() {
 	double H = act.getAction(phi);
-	H += 0.5 * momentum.dot(momentum);
+	H += 0.5 * momentum.cwiseMultAndSum(momentum);
 	return H;
 }
 

@@ -18,7 +18,7 @@ int main() {
 	size_t Nt = 2, Ns = 2, dim = 3;
 	Lattice lat(Nt, Ns, dim);
 
-	Field<Real> fs0(lat.getVol(), &rndGen, zeroInit);
+	Field<Real> fs0(lat.getVol(), 1, &rndGen, zeroInit);
 	bool correct = true;
 	for( size_t x = 0; x < lat.getVol(); x++ ) {
 		if( 0 !=fs0(x) ) correct = false;
@@ -29,7 +29,7 @@ int main() {
 		exit(1);
 	}
 
-	Field<Complex> fs1(lat.getVol(), &rndGen, oneInit);
+	Field<Complex> fs1(lat.getVol(), 1, &rndGen, oneInit);
 	for( size_t x = 0; x < lat.getVol(); x++ ) {
 		if( Complex(1.,0) !=fs1(x) ) correct = false;
 	}
@@ -53,7 +53,7 @@ int main() {
 		std::cout << "Initialization by copy works!" << std::endl;
 	}
 
-	Field<Complex> fsSum(lat.getVol(), &rndGen, randomInit);
+	Field<Complex> fsSum(lat.getVol(), 1, &rndGen, randomInit);
 	fsSum = fs1+fs1copy;
 	for( size_t x = 0; x < lat.getVol(); x++ ) {
 		if( Complex(2.,0) !=fsSum(x) ) correct = false;
@@ -69,17 +69,17 @@ int main() {
 	// Random initializations of large vectors
 	Nt = 16, Ns = 15, dim = 3;
 	Lattice latLarge(Nt, Ns, dim);
-	Field<Complex> fsrnd(latLarge.getVol(), &rndGen, randomInit);
+	Field<Complex> fsrnd(latLarge.getVol(), 1, &rndGen, randomInit);
 	fsrnd.writeToFile("randomUniform.dat");
 	std::cout << "Writing data to randomUniform.dat, check with Octave, if it looks uniformly distributed." << std::endl;
 
-	Field<Real> fsGauss(latLarge.getVol(), &rndGen, gaussianInit);
+	Field<Real> fsGauss(latLarge.getVol(), 1, &rndGen, gaussianInit);
 	fsGauss.writeToFile("randomGauss1.dat");
 	std::cout << "Writing data to randomGauss1.dat, check with Octave, if it looks gaussian distributed." << std::endl;
 	fsGauss.setGaussian();
 	fsGauss.writeToFile("randomGauss2.dat");
 	std::cout << "Writing data to randomGauss2.dat, check with Octave, if it looks gaussian distributed and is different from randomGauss1.dat." << std::endl;
-	Field<Complex> fsGaussC(latLarge.getVol(), &rndGen, gaussianInit);
+	Field<Complex> fsGaussC(latLarge.getVol(), 1, &rndGen, gaussianInit);
 	fsGaussC.writeToFile("randomGaussC.dat");
 	std::cout << "Writing complex data to randomGaussC.dat" << std::endl;
 	std::cout << "Check with Octave if both real and imaginary parts are gaussian distributed and independent from the other files." << std::endl;
