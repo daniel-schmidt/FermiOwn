@@ -7,7 +7,8 @@
 
 #include "Action.h"
 #include "Metropolis.h"
-#include "FieldScalar.h"
+
+#include "Field.h"
 #include "Lattice.h"
 
 int main() {
@@ -25,7 +26,7 @@ int main() {
 	double lambda = 1.145;
 
 	// initialize field
-	FieldScalar<Real> phi(lat.getVol(), &rndGen, gaussianInit);
+	Field<Real> phi(lat.getVol(), &rndGen, gaussianInit);
 
 
 	// initialize Monte Carlo Algorithm

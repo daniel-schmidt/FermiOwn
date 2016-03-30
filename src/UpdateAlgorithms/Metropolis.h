@@ -11,7 +11,7 @@
 #include <random>
 #include <cmath>
 
-#include "FieldScalar.h"
+#include "Field.h"
 #include "BasicAction.h"
 
 namespace FermiOwn {
@@ -26,7 +26,7 @@ public:
 	 * @param nphi
 	 * @param rndGen
 	 */
-	Metropolis( const double ndelta, const BasicAction& naction, FieldScalar<Real>& nphi, std::ranlux48* rndGen );
+	Metropolis( const double ndelta, const BasicAction& naction, Field<Real>& nphi, std::ranlux48* rndGen );
 	virtual ~Metropolis();
 
 	/** @brief Lattice sweep
@@ -38,7 +38,7 @@ private:
 	const double delta;
 	std::ranlux48* randomGenerator;
 	const BasicAction& act;
-	FieldScalar<Real>& phi;
+	Field<Real>& phi;
 	std::uniform_real_distribution<Real> uniformDistribution01;
 };
 

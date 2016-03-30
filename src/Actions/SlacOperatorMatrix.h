@@ -18,9 +18,6 @@
 
 namespace FermiOwn {
 
-typedef Eigen::Matrix< bool, Eigen::Dynamic, 1 > VectorXb;
-typedef Eigen::Matrix< bool, Eigen::Dynamic, Eigen::Dynamic > MatrixXb;
-
 class SlacOperatorMatrix {
 public:
 	SlacOperatorMatrix( size_t size );

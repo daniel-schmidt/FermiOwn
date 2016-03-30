@@ -15,6 +15,9 @@ namespace FermiOwn {
 	typedef std::complex< double > Complex;
 	typedef double Real;
 
+	typedef Eigen::Matrix< bool, Eigen::Dynamic, 1 > VectorXb;
+	typedef Eigen::Matrix< bool, Eigen::Dynamic, Eigen::Dynamic > MatrixXb;
+
 	const double PI = 3.14159265358979;
 	const Complex I = Complex(0,1);
 } // namespace FermiOwn

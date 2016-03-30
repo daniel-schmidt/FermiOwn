@@ -7,8 +7,8 @@
 
 #include <random>
 #include "Lattice.h"
-#include "FieldScalar.h"
 #include "Action.h"
+#include "Field.h"
 
 // TODO: rewrite as true test, include in makefile
 
@@ -19,7 +19,7 @@ bool Action_test(){
 
 	std::ranlux48 rndGen;
 
-	FieldScalar<Real> phi(lat.getVol(), &rndGen, oneInit);
+	Field<Real> phi(lat.getVol(), &rndGen, oneInit);
 
 	double lambda = 0.5;
 	double kappa = 0.1;

@@ -9,7 +9,7 @@
 
 namespace FermiOwn {
 
-Integrator::Integrator( FieldScalar<Real>& position, FieldScalar<Real>& momentum, const BasicAction& new_act, const double new_t, const size_t new_nt ) :
+Integrator::Integrator( Field<Real>& position, Field<Real>& momentum, const BasicAction& new_act, const double new_t, const size_t new_nt ) :
 	x(position),
 	p(momentum),
 	act(new_act),

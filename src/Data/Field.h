@@ -28,10 +28,10 @@ enum InitType {
 /**
  * Every Field class is associated with a lattice that is passed to it at construction.
  */
-template<class ScalarType> class FieldScalar {
+template<class ScalarType> class Field {
 public:
-	FieldScalar( const size_t latticeVolume, std::ranlux48 * rndGen, InitType init );
-	virtual ~FieldScalar();
+	Field( const size_t latticeVolume, std::ranlux48 * rndGen, InitType init );
+	virtual ~Field();
 
 	void setGaussian();
 	/**
@@ -53,63 +53,63 @@ public:
 	 * @param rhs is the field to add to the current one.
 	 * @return the sum of the current vector and rhs
 	 */
-	FieldScalar<ScalarType>& operator+=( const FieldScalar<ScalarType>& rhs );
+	Field<ScalarType>& operator+=( const Field<ScalarType>& rhs );
 
 	/**
 	 * @brief subtract a field from this field
 	 * @param rhs is the field to subtract from the current one.
 	 * @return the current vector minus rhs
 	 */
-	FieldScalar<ScalarType>& operator-=( const FieldScalar<ScalarType>& rhs );
+	Field<ScalarType>& operator-=( const Field<ScalarType>& rhs );
 
 	/**
 	 * @brief Coefficient-wise multiply
 	 * @param rhs is the field to multiply with
 	 * @return the current vector with each element divided by the corresponding one in rhs
 	 */
-	FieldScalar<ScalarType>& operator*=( const FieldScalar<ScalarType>& rhs );
+	Field<ScalarType>& operator*=( const Field<ScalarType>& rhs );
 
 	/**
 	 * @brief Coefficient-wise divide
 	 * @param rhs is the field to divide by
 	 * @return the current vector with each element divided by the corresponding one in rhs
 	 */
-	FieldScalar<ScalarType>& operator/=( const FieldScalar<ScalarType>& rhs );
+	Field<ScalarType>& operator/=( const Field<ScalarType>& rhs );
 
 	/**
 	 * @brief Scalar addition
 	 * @param rhs scalar to add to each vector component
 	 * @return the current field shifted by rhs
 	 */
-	FieldScalar<ScalarType>& operator+=( const ScalarType& rhs );
+	Field<ScalarType>& operator+=( const ScalarType& rhs );
 
 	/**
 	 * @brief Scalar subtraction
 	 * @param rhs scalar to subtract from each vector component
 	 * @return the current field shifted by -rhs
 	 */
-	FieldScalar<ScalarType>& operator-=( const ScalarType& rhs );
+	Field<ScalarType>& operator-=( const ScalarType& rhs );
 
 	/**
 	 * @brief Scalar multiplication
 	 * @param rhs scalar to multiply with
 	 * @return the current field multiplied by rhs
 	 */
-	FieldScalar<ScalarType>& operator*=( const ScalarType& rhs );
+	Field<ScalarType>& operator*=( const ScalarType& rhs );
 
 	/**
 	 * @brief Scalar division
 	 * @param rhs scalar to divide by
 	 * @return the current field divided by rhs
 	 */
-	FieldScalar<ScalarType>& operator/=( const ScalarType& rhs );
+	Field<ScalarType>& operator/=( const ScalarType& rhs );
 
 	/**
 	 * @brief Calculate scalar product
 	 * @param rhs other vector to perform scalar product with
 	 * @return scalar product of this field with rhs
 	 */
-	ScalarType dot( const FieldScalar<ScalarType>& rhs ) const;
+	ScalarType dot( const Field<ScalarType>& rhs ) const;
 
 	/**
 	 * @brief Returns the lattice associated with this field.
@@ -133,7 +133,7 @@ private:
  * Implementation of member functions
  * ---------------------------------------------------------------------------------------------------*/
 
-template<class ScalarType> FieldScalar<ScalarType>::FieldScalar(const size_t latticeVolume, std::ranlux48 * rndGen, InitType init) :
+template<class ScalarType> Field<ScalarType>::Field(const size_t latticeVolume, std::ranlux48 * rndGen, InitType init) :
 				latVol(latticeVolume),
 				randomGenerator(rndGen)
 				{
@@ -156,69 +156,69 @@ template<class ScalarType> FieldScalar<ScalarType>::FieldScalar(const size_t lat
 
 				}
 
-template<class ScalarType> FieldScalar<ScalarType>::~FieldScalar() {}
+template<class ScalarType> Field<ScalarType>::~Field() {}
 
-template<class ScalarType> ScalarType& FieldScalar<ScalarType>::operator()( const size_t x ) {
+template<class ScalarType> ScalarType& Field<ScalarType>::operator()( const size_t x ) {
 	return data(x);
 }
 
-template<class ScalarType> ScalarType FieldScalar<ScalarType>::operator()( const size_t x ) const {
+template<class ScalarType> ScalarType Field<ScalarType>::operator()( const size_t x ) const {
 	return data(x);
 }
 
-template<class ScalarType> FieldScalar<ScalarType>& FieldScalar<ScalarType>::operator+=( const FieldScalar<ScalarType>& rhs ) {
+template<class ScalarType> Field<ScalarType>& Field<ScalarType>::operator+=( const Field<ScalarType>& rhs ) {
 	data += rhs.data;
 	return *this;
 }
 
-template<class ScalarType> FieldScalar<ScalarType>& FieldScalar<ScalarType>::operator-=( const FieldScalar<ScalarType>& rhs ) {
+template<class ScalarType> Field<ScalarType>& Field<ScalarType>::operator-=( const Field<ScalarType>& rhs ) {
 	data -= rhs.data;
 	return *this;
 }
 
-template<class ScalarType> FieldScalar<ScalarType>& FieldScalar<ScalarType>::operator*=( const FieldScalar<ScalarType>& rhs ) {
+template<class ScalarType> Field<ScalarType>& Field<ScalarType>::operator*=( const Field<ScalarType>& rhs ) {
 	data = data.cwiseProduct(rhs.data);
 	return *this;
 }
 
-template<class ScalarType> FieldScalar<ScalarType>& FieldScalar<ScalarType>::operator/=( const FieldScalar<ScalarType>& rhs ) {
+template<class ScalarType> Field<ScalarType>& Field<ScalarType>::operator/=( const Field<ScalarType>& rhs ) {
 	data = data.cwiseQuotient(rhs.data);
 	return *this;
 }
 
-template<class ScalarType> FieldScalar<ScalarType>& FieldScalar<ScalarType>::operator+=( const ScalarType& rhs ) {
+template<class ScalarType> Field<ScalarType>& Field<ScalarType>::operator+=( const ScalarType& rhs ) {
 	data -= Eigen::Matrix< ScalarType, Eigen::Dynamic, 1>::Constant(data.size(), rhs);
 	return *this;
 }
 
-template<class ScalarType> FieldScalar<ScalarType>& FieldScalar<ScalarType>::operator-=( const ScalarType& rhs ) {
+template<class ScalarType> Field<ScalarType>& Field<ScalarType>::operator-=( const ScalarType& rhs ) {
 	data -= Eigen::Matrix< ScalarType, Eigen::Dynamic, 1>::Constant(data.size(), rhs);
 	return *this;
 }
 
-template<class ScalarType> FieldScalar<ScalarType>& FieldScalar<ScalarType>::operator*=( const ScalarType& rhs ) {
+template<class ScalarType> Field<ScalarType>& Field<ScalarType>::operator*=( const ScalarType& rhs ) {
 	data *= rhs;
 	return *this;
 }
 
-template<class ScalarType> FieldScalar<ScalarType>& FieldScalar<ScalarType>::operator/=( const ScalarType& rhs ) {
+template<class ScalarType> Field<ScalarType>& Field<ScalarType>::operator/=( const ScalarType& rhs ) {
 	data /= rhs;
 	return *this;
 }
 
-template<class ScalarType> ScalarType FieldScalar<ScalarType>::dot( const FieldScalar<ScalarType>& rhs ) const {
+template<class ScalarType> ScalarType Field<ScalarType>::dot( const Field<ScalarType>& rhs ) const {
 	return data.dot(rhs.data);
 }
 
-template<class ScalarType> size_t FieldScalar<ScalarType>::getSize() const {
+template<class ScalarType> size_t Field<ScalarType>::getSize() const {
 	return latVol;
 }
 
-template<class ScalarType> void FieldScalar<ScalarType>::Print() const {
+template<class ScalarType> void Field<ScalarType>::Print() const {
 	std::cout << data << std::endl;
 }
 
-template<class ScalarType> void FieldScalar<ScalarType>::writeToFile( const std::string& filename ) const {
+template<class ScalarType> void Field<ScalarType>::writeToFile( const std::string& filename ) const {
 	std::ofstream file(filename);
 	for( int i = 0; i < data.size(); i++ ) {
 		file << std::real(data(i)) << "\t" << std::imag(data(i)) << std::endl;
@@ -230,62 +230,62 @@ template<class ScalarType> void FieldScalar<ScalarType>::writeToFile( const std:
  * Implementation of non-member functions
  * ---------------------------------------------------------------------------------------------------*/
 
-template<class ScalarType> inline FieldScalar<ScalarType> operator+( FieldScalar<ScalarType> lhs, const FieldScalar<ScalarType>& rhs ) {
+template<class ScalarType> inline Field<ScalarType> operator+( Field<ScalarType> lhs, const Field<ScalarType>& rhs ) {
 	lhs += rhs;
 	return lhs;
 }
 
-template<class ScalarType> inline FieldScalar<ScalarType> operator-( FieldScalar<ScalarType> lhs, const FieldScalar<ScalarType>& rhs ) {
+template<class ScalarType> inline Field<ScalarType> operator-( Field<ScalarType> lhs, const Field<ScalarType>& rhs ) {
 	lhs -= rhs;
 	return lhs;
 }
 
-template<class ScalarType> inline FieldScalar<ScalarType> operator*( FieldScalar<ScalarType> lhs, const FieldScalar<ScalarType>& rhs ) {
+template<class ScalarType> inline Field<ScalarType> operator*( Field<ScalarType> lhs, const Field<ScalarType>& rhs ) {
 	lhs *= rhs;
 	return lhs;
 }
 
-template<class ScalarType> inline FieldScalar<ScalarType> operator/( FieldScalar<ScalarType> lhs, const FieldScalar<ScalarType>& rhs ) {
+template<class ScalarType> inline Field<ScalarType> operator/( Field<ScalarType> lhs, const Field<ScalarType>& rhs ) {
 	lhs /= rhs;
 	return lhs;
 }
 
-template<class ScalarType> inline FieldScalar<ScalarType> operator+( FieldScalar<ScalarType> lhs, const ScalarType& rhs ) {
+template<class ScalarType> inline Field<ScalarType> operator+( Field<ScalarType> lhs, const ScalarType& rhs ) {
 	lhs += rhs;
 	return lhs;
 }
 
-template<class ScalarType> inline FieldScalar<ScalarType> operator-( FieldScalar<ScalarType> lhs, const ScalarType& rhs ) {
+template<class ScalarType> inline Field<ScalarType> operator-( Field<ScalarType> lhs, const ScalarType& rhs ) {
 	lhs -= rhs;
 	return lhs;
 }
 
-template<class ScalarType> inline FieldScalar<ScalarType> operator*( FieldScalar<ScalarType> lhs, const ScalarType& rhs ) {
+template<class ScalarType> inline Field<ScalarType> operator*( Field<ScalarType> lhs, const ScalarType& rhs ) {
 	lhs *= rhs;
 	return lhs;
 }
 
-template<class ScalarType> inline FieldScalar<ScalarType> operator/( FieldScalar<ScalarType> lhs, const ScalarType& rhs ) {
+template<class ScalarType> inline Field<ScalarType> operator/( Field<ScalarType> lhs, const ScalarType& rhs ) {
 	lhs /= rhs;
 	return lhs;
 }
 
-template<class ScalarType> inline FieldScalar<ScalarType> operator+( const ScalarType& lhs, FieldScalar<ScalarType> rhs ) {
+template<class ScalarType> inline Field<ScalarType> operator+( const ScalarType& lhs, Field<ScalarType> rhs ) {
 	rhs += lhs;
 	return rhs;
 }
 
-template<class ScalarType> inline FieldScalar<ScalarType> operator-( const ScalarType& lhs, FieldScalar<ScalarType> rhs ) {
+template<class ScalarType> inline Field<ScalarType> operator-( const ScalarType& lhs, Field<ScalarType> rhs ) {
 	rhs -= lhs;
 	return rhs;
 }
 
-template<class ScalarType> inline FieldScalar<ScalarType> operator*( const ScalarType& lhs, FieldScalar<ScalarType> rhs ) {
+template<class ScalarType> inline Field<ScalarType> operator*( const ScalarType& lhs, Field<ScalarType> rhs ) {
 	rhs *= lhs;
 	return rhs;
 }
 
-template<class ScalarType> inline FieldScalar<ScalarType> operator/( const ScalarType& lhs, FieldScalar<ScalarType> rhs ) {
+template<class ScalarType> inline Field<ScalarType> operator/( const ScalarType& lhs, Field<ScalarType> rhs ) {
 	rhs /= lhs;
 	return rhs;
 }

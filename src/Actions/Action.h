@@ -8,7 +8,7 @@
 #ifndef ACTION_H_
 #define ACTION_H_
 
-#include "FieldScalar.h"
+#include "Field.h"
 #include "Lattice.h"
 #include "BasicAction.h"
 
@@ -19,9 +19,9 @@ public:
 	Action( const Lattice& new_lat, const double new_kappa, const double new_lambda);
 	virtual ~Action();
 
-	double getAction( const FieldScalar<Real>& phi ) const;
+	double getAction( const Field<Real>& phi ) const;
 
-	FieldScalar<Real> getForce( const FieldScalar<Real>& phi ) const;
+	Field<Real> getForce( const Field<Real>& phi ) const;
 
 private:
 	const Lattice& lat;

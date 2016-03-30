@@ -8,7 +8,7 @@
 #ifndef BASICACTION_H_
 #define BASICACTION_H_
 
-#include "FieldScalar.h"
+#include "Field.h"
 
 namespace FermiOwn {
 
@@ -17,14 +17,14 @@ public:
 	BasicAction(){};
 	virtual ~BasicAction(){};
 
-	virtual double getAction( const FieldScalar<Real>& phi ) const =0;
+	virtual double getAction( const Field<Real>& phi ) const =0;
 
 	/**
 	 * @brief calculates the force for the scalar field
 	 * More exactly, it calculates the gradient of the action, which is more likely the negative force...
 	 * @return a field with the force at every lattice point
 	 */
-	virtual FieldScalar<Real> getForce( const FieldScalar<Real>& phi ) const =0;
+	virtual Field<Real> getForce( const Field<Real>& phi ) const =0;
 
 };
 

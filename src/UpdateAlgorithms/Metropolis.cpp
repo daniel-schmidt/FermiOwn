@@ -9,7 +9,7 @@
 
 namespace FermiOwn {
 
-Metropolis::Metropolis( const double ndelta, const BasicAction& naction, FieldScalar<Real>& nphi, std::ranlux48* rndGen) :
+Metropolis::Metropolis( const double ndelta, const BasicAction& naction, Field<Real>& nphi, std::ranlux48* rndGen) :
 	delta(ndelta),
 	randomGenerator(rndGen),
 	act(naction),
@@ -26,7 +26,7 @@ double Metropolis::update() {
 
 		// store old field and value of action
 		double dAction = act.getAction(phi);
-		FieldScalar<Real> old = phi;
+		Field<Real> old = phi;
 
 		// generate random number in the interval [-delta, delta] and update field
 		double dphi = delta*( 2*uniformDistribution01(*randomGenerator)-1);

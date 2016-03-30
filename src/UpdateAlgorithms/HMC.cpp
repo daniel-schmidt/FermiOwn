@@ -9,7 +9,7 @@
 
 namespace FermiOwn {
 
-HMC::HMC( double t, size_t nt, const BasicAction& naction, FieldScalar<Real>& nphi, std::ranlux48* rndGen ) :
+HMC::HMC( double t, size_t nt, const BasicAction& naction, Field<Real>& nphi, std::ranlux48* rndGen ) :
 	randomGenerator(rndGen),
 	act(naction),
 	phi(nphi),
@@ -26,7 +26,7 @@ bool HMC::update() {
 	// integration
 	momentum.setGaussian();
 	double H_old = Hamiltonian();
-	FieldScalar<Real> old = phi;
+	Field<Real> old = phi;
 	integrator.integrate();
 	double H_new = Hamiltonian();
 

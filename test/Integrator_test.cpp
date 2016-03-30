@@ -18,11 +18,11 @@ public:
 	HarmonicAction(){};
 	~HarmonicAction(){};
 
-	double getAction( const FieldScalar<Real>& phi ) const {
+	double getAction( const Field<Real>& phi ) const {
 		return phi.dot(phi);
 	}
 
-	FieldScalar<Real> getForce( const FieldScalar<Real>& phi ) const {
+	Field<Real> getForce( const Field<Real>& phi ) const {
 		return phi;
 	}
 };
@@ -38,8 +38,8 @@ int main() {
 	double kappa = 0.5, lambda = 0.1;
 	Lattice lat(Nt, Ns, dim);
 
-	FieldScalar<Real> fs0(lat.getVol(), &rndGen, zeroInit);
-	FieldScalar<Real> pRand(lat.getVol(), &rndGen, gaussianInit);
+	Field<Real> fs0(lat.getVol(), &rndGen, zeroInit);
+	Field<Real> pRand(lat.getVol(), &rndGen, gaussianInit);
 	Action act(lat, kappa, lambda);
 	fs0.Print();
 
@@ -67,7 +67,7 @@ int main() {
 
 	std::cout << "Trying harmonic action..." << std::endl;
 	HarmonicAction hact;
-	FieldScalar<Real> pOnes(lat.getVol(), &rndGen, oneInit);
+	Field<Real> pOnes(lat.getVol(), &rndGen, oneInit);
 	nt=5;
 	size_t imax = 200;
 	t=25.1327/imax; // 8 pi divided in imax parts, each nt integration steps inbetween

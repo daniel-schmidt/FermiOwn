@@ -7,7 +7,8 @@
 
 #include "Action.h"
 #include "HMC.h"
-#include "FieldScalar.h"
+
+#include "Field.h"
 #include "Lattice.h"
 
 int main() {
@@ -26,7 +27,7 @@ int main() {
 	Action act(lat, kappa, lambda);
 
 	// initialize field
-	FieldScalar<Real> phi(lat.getVol(), &rndGen, gaussianInit);
+	Field<Real> phi(lat.getVol(), &rndGen, gaussianInit);
 
 	double HMCt = 1.;
 	size_t HMCnt = 30;
