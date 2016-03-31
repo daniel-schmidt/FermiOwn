@@ -85,7 +85,8 @@ int main( int argc, char** argv ) {
 	int numSpin = 2;
 	// initialize classes
 	Lattice lat( Nt, Ns, dim );
-	SlacOperatorMatrix slac( Nf, Ns, dim, Nf );
+	SlacOperatorMatrix slac( Nt, Ns, dim, Nf );
+//	std::cout << slac.getMatrix() << std::endl << std::endl;
 
 	// initialize random number generator and distributions
 	std::ranlux48 gen;
@@ -113,6 +114,7 @@ int main( int argc, char** argv ) {
 		double av_k = 0.;
 		double accrate = 0;
 		slac.erase( kxab );
+//		std::cout << slac.getMatrix() << std::endl << std::endl;
 		Complex detOld = slac.det();
 		slac.setFull();
 
@@ -132,15 +134,15 @@ int main( int argc, char** argv ) {
 
 				FieldBoolean kxabOld(kxab);
 
-				std::cout << "Field before update:" << std::endl;
-				kxab.Print();
+//				std::cout << "Field before update:" << std::endl;
+//				kxab.Print();
 
 				// update at the drawn index
 				int dk = -kxab.sumAll();
 				kxab.invert( x, spin, a, b );
 				int dk2 = dk + kxab.sumAll();
-				std::cout << "Field after first update:" << std::endl;
-				kxab.Print();
+//				std::cout << "Field after first update:" << std::endl;
+//				kxab.Print();
 
 				if( a == b ) {
 					// updating with same flavour,
@@ -184,8 +186,8 @@ int main( int argc, char** argv ) {
 				}
 				dk += kxab.sumAll();
 				nxNew = kxab.countSummedSpin( x );
-				std::cout << "Field after second update:" << std::endl;
-				kxab.Print();
+//				std::cout << "Field after second update:" << std::endl;
+//				kxab.Print();
 				if( kxab.constraintViolated( x ) ) {
 					kxab = kxabOld;
 					std::cout << "violated! Reset and continue loop..." << std::endl;
@@ -193,29 +195,29 @@ int main( int argc, char** argv ) {
 				}
 //				std::cout << "Matrix before erase: " << std::endl << slac.getMatrix() << std::endl << std::endl;
 				slac.erase( kxab );
-//				std::cout << "Matrix: " << std::endl << slac.getMatrix() << std::endl << std::endl;
+//				std::cout << slac.getMatrix() << std::endl << std::endl;
 				Complex det = slac.det();
 				slac.setFull();
-				std::cout << "nxOld=" << std::endl << nxOld << std::endl << "nxNew=" << std::endl << nxNew << std::endl
-						<< "nyOld=" << std::endl << nyOld << std::endl << "nyNew=" << std::endl << nyNew << std::endl;
-				std::cout << "dk: " << dk << "\tdetOld: " << detOld << "\tdet: " << det;
+//				std::cout << "nxOld=" << std::endl << nxOld << std::endl << "nxNew=" << std::endl << nxNew << std::endl
+//						<< "nyOld=" << std::endl << nyOld << std::endl << "nyNew=" << std::endl << nyNew << std::endl;
+//				std::cout << "dk: " << dk << "\tdetOld: " << detOld << "\tdet: " << det;
 				double factor = 1.;
 				factor /= getHypergeometricFactor( nxOld(1), nxOld(2) ) * getHypergeometricFactor( nyOld(1), nyOld(2) );
-				std::cout << "\tfactor1=" << factor;
+//				std::cout << "\tfactor1=" << factor;
 				factor *= getHypergeometricFactor( nxNew(1), nxNew(2) ) * getHypergeometricFactor( nyNew(1), nyNew(2) );
 				double dw = std::pow(kappa, double(dk)/2.);
 				Complex weight =  factor*dw*(det/detOld);
 
 				double r = uni_real_dist(gen);
-				bool accepted = false;
+//				bool accepted = false;
 				if( std::fabs(weight) > r ) {
-					accepted = true;
+//					accepted = true;
 					accrate++;
 					detOld = det;
 				} else {
 					kxab = kxabOld;
 				}
-				std::cout << "\tfactor: " << factor << "\tdw: " << dw << "\tweight: " << weight << "\taccepted: " << accepted << std::endl;
+//				std::cout << "\tfactor: " << factor << "\tdw: " << dw << "\tweight: " << weight << "\taccepted: " << accepted << std::endl;
 			}
 			if( measure >= numThermal ) av_k += kxab.sumAll()/double(2*V);
 		}
