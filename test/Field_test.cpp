@@ -99,6 +99,7 @@ int main() {
 	fbool0.Print();
 
 	std::cout << "Testing count, field 0 at x=6: " << std::endl << fbool0.countSummedSpin(6) << std::endl << " field 1 at x=3: " << std::endl << fbool1.countSummedSpin(3) << std::endl;
+	std::cout << "Testing count offidagonal, field 0: " << std::endl << fbool0.countOffdiagonal2() << std::endl << " field 1: " << std::endl << fbool1.countOffdiagonal2() << std::endl;
 
 	std::cout << std::endl << "Testing copy assignment:" << std::endl;
 	fbool1 = fbool0;

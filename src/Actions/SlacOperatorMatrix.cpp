@@ -44,9 +44,7 @@ SlacOperatorMatrix::SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t
 	resetMaps();
 }
 
-SlacOperatorMatrix::~SlacOperatorMatrix() {
-	// TODO Auto-generated destructor stub
-}
+SlacOperatorMatrix::~SlacOperatorMatrix() {}
 
 
 const Eigen::MatrixXcd SlacOperatorMatrix::getMatrix() const {

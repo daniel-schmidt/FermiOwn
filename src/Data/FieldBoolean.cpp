@@ -12,12 +12,12 @@ namespace FermiOwn {
 FieldBoolean::FieldBoolean( const size_t latticeVolume,
 		const size_t numberOfSpins, const size_t numberOfFlavours,
 		std::ranlux48 * rndGen, InitType init ) :
-Field<bool>( latticeVolume, numberOfFlavours*(numberOfFlavours+1)/2 * numberOfSpins, rndGen, init ),
-numSpins(numberOfSpins),
-numFlavours(numberOfFlavours),
-numColsPerSpin(numFlavours*(numFlavours+1)/2)
-{
-}
+								Field<bool>( latticeVolume, numberOfFlavours*numberOfFlavours* numberOfSpins, rndGen, init ),
+								numSpins(numberOfSpins),
+								numFlavours(numberOfFlavours),
+								numColsPerSpin(numFlavours*numFlavours)
+								{
+								}
 
 FieldBoolean::~FieldBoolean() {
 }
@@ -35,12 +35,12 @@ void FieldBoolean::invert(size_t x, size_t spin, size_t flavour1, size_t flavour
 }
 
 bool FieldBoolean::constraintViolated( size_t x ) const {
-	for( size_t i = 0; i < numSpins; i++ ) {
-		for( size_t m = 0; m < numFlavours; m++ ) {
+	for( size_t spin = 0; spin < numSpins; spin++ ) {
+		for( size_t flavour1 = 0; flavour1 < numFlavours; flavour1++ ) {
 			int constrSum = 0;
-			for( size_t n = 0; n < numFlavours; n++ )
+			for( size_t flavour2 = 0; flavour2 < numFlavours; flavour2++ )
 			{
-				constrSum += data( x, colIndex( i, m, n ) );
+				constrSum += data( x, colIndex( spin, flavour1, flavour2 ) );
 			}
 			if( constrSum > 1 ) return true;
 		}
@@ -58,13 +58,29 @@ Eigen::ArrayXi FieldBoolean::countSummedSpin(size_t x) const {
 	for( size_t flavour = 0; flavour < numFlavours; flavour++ ) {
 		size_t spinSum = 0;
 		for( size_t spin = 0; spin < numSpins; spin++ ) {
-			spinSum += row( spin*numColsPerSpin + flavour );
+			spinSum += row( colIndex( spin, flavour, flavour) );
 		}
 		if( spinSum > numSpins ) {
 			std::cerr << spinSum << " is too much spins counted in FieldBoolean. Should be less than " << numSpins << std::endl;
 			exit(1);
 		}
 		count[spinSum]++;
+	}
+	return count;
+}
+
+size_t FieldBoolean::countOffdiagonal2() const {
+	size_t count = 0;
+	for( size_t x = 0; x < latVol; x++ ) {
+		for( size_t flavour2 = 0; flavour2 < numFlavours; flavour2++ ) {
+			for( size_t flavour1 = 0; flavour1 < flavour2; flavour1++ ) {
+				size_t spinSum = 0;
+				for( size_t spin = 0; spin < numSpins; spin++ ) {
+					spinSum += data( x, colIndex( spin, flavour1, flavour2 ) );
+				}
+				if( spinSum == 2 ) count++;
+			}
+		}
 	}
 	return count;
 }
@@ -84,16 +100,7 @@ size_t FieldBoolean::colIndex(size_t spin, size_t flavour1, size_t flavour2) con
 	}
 	size_t index;
 	// calculating flavour-part of the index
-	if( flavour1 == flavour2) {
-		index = flavour1;
-	} else {
-		if( flavour1 > flavour2 ) {
-			int tmp = flavour2;
-			flavour2 = flavour1;
-			flavour1 = tmp;
-		}
-		index = numColsPerSpin - (numFlavours-flavour1)*(numFlavours-flavour1-1)/2+flavour2-flavour1-1;		//TODO: index can be simplified!
-	}
+	index = flavour2 + numFlavours * flavour1;
 	// shifting to correct spin part
 	return index + spin*numColsPerSpin;
 }

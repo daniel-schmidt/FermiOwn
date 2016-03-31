@@ -37,12 +37,25 @@ public:
 	 */
 	Eigen::ArrayXi countSummedSpin( size_t x ) const;
 
+	/**
+	 * @brief Counts the number of offdiagonal flavours kxab set to 2
+	 * @return number of offdiagonal flavour entries equal to 2
+	 */
+	size_t countOffdiagonal2() const;
+
 private:
+	/**
+	 * Returns the col index corresponding to the input parameters
+	 * @param spin
+	 * @param flavour1
+	 * @param flavour2
+	 * @return col index
+	 */
 	size_t colIndex( size_t spin, size_t flavour1, size_t flavour2 ) const;
 
 	size_t numSpins;
 	size_t numFlavours;
-	size_t numColsPerSpin;	///< number of columns for each spin degree: Nf*(Nf+1)/2, that is Nf for kxiaa and Nf*(Nf-1)/2 for kxiab with a!=b
+	size_t numColsPerSpin;	///< number of columns for each spin degree: Nf*Nf since we have to save all kxiab
 };
 
 } /* namespace FermiOwn */

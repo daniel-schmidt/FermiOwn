@@ -96,8 +96,8 @@ int main( int argc, char** argv ) {
 	std::uniform_int_distribution<int> intNf_dist( 0, Nf-1 );
 	std::uniform_int_distribution<int> intSpin_dist( 0, 1 );
 
-	for( int step = 0; step < 10; step++ ) {
-		lambda += 0.1;
+//	for( int step = 0; step < 10; step++ ) {
+//		lambda += 0.1;
 		double kappa = 2./lambda;
 
 		// initialize single-flavour part to true, the rest to false
@@ -134,16 +134,17 @@ int main( int argc, char** argv ) {
 
 				FieldBoolean kxabOld(kxab);
 
-//				std::cout << "Field before update:" << std::endl;
-//				kxab.Print();
+				std::cout << "Field before update:" << std::endl;
+				kxab.Print();
 
 				// update at the drawn index
 				int dk = -kxab.sumAll();
+				int dntilde = -kxab.countOffdiagonal2();
 				kxab.invert( x, spin, a, b );
 				int dk2 = dk + kxab.sumAll();
-//				std::cout << "Field after first update:" << std::endl;
-//				kxab.Print();
-
+				std::cout << "Field after first update:" << std::endl;
+				kxab.Print();
+				std::cout << std::endl << "a=" << a << "\tb=" << b << "\tdk=" << dk << std::endl;
 				if( a == b ) {
 					// updating with same flavour,
 					// choose, if we update another spin (setting a kxaa=2) or another point (setting two kxaa=1, keeping n1 even)
@@ -159,7 +160,7 @@ int main( int argc, char** argv ) {
 
 						if( kxab.constraintViolated( y ) ) {
 							kxab = kxabOld;
-							std::cout << "violated! Reset and continue loop..." << std::endl;
+							std::cout << "y violated! Reset and continue loop..." << std::endl;
 							continue;
 						}
 						nyNew = kxab.countSummedSpin( y );
@@ -186,11 +187,11 @@ int main( int argc, char** argv ) {
 				}
 				dk += kxab.sumAll();
 				nxNew = kxab.countSummedSpin( x );
-//				std::cout << "Field after second update:" << std::endl;
-//				kxab.Print();
+				std::cout << "Field after second update:" << std::endl;
+				kxab.Print();
 				if( kxab.constraintViolated( x ) ) {
 					kxab = kxabOld;
-					std::cout << "violated! Reset and continue loop..." << std::endl;
+					std::cout << "x violated! Reset and continue loop..." << std::endl;
 					continue;
 				}
 //				std::cout << "Matrix before erase: " << std::endl << slac.getMatrix() << std::endl << std::endl;
@@ -200,29 +201,32 @@ int main( int argc, char** argv ) {
 				slac.setFull();
 //				std::cout << "nxOld=" << std::endl << nxOld << std::endl << "nxNew=" << std::endl << nxNew << std::endl
 //						<< "nyOld=" << std::endl << nyOld << std::endl << "nyNew=" << std::endl << nyNew << std::endl;
-//				std::cout << "dk: " << dk << "\tdetOld: " << detOld << "\tdet: " << det;
+				std::cout << "dk: " << dk << "\tdetOld: " << detOld << "\tdet: " << det;
 				double factor = 1.;
 				factor /= getHypergeometricFactor( nxOld(1), nxOld(2) ) * getHypergeometricFactor( nyOld(1), nyOld(2) );
 //				std::cout << "\tfactor1=" << factor;
 				factor *= getHypergeometricFactor( nxNew(1), nxNew(2) ) * getHypergeometricFactor( nyNew(1), nyNew(2) );
+				dntilde += kxab.countOffdiagonal2();
+				std::cout << "\tdntilde = " << dntilde << std::endl;
+				factor *= pow( 2, -dntilde );
 				double dw = std::pow(kappa, double(dk)/2.);
 				Complex weight =  factor*dw*(det/detOld);
 
 				double r = uni_real_dist(gen);
-//				bool accepted = false;
+				bool accepted = false;
 				if( std::fabs(weight) > r ) {
-//					accepted = true;
+					accepted = true;
 					accrate++;
 					detOld = det;
 				} else {
 					kxab = kxabOld;
 				}
-//				std::cout << "\tfactor: " << factor << "\tdw: " << dw << "\tweight: " << weight << "\taccepted: " << accepted << std::endl;
+				std::cout << "\tfactor: " << factor << "\tdw: " << dw << "\tweight: " << weight << "\taccepted: " << accepted << std::endl;
 			}
 			if( measure >= numThermal ) av_k += kxab.sumAll()/double(2*V);
 		}
 		av_k/=double(numMeasures);
 		accrate /= double((numMeasures+numThermal)*upPerMeasure);
 		std::cerr << lambda << "\t" << av_k << "\t" << accrate << std::endl;
-	}
+//	}
 }
