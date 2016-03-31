@@ -16,36 +16,6 @@
 
 namespace FermiOwn {
 
-//Complex calcDet( SlacOperatorMatrix& dslac, const VectorXb& kx ) {
-//	for( int x = 0; x < kx.size(); x++ ) {
-//		if( kx(x) ) {
-//			dslac.deletePoint(x);
-//		}
-//	}
-//	return pow(I,dslac.getMatrix().rows())*dslac.det();
-//}
-//
-//Complex calcDet( std::vector<SlacOperatorMatrix> dslac, const MatrixXb& kxab0, const MatrixXb& kxab1, int Nf ) {
-//	Complex det = 1.;
-//	for( size_t b = 0; b < Nf; b++ ) {
-//		for( size_t a = 0; a < b; a++ ) {
-//			VectorXb kx0 = kxab0.col( linIndex( Nf, a, b ) );
-//			VectorXb kx1 = kxab1.col( linIndex( Nf, a, b ) );
-//			dslac[a].eraseCols( kx0, kx1 );
-//			dslac[b].eraseRows( kx0, kx1 );
-//		}
-//	}
-//	for( size_t a = 0; a < Nf; a++ ) {
-//		VectorXb kx0 = kxab0.col( a );
-//		VectorXb kx1 = kxab1.col( a );
-//		dslac[a].eraseCols( kx0, kx1 );
-//		dslac[a].eraseRows( kx0, kx1 );
-//		det *= pow(I,dslac[a].getMatrix().rows())*dslac[a].det();
-//	}
-//	return det;
-//}
-
-
 double getHypergeometricFactor( int flavour ) {
 	switch( flavour ){
 	case 0: return 1.;
@@ -129,7 +99,6 @@ int main( int argc, char** argv ) {
 		lambda += 0.1;
 		double kappa = 2./lambda;
 
-		// Data layout: first Nf columns hold kxaa for a=1,..,Nf, then kxab with a<b orderd (1,2), (1,3), (2,3), ...
 		// initialize single-flavour part to true, the rest to false
 		FieldBoolean kxab( lat.getVol(), numSpin, Nf, &gen, zeroInit );
 
@@ -144,7 +113,6 @@ int main( int argc, char** argv ) {
 		double av_k = 0.;
 		double accrate = 0;
 		slac.erase( kxab );
-//		std::cout << "Initial matrix: " << std::endl << slac.getMatrix() << std::endl << std::endl;
 		Complex detOld = slac.det();
 		slac.setFull();
 
@@ -152,66 +120,48 @@ int main( int argc, char** argv ) {
 			for( int i = 0; i < upPerMeasure; i++ ) {
 				// draw random point, spin and 2 flavours
 				int x = intV_dist(gen);
-				//				int mu = int2mu_dist(gen);
+				int spin = intSpin_dist(gen);
 				int a = intNf_dist(gen);
 				int b = intNf_dist(gen);
-				int spin = intSpin_dist(gen);
-				//				int y = lat.getNeighbours(x)[mu];
 
-				//				double factor = 1.;
-				int dk = 0;		// change in kxab
-				//				int dkt = 0;	// change in tilde kxab
 //				 calculate old value of na
-
 				Eigen::ArrayXi nxOld = kxab.countSummedSpin( x );
 				Eigen::ArrayXi nxNew;
 				Eigen::ArrayXi nyOld = Eigen::ArrayXi::Zero( numSpin+1 );
 				Eigen::ArrayXi nyNew = Eigen::ArrayXi::Zero( numSpin+1 );
-				//				Eigen::VectorXi kxSpinSum = kxab[0].leftCols(Nf).cast<int>() + kxab[1].leftCols(Nf).cast<int>();
-				//				int n1 = 0;
-				//				int n2 = 0;
-				//
-				//				n1 = -(kxSpinSum.array() == 1).count();
-				//				n2 = -(kxSpinSum.array() == 2).count();
-
-				//				for( int n = 0; n <= Nf; n++ ) {
-				//					na(n) = -(kx.array() == n).count();
-				//				}
-
-				//			std::cout << "Constraint before update: " << std::endl;
-				//			constraintViolated( kxab, Nf, x );
-				//			constraintViolated( kxab, Nf, y );
-				//			std::cout << "updating..." << std::endl;
 
 				FieldBoolean kxabOld(kxab);
-//				std::cout << "Field before update:" << std::endl;
-//				kxab.Print();
+
+				std::cout << "Field before update:" << std::endl;
+				kxab.Print();
+
 				// update at the drawn index
-				dk = -kxab.sumAll();
+				int dk = -kxab.sumAll();
 				kxab.invert( x, spin, a, b );
 				int dk2 = dk + kxab.sumAll();
-//				std::cout << "Field after first update:" << std::endl;
-//				kxab.Print();
+				std::cout << "Field after first update:" << std::endl;
+				kxab.Print();
+
 				if( a == b ) {
 					// updating with same flavour,
 					// choose, if we update another spin (setting a kxaa=2) or another point (setting two kxaa=1, keeping n1 even)
-					double r = uni_real_dist(gen);
-//					std::cout << "r=" << r << std::endl;
-					if( 0.5 > r ) {
+//					double r = uni_real_dist(gen);
+//					if( 0.5 > r ) {
 						kxab.invert( x, 1-spin, a, a );
-//						std::cout << "Hallo!" << std::endl;
-					} else {
+//					} else {
 						int mu = int2mu_dist(gen);
 						int y = lat.getNeighbours( x )[mu];
 						nyOld = kxab.countSummedSpin( y );
 						kxab.invert( y, spin, a, a );
+						kxab.invert( y, 1-spin, a, a );
+
 						if( kxab.constraintViolated( y ) ) {
 							kxab = kxabOld;
 							std::cout << "violated! Reset and continue loop..." << std::endl;
 							continue;
 						}
 						nyNew = kxab.countSummedSpin( y );
-					}
+//					}
 				} else {
 					// updating with two different flavours, enforce kxab = kxba
 					int spin2 = intSpin_dist(gen);
@@ -231,21 +181,11 @@ int main( int argc, char** argv ) {
 							kxab.invert( x, 1-spin2, b, a );
 						}
 					}
-
-					//					if( 0.5 > uni_real_dist(gen) ) {
-					//						kxab(x,linIndex(Nf,a, b)) = !kxab(x,linIndex(Nf,a, b));
-					//						kxab(y,linIndex(Nf,a, b)) = !kxab(y,linIndex(Nf,a, b));
-					//					} else {
-					//						kxab(x,linIndex(Nf,a, b)) = !kxab(x,linIndex(Nf,a, b));
-					//						kxab(x,a) = !kxab(x,a);
-					//						kxab(x,b) = !kxab(x,b);
-					//					}
-					//					factor *= pow( 2., double(dk) );
 				}
 				dk += kxab.sumAll();
 				nxNew = kxab.countSummedSpin( x );
-//				std::cout << "Field after second update:" << std::endl;
-//				kxab.Print();
+				std::cout << "Field after second update:" << std::endl;
+				kxab.Print();
 				if( kxab.constraintViolated( x ) ) {
 					kxab = kxabOld;
 					std::cout << "violated! Reset and continue loop..." << std::endl;
@@ -256,31 +196,14 @@ int main( int argc, char** argv ) {
 //				std::cout << "Matrix: " << std::endl << slac.getMatrix() << std::endl << std::endl;
 				Complex det = slac.det();
 				slac.setFull();
-				// TODO: calculate change in na
-
-				//				kxSpinSum = kxab[0].leftCols(Nf).cast<int>() + kxab[1].leftCols(Nf).cast<int>();
-				//				n1 += (kxSpinSum.array() == 1).count();
-				//				n2 += (kxSpinSum.array() == 2).count();
-
-				//				kx0 = kxab[0].leftCols(Nf).rowwise().count().cast<int>();
-				//				for( int n = 0; n <= Nf; n++ ) {
-				//					na(n) += (kx.array() == n).count();
-				//					factor *= std::pow( getHypergeometricFactor( n ), double(na(n)) );
-				//					//					std::cout << "n=" << n << "\tfactor=" << factor << "\thyperFactor=" << getHypergeometricFactor(n) << std::endl;
-				//				}
-
-				//			std::cout << "kxab=" << std::endl << kxab << std::endl << std::endl;
-				//			std::cout << "kx=" << std::endl << kx << std::endl;
-//				std::cout << "nxOld=" << std::endl << nxOld << std::endl << "nxNew=" << std::endl << nxNew << std::endl
-//						<< "nyOld=" << std::endl << nyOld << std::endl << "nyNew=" << std::endl << nyNew << std::endl;
-				//			std::cout << "x=" << x << "\ty=" << y << "\ta=" << a << "\tb=" << b;
-				//			std::cout << "\tka=" << kxab.leftCols(Nf).count() << "\tkab="<< kxab.rightCols( Nf*(Nf-1)/2 ).count() << "\tdk=" << dk;
-//				std::cout << "dk: " << dk << "\tdetOld: " << detOld << "\tdet: " << det;
+				std::cout << "nxOld=" << std::endl << nxOld << std::endl << "nxNew=" << std::endl << nxNew << std::endl
+						<< "nyOld=" << std::endl << nyOld << std::endl << "nyNew=" << std::endl << nyNew << std::endl;
+				std::cout << "dk: " << dk << "\tdetOld: " << detOld << "\tdet: " << det;
 				double factor = 1.;
 				factor /= getHypergeometricFactor( nxOld(1), nxOld(2) ) * getHypergeometricFactor( nyOld(1), nyOld(2) );
-//				std::cout << "\tfactor1=" << factor;
+				std::cout << "\tfactor1=" << factor;
 				factor *= getHypergeometricFactor( nxNew(1), nxNew(2) ) * getHypergeometricFactor( nyNew(1), nyNew(2) );
-				double dw = std::pow(-kappa, double(dk)/2.);
+				double dw = std::pow(kappa, double(dk)/2.);
 				Complex weight =  factor*dw*(det/detOld);
 
 				double r = uni_real_dist(gen);
@@ -292,12 +215,12 @@ int main( int argc, char** argv ) {
 				} else {
 					kxab = kxabOld;
 				}
-//				std::cout << "\tfactor: " << factor << "\tdw: " << dw << "\tweight: " << weight << "\taccepted: " << accepted << std::endl;
+				std::cout << "\tfactor: " << factor << "\tdw: " << dw << "\tweight: " << weight << "\taccepted: " << accepted << std::endl;
 			}
-			if( measure >= numThermal ) av_k += kxab.sumAll()/double(V);
+			if( measure >= numThermal ) av_k += kxab.sumAll()/double(2*V);
 		}
 		av_k/=double(numMeasures);
 		accrate /= double((numMeasures+numThermal)*upPerMeasure);
-		std::cout << lambda << "\t" << av_k << "\t" << accrate << std::endl;
+		std::cerr << lambda << "\t" << av_k << "\t" << accrate << std::endl;
 	}
 }
