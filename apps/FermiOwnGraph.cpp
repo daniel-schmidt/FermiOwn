@@ -195,9 +195,11 @@ int main( int argc, char** argv ) {
 				if( a == b ) {
 					// updating with same flavour,
 					// choose, if we update another spin (setting a kxaa=2) or another point (setting two kxaa=1, keeping n1 even)
-
-					if( 0.5 > uni_real_dist(gen) ) {
+					double r = uni_real_dist(gen);
+//					std::cout << "r=" << r << std::endl;
+					if( 0.5 > r ) {
 						kxab.invert( x, 1-spin, a, a );
+//						std::cout << "Hallo!" << std::endl;
 					} else {
 						int mu = int2mu_dist(gen);
 						int y = lat.getNeighbours( x )[mu];
@@ -276,9 +278,9 @@ int main( int argc, char** argv ) {
 //				std::cout << "dk: " << dk << "\tdetOld: " << detOld << "\tdet: " << det;
 				double factor = 1.;
 				factor /= getHypergeometricFactor( nxOld(1), nxOld(2) ) * getHypergeometricFactor( nyOld(1), nyOld(2) );
-				std::cout << "factor=" << factor << std::endl;
+//				std::cout << "\tfactor1=" << factor;
 				factor *= getHypergeometricFactor( nxNew(1), nxNew(2) ) * getHypergeometricFactor( nyNew(1), nyNew(2) );
-				double dw = std::pow(kappa, dk);
+				double dw = std::pow(-kappa, double(dk)/2.);
 				Complex weight =  factor*dw*(det/detOld);
 
 				double r = uni_real_dist(gen);
@@ -290,7 +292,7 @@ int main( int argc, char** argv ) {
 				} else {
 					kxab = kxabOld;
 				}
-				std::cout << "\tfactor: " << factor << "\tdw: " << dw << "\tweight: " << weight << "\taccepted: " << accepted << std::endl;
+//				std::cout << "\tfactor: " << factor << "\tdw: " << dw << "\tweight: " << weight << "\taccepted: " << accepted << std::endl;
 			}
 			if( measure >= numThermal ) av_k += kxab.sumAll()/double(V);
 		}
