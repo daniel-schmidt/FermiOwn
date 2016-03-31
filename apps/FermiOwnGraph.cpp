@@ -60,6 +60,37 @@ double getHypergeometricFactor( int flavour ) {
 	}
 }
 
+double getHypergeometricFactor( int n1, int n2 ) {
+	if( n1%2==1 ) return 0.;
+	switch( n1 ) {
+	case 0: return getHypergeometricFactor( n2 );
+	case 2:
+		switch( n2 ) {
+		case 0:	return 0.5;
+		case 1:	return 5./4.;
+		case 2:	return 31./8.;
+		case 3: return 239./16.;
+		case 4: return 2257./32.;
+		default: std::cout << "Value of the confluent hypergeometric function for n2=" << n2 << " not implemented!" << std::endl;
+		return -1.;
+		}
+		break;
+	case 4:
+		switch( n2 ) {
+		case 0: return 3./4.;
+		case 1: return 21./8.;
+		case 2: return 177./16.;
+		case 3: return 1779./32.;
+		case 4: return 21003./64.;
+		default: std::cout << "Value of the confluent hypergeometric function for n2=" << n2 << " not implemented!" << std::endl;
+		return -1.;
+		}
+		break;
+	default: std::cout << "Value of the confluent hypergeometric function for n1=" << n1 << " and " << n2 << " not implemented!" << std::endl;
+	return -1.;
+	}
+}
+
 }
 
 int main( int argc, char** argv ) {
@@ -130,8 +161,12 @@ int main( int argc, char** argv ) {
 				//				double factor = 1.;
 				int dk = 0;		// change in kxab
 				//				int dkt = 0;	// change in tilde kxab
-				// calculate old value of na
+//				 calculate old value of na
 
+				Eigen::ArrayXi nxOld = kxab.countSummedSpin( x );
+				Eigen::ArrayXi nxNew;
+				Eigen::ArrayXi nyOld = Eigen::ArrayXi::Zero( numSpin+1 );
+				Eigen::ArrayXi nyNew = Eigen::ArrayXi::Zero( numSpin+1 );
 				//				Eigen::VectorXi kxSpinSum = kxab[0].leftCols(Nf).cast<int>() + kxab[1].leftCols(Nf).cast<int>();
 				//				int n1 = 0;
 				//				int n2 = 0;
@@ -166,12 +201,14 @@ int main( int argc, char** argv ) {
 					} else {
 						int mu = int2mu_dist(gen);
 						int y = lat.getNeighbours( x )[mu];
+						nyOld = kxab.countSummedSpin( y );
 						kxab.invert( y, spin, a, a );
 						if( kxab.constraintViolated( y ) ) {
 							kxab = kxabOld;
 							std::cout << "violated! Reset and continue loop..." << std::endl;
 							continue;
 						}
+						nyNew = kxab.countSummedSpin( y );
 					}
 				} else {
 					// updating with two different flavours, enforce kxab = kxba
@@ -204,7 +241,7 @@ int main( int argc, char** argv ) {
 					//					factor *= pow( 2., double(dk) );
 				}
 				dk += kxab.sumAll();
-
+				nxNew = kxab.countSummedSpin( x );
 //				std::cout << "Field after second update:" << std::endl;
 //				kxab.Print();
 				if( kxab.constraintViolated( x ) ) {
@@ -232,11 +269,15 @@ int main( int argc, char** argv ) {
 
 				//			std::cout << "kxab=" << std::endl << kxab << std::endl << std::endl;
 				//			std::cout << "kx=" << std::endl << kx << std::endl;
-				//			std::cout << "na=" << std::endl << na << std::endl;
+//				std::cout << "nxOld=" << std::endl << nxOld << std::endl << "nxNew=" << std::endl << nxNew << std::endl
+//						<< "nyOld=" << std::endl << nyOld << std::endl << "nyNew=" << std::endl << nyNew << std::endl;
 				//			std::cout << "x=" << x << "\ty=" << y << "\ta=" << a << "\tb=" << b;
 				//			std::cout << "\tka=" << kxab.leftCols(Nf).count() << "\tkab="<< kxab.rightCols( Nf*(Nf-1)/2 ).count() << "\tdk=" << dk;
 //				std::cout << "dk: " << dk << "\tdetOld: " << detOld << "\tdet: " << det;
-				double factor = 1.;	//TODO: implement correct factor for Nf > 1
+				double factor = 1.;
+				factor /= getHypergeometricFactor( nxOld(1), nxOld(2) ) * getHypergeometricFactor( nyOld(1), nyOld(2) );
+				std::cout << "factor=" << factor << std::endl;
+				factor *= getHypergeometricFactor( nxNew(1), nxNew(2) ) * getHypergeometricFactor( nyNew(1), nyNew(2) );
 				double dw = std::pow(kappa, dk);
 				Complex weight =  factor*dw*(det/detOld);
 
@@ -249,7 +290,7 @@ int main( int argc, char** argv ) {
 				} else {
 					kxab = kxabOld;
 				}
-//				std::cout << "\tdw: " << dw << "\tweight: " << weight << "\taccepted: " << accepted << std::endl;
+				std::cout << "\tfactor: " << factor << "\tdw: " << dw << "\tweight: " << weight << "\taccepted: " << accepted << std::endl;
 			}
 			if( measure >= numThermal ) av_k += kxab.sumAll()/double(V);
 		}

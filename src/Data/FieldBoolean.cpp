@@ -14,7 +14,8 @@ FieldBoolean::FieldBoolean( const size_t latticeVolume,
 		std::ranlux48 * rndGen, InitType init ) :
 Field<bool>( latticeVolume, numberOfFlavours*(numberOfFlavours+1)/2 * numberOfSpins, rndGen, init ),
 numSpins(numberOfSpins),
-numFlavours(numberOfFlavours)
+numFlavours(numberOfFlavours),
+numColsPerSpin(numFlavours*(numFlavours+1)/2)
 {
 }
 
@@ -51,6 +52,23 @@ size_t FieldBoolean::sumAll() const {
 	return data.count();
 }
 
+Eigen::ArrayXi FieldBoolean::countSummedSpin(size_t x) const {
+	auto row = data.row(x);
+	Eigen::ArrayXi count = Eigen::ArrayXi::Zero( numSpins+1 );
+	for( size_t flavour = 0; flavour < numFlavours; flavour++ ) {
+		size_t spinSum = 0;
+		for( size_t spin = 0; spin < numSpins; spin++ ) {
+			spinSum += row( spin*numColsPerSpin + flavour );
+		}
+		if( spinSum > numSpins ) {
+			std::cerr << spinSum << " is too much spins counted in FieldBoolean. Should be less than " << numSpins << std::endl;
+			exit(1);
+		}
+		count[spinSum]++;
+	}
+	return count;
+}
+
 /*
  * Private Functions
  *****************************************************************************/
@@ -74,10 +92,10 @@ size_t FieldBoolean::colIndex(size_t spin, size_t flavour1, size_t flavour2) con
 			flavour2 = flavour1;
 			flavour1 = tmp;
 		}
-		index = numFlavours+numFlavours*(numFlavours-1)/2 - (numFlavours-flavour1)*(numFlavours-flavour1-1)/2+flavour2-flavour1-1;
+		index = numColsPerSpin - (numFlavours-flavour1)*(numFlavours-flavour1-1)/2+flavour2-flavour1-1;		//TODO: index can be simplified!
 	}
 	// shifting to correct spin part
-	return index + spin*numFlavours*(numFlavours+1)/2;
+	return index + spin*numColsPerSpin;
 }
 
 } /* namespace FermiOwn */

@@ -98,8 +98,11 @@ int main() {
 	fbool0.invert(6,0,1,1);
 	fbool0.Print();
 
+	std::cout << "Testing count, field 0 at x=6: " << std::endl << fbool0.countSummedSpin(6) << std::endl << " field 1 at x=3: " << std::endl << fbool1.countSummedSpin(3) << std::endl;
+
 	std::cout << std::endl << "Testing copy assignment:" << std::endl;
 	fbool1 = fbool0;
 	fbool1.Print();
+
 	return 0;
 }
