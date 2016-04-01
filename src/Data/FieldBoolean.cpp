@@ -35,6 +35,25 @@ void FieldBoolean::invert(size_t x, size_t spin, size_t flavour1, size_t flavour
 }
 
 bool FieldBoolean::constraintViolated( size_t x ) const {
+
+	//checking kxab = kxba
+
+	for( size_t flavour1 = 0; flavour1 < numFlavours; flavour1++ ) {
+		for( size_t flavour2 = 0; flavour2 < flavour1; flavour2++ ) {
+			int abSum = 0;
+			int baSum = 0;
+			for( size_t spin = 0; spin < numSpins; spin++ ) {
+				abSum += data( x, colIndex( spin, flavour1, flavour2 ) );
+				baSum += data( x, colIndex( spin, flavour2, flavour1 ) );
+			}
+			if( abSum != baSum ) {
+				std::cerr << "Constraint kxab=kxba violated!" << std::endl;
+				return true;
+			}
+		}
+	}
+
+	// checking sum over second flavour for all other flavours and spins
 	for( size_t spin = 0; spin < numSpins; spin++ ) {
 		for( size_t flavour1 = 0; flavour1 < numFlavours; flavour1++ ) {
 			int constrSum = 0;

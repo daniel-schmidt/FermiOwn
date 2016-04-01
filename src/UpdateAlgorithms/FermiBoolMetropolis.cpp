@@ -44,15 +44,24 @@ bool FermiBoolMetropolis::updateField() {
 	int dk = -kxiab.sumAll();
 	int dntilde = -kxiab.countOffdiagonal2();
 	nxOld = kxiab.countSummedSpin( x );
-	updateField( x, spin, a, b );
+	bool success = updateField( x, spin, a, b );
+	if( !success ) return false;
 	nxNew = kxiab.countSummedSpin( x );
 
-	int mu = int2mu_dist(*rndGen);
-	int y = lat.getNeighbours( x )[mu];
-	nyOld = kxiab.countSummedSpin( y );
-	updateField( y, spin, a, b );
-	nyNew = kxiab.countSummedSpin( y );
-
+	if( a==b || 0.5 > uni_real_dist( * rndGen ) ) {
+		int mu = int2mu_dist(*rndGen);
+		int y = lat.getNeighbours( x )[mu];
+//		a = intNf_dist(*rndGen);/
+//		b = intNf_dist(*rndGen);
+//		spin = intSpin_dist(*rndGen);
+		nyOld = kxiab.countSummedSpin( y );
+		success = updateField( y, spin, a, b );
+		if( !success ) return false;
+		nyNew = kxiab.countSummedSpin( y );
+	} else {
+		nyOld = Eigen::ArrayXi::Zero( nxOld.size() );
+		nyNew = Eigen::ArrayXi::Zero( nyNew.size() );
+	}
 	dk += kxiab.sumAll();
 	dntilde += kxiab.countOffdiagonal2();
 
@@ -67,7 +76,10 @@ bool FermiBoolMetropolis::updateField() {
 }
 
 bool FermiBoolMetropolis::updateField( size_t x, size_t spin, size_t a, size_t b ) {
+
+	int dk2 = -kxiab.sumAll();
 	kxiab.invert( x, spin, a, b );
+	dk2 += kxiab.sumAll();
 	if( a == b ) {
 		// updating with same flavour,
 		// choose, if we update another spin (setting a kxaa=2) or another point (setting two kxaa=1, keeping n1 even)
@@ -79,28 +91,28 @@ bool FermiBoolMetropolis::updateField( size_t x, size_t spin, size_t a, size_t b
 	} else {
 		// updating with two different flavours, enforce kxab = kxba
 
-//		int spin2 = intSpin_dist(*rndGen);
+		int spin2 = intSpin_dist(*rndGen);
 
-		//		if( dk2 < 0 ) {
-		//			// we have to delete another spin in kxba to keep the sum constraint, choose one randomly and check,
-		//			// if it is set, otherwise the other one must be set, since we have only two spins.
-		//			if( kxiab.getValue( x, spin2, b, a ) ) {
-		//				kxiab.invert( x, spin2, b, a );
-		//			} else {
-		//				kxiab.invert( x, 1-spin2, b, a );
-		//			}
-		//		} else {
-		//			// we have to set another spin in kxba as before
-		//			if( !kxiab.getValue( x, spin2, b, a ) ) {
-		//				kxiab.invert( x, spin2, b, a );
-		//			} else {
-		//				kxiab.invert( x, 1-spin2, b, a );
-		//			}
-		//		}
+		if( dk2 < 0 ) {
+			// we have to delete another spin in kxba to keep the sum constraint, choose one randomly and check,
+			// if it is set, otherwise the other one must be set, since we have only two spins.
+			if( kxiab.getValue( x, spin2, b, a ) ) {
+				kxiab.invert( x, spin2, b, a );
+			} else {
+				kxiab.invert( x, 1-spin2, b, a );
+			}
+		} else {
+			// we have to set another spin in kxba as before
+			if( !kxiab.getValue( x, spin2, b, a ) ) {
+				kxiab.invert( x, spin2, b, a );
+			} else {
+				kxiab.invert( x, 1-spin2, b, a );
+			}
+		}
 	}
 	bool success = true;
 	if( kxiab.constraintViolated( x ) ) {
-		std::cout << "x violated! Reset and continue loop..." << std::endl;
+//		std::cerr << "x violated! Reset and continue loop..." << std::endl;
 		kxiab = oldField;
 		success = false;
 	}
@@ -118,9 +130,9 @@ Complex FermiBoolMetropolis::calculateWeight( int dk, int dntilde ) {
 	factor /= getHypergeometricFactor( nxOld(1), nxOld(2) ) * getHypergeometricFactor( nyOld(1), nyOld(2) );
 //					std::cout << "\tfactor1=" << factor;
 
-//	std::cout << "\tdntilde = " << dntilde << std::endl;
-	factor *= pow( 2, -dntilde );
-	double dw = std::pow(kappa, double(dk)/2.);
+//	if( dntilde != 0 ) std::cerr << "\tdntilde = " << dntilde << std::endl;
+	factor *= std::pow( 2, dntilde );
+	double dw = std::pow(-kappa, double(dk)/2.);
 	return factor*dw*(det/detOld);
 }
 

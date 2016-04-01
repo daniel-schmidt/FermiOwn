@@ -67,6 +67,6 @@ int main( int argc, char** argv ) {
 		}
 		av_k/=double(numMeasures);
 		double accrate = updater.acceptanceCounter/double((numMeasures+numThermal)*upPerMeasure);
-		std::cerr << lambda << "\t" << av_k << "\t" << accrate << std::endl;
+		std::cout << lambda << "\t" << av_k << "\t" << accrate << std::endl;
 	}
 }
