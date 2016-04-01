@@ -102,7 +102,12 @@ size_t FieldBoolean::colIndex(size_t spin, size_t flavour1, size_t flavour2) con
 	// calculating flavour-part of the index
 	index = flavour2 + numFlavours * flavour1;
 	// shifting to correct spin part
-	return index + spin*numColsPerSpin;
+	index += spin*numColsPerSpin;
+	if( data.cols() <= index ) {
+		std::cerr << "Col index too large!" << std::endl;
+		exit(1);
+	}
+	return index;
 }
 
 } /* namespace FermiOwn */

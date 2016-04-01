@@ -1,2 +1,2 @@
 add_executable(FermiOwnGraph "FermiOwnGraph.cpp")
-target_link_libraries( FermiOwnGraph Actions Data)
+target_link_libraries( FermiOwnGraph Actions Data UpdateAlgorithms )
