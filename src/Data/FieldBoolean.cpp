@@ -12,12 +12,12 @@ namespace FermiOwn {
 FieldBoolean::FieldBoolean( const size_t latticeVolume,
 		const size_t numberOfSpins, const size_t numberOfFlavours,
 		std::ranlux48 * rndGen, InitType init ) :
-								Field<bool>( latticeVolume, numberOfFlavours*numberOfFlavours* numberOfSpins, rndGen, init ),
-								numSpins(numberOfSpins),
-								numFlavours(numberOfFlavours),
-								numColsPerSpin(numFlavours*numFlavours)
-								{
-								}
+												Field<bool>( latticeVolume, numberOfFlavours*numberOfFlavours* numberOfSpins, rndGen, init ),
+												numSpins(numberOfSpins),
+												numFlavours(numberOfFlavours),
+												numColsPerSpin(numFlavours*numFlavours)
+												{
+												}
 
 FieldBoolean::~FieldBoolean() {
 }
@@ -37,7 +37,6 @@ void FieldBoolean::invert(size_t x, size_t spin, size_t flavour1, size_t flavour
 bool FieldBoolean::constraintViolated( size_t x ) const {
 
 	//checking kxab = kxba
-
 	for( size_t flavour1 = 0; flavour1 < numFlavours; flavour1++ ) {
 		for( size_t flavour2 = 0; flavour2 < flavour1; flavour2++ ) {
 			int abSum = 0;
@@ -47,9 +46,20 @@ bool FieldBoolean::constraintViolated( size_t x ) const {
 				baSum += data( x, colIndex( spin, flavour2, flavour1 ) );
 			}
 			if( abSum != baSum ) {
-				std::cerr << "Constraint kxab=kxba violated!" << std::endl;
+				//				std::cerr << "Constraint kxab=kxba violated!" << std::endl;
 				return true;
 			}
+		}
+	}
+
+	// checking sum over first flavour for all other flavours and spins
+	for( size_t spin = 0; spin < numSpins; spin++ ) {
+		for( size_t flavour2 = 0; flavour2 < numFlavours; flavour2++ ) {
+			int constrSum = 0;
+			for( size_t flavour1 = 0; flavour1 < numFlavours; flavour1++ ) {
+				constrSum += data( x, colIndex( spin, flavour1, flavour2 ) );
+			}
+			if( constrSum > 1 ) return true;
 		}
 	}
 
@@ -117,7 +127,7 @@ size_t FieldBoolean::colIndex(size_t spin, size_t flavour1, size_t flavour2) con
 		std::cerr << "Flavour index of FieldBoolean out of bounds!" << std::endl;
 		exit(1);
 	}
-	size_t index;
+	int index;
 	// calculating flavour-part of the index
 	index = flavour2 + numFlavours * flavour1;
 	// shifting to correct spin part

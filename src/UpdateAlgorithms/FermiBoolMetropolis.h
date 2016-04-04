@@ -10,6 +10,8 @@
 
 #include <random>
 #include <iostream>
+#include <fstream>
+#include <string>
 #include "Lattice.h"
 #include "FieldBoolean.h"
 #include "SlacOperatorMatrix.h"
@@ -47,9 +49,15 @@ public:
 	Eigen::ArrayXi nyOld;
 	Eigen::ArrayXi nyNew;
 
+	Eigen::ArrayXi nzOld;
+	Eigen::ArrayXi nzNew;
+	Eigen::ArrayXi nwOld;
+	Eigen::ArrayXi nwNew;
+
 	size_t acceptanceCounter;
 	Complex det;
 	Complex detOld;
+	std::ofstream fWeight;
 };
 
 } /* namespace FermiOwn */

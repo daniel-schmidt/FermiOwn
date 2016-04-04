@@ -10,22 +10,25 @@
 namespace FermiOwn {
 
 FermiBoolMetropolis::FermiBoolMetropolis( FieldBoolean& boolField, SlacOperatorMatrix& slacMat, const Lattice & lattice, double lambda, size_t numFlavours, std::ranlux48* randomGenerator ) :
-			kappa( 2./lambda ),
-			kxiab( boolField ),
-			oldField(kxiab),
-			slac(slacMat),
-			lat(lattice),
-			rndGen( randomGenerator ),
-			uni_real_dist(),
-			intV_dist( 0, lat.getVol()-1 ),
-			int2mu_dist( 0, 2*lat.getDim()-1 ),
-			intNf_dist( 0, numFlavours-1 ),
-			intSpin_dist( 0, 1 ),
-			acceptanceCounter(0)
+					kappa( 2./lambda ),
+					kxiab( boolField ),
+					oldField(kxiab),
+					slac(slacMat),
+					lat(lattice),
+					rndGen( randomGenerator ),
+					uni_real_dist(),
+					intV_dist( 0, lat.getVol()-1 ),
+					int2mu_dist( 0, 2*lat.getDim()-1 ),
+					intNf_dist( 0, numFlavours-1 ),
+					intSpin_dist( 0, 1 ),
+					acceptanceCounter(0),
+					fWeight( "weight" + std::to_string(lambda) + ".dat" )
 {
 	slac.erase( kxiab );
 	detOld = slac.det();
 	slac.setFull();
+	//	std::string filename = "weight";
+	//	filename = filename + std::to_string(lambda) + ".dat";
 }
 
 FermiBoolMetropolis::~FermiBoolMetropolis() {
@@ -37,6 +40,9 @@ bool FermiBoolMetropolis::updateField() {
 
 	// draw random point, spin and 2 flavours
 	int x = intV_dist(*rndGen);
+	int y = intV_dist(*rndGen);
+	int z = intV_dist(*rndGen);
+	int w = intV_dist(*rndGen);
 	int spin = intSpin_dist(*rndGen);
 	int a = intNf_dist(*rndGen);
 	int b = intNf_dist(*rndGen);
@@ -44,32 +50,44 @@ bool FermiBoolMetropolis::updateField() {
 	int dk = -kxiab.sumAll();
 	int dntilde = -kxiab.countOffdiagonal2();
 	nxOld = kxiab.countSummedSpin( x );
-	bool success = updateField( x, spin, a, b );
-	if( !success ) return false;
-	nxNew = kxiab.countSummedSpin( x );
+	nyOld = kxiab.countSummedSpin( y );
+	nzOld = kxiab.countSummedSpin( z );
+	nwOld = kxiab.countSummedSpin( w );
 
-	if( a==b || 0.5 > uni_real_dist( * rndGen ) ) {
-		int mu = int2mu_dist(*rndGen);
-		int y = lat.getNeighbours( x )[mu];
-//		a = intNf_dist(*rndGen);/
-//		b = intNf_dist(*rndGen);
-//		spin = intSpin_dist(*rndGen);
-		nyOld = kxiab.countSummedSpin( y );
-		success = updateField( y, spin, a, b );
-		if( !success ) return false;
-		nyNew = kxiab.countSummedSpin( y );
-	} else {
-		nyOld = Eigen::ArrayXi::Zero( nxOld.size() );
-		nyNew = Eigen::ArrayXi::Zero( nyNew.size() );
+	kxiab.invert( x, spin, a, b );
+
+	spin = intSpin_dist(*rndGen);
+	a = intNf_dist(*rndGen);
+	b = intNf_dist(*rndGen);
+	kxiab.invert( y, spin, a, b );
+
+	spin = intSpin_dist(*rndGen);
+	a = intNf_dist(*rndGen);
+	b = intNf_dist(*rndGen);
+	kxiab.invert( z, spin, a, b );
+
+	spin = intSpin_dist(*rndGen);
+	a = intNf_dist(*rndGen);
+	b = intNf_dist(*rndGen);
+	kxiab.invert( w, spin, a, b );
+
+	if( kxiab.constraintViolated( x ) || kxiab.constraintViolated( y ) || kxiab.constraintViolated( z ) || kxiab.constraintViolated( w ) ) {
+		kxiab = oldField;
+		return false;
 	}
+
+	nxNew = kxiab.countSummedSpin( x );
+	nyNew = kxiab.countSummedSpin( y );
+	nzNew = kxiab.countSummedSpin( z );
+	nwNew = kxiab.countSummedSpin( w );
 	dk += kxiab.sumAll();
 	dntilde += kxiab.countOffdiagonal2();
 
 	Complex weight = calculateWeight( dk, dntilde );
 
-	if( imag(weight) > ZERO_TOL || ( std::fabs(weight) > ZERO_TOL && std::real(weight) < 0 ) ) {
-		std::cerr << "Warning, non-positive weight: " << weight << std::endl;
-	}
+	//	if( imag(weight) > ZERO_TOL || ( std::fabs(weight) > ZERO_TOL && std::real(weight) < 0 ) ) {
+	//		std::cerr << "Warning, non-positive weight: " << weight << std::endl;
+	//	}
 
 	bool accepted = accept( weight );
 	return accepted;
@@ -112,7 +130,7 @@ bool FermiBoolMetropolis::updateField( size_t x, size_t spin, size_t a, size_t b
 	}
 	bool success = true;
 	if( kxiab.constraintViolated( x ) ) {
-//		std::cerr << "x violated! Reset and continue loop..." << std::endl;
+		//		std::cerr << "x violated! Reset and continue loop..." << std::endl;
 		kxiab = oldField;
 		success = false;
 	}
@@ -126,13 +144,19 @@ Complex FermiBoolMetropolis::calculateWeight( int dk, int dntilde ) {
 	det = slac.det();
 	slac.setFull();
 
-	double factor = getHypergeometricFactor( nxNew(1), nxNew(2) ) * getHypergeometricFactor( nyNew(1), nyNew(2) );
+	double factor = getHypergeometricFactor( nxNew(1), nxNew(2) ) * getHypergeometricFactor( nyNew(1), nyNew(2) ) ;
+	factor *= getHypergeometricFactor( nzNew(1), nzNew(2) );
+	factor *= getHypergeometricFactor( nwNew(1), nwNew(2) );
 	factor /= getHypergeometricFactor( nxOld(1), nxOld(2) ) * getHypergeometricFactor( nyOld(1), nyOld(2) );
-//					std::cout << "\tfactor1=" << factor;
+	factor /= getHypergeometricFactor( nzOld(1), nzOld(2) );
+	factor /= getHypergeometricFactor( nwOld(1), nwOld(2) );
+	//					std::cout << "\tfactor1=" << factor;
 
-//	if( dntilde != 0 ) std::cerr << "\tdntilde = " << dntilde << std::endl;
+	//	if( dntilde != 0 ) std::cerr << "\tdntilde = " << dntilde << std::endl;
 	factor *= std::pow( 2, dntilde );
 	double dw = std::pow(-kappa, double(dk)/2.);
+	Complex detRatio = det/detOld;
+	fWeight << std::real(detRatio) << "\t" << std::imag(detRatio) << "\t" << dw << "\t" << std::fabs(factor*dw*(det/detOld)) << std::endl;
 	return factor*dw*(det/detOld);
 }
 

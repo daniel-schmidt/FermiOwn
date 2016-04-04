@@ -95,10 +95,10 @@ void SlacOperatorMatrix::erase( size_t x, size_t spin, size_t flavour1, size_t f
 
 	if( rowMap( rowIndex ) == -1 ) {
 		std::cerr << "Row already deleted!" << std::endl;
-		exit(1);
+//		exit(1);
 	} else if ( colMap( colIndex ) == -1 ) {
 		std::cerr << "Col already deleted!" << std::endl;
-		exit(1);
+//		exit(1);
 	}
 
 	dslac.row(rowIndex) = Eigen::RowVectorXcd::Zero( dslac.cols() );
