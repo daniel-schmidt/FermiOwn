@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <Eigen/Dense>
+#include "FieldBoolean.h"
 #include "SlacOperatorMatrix.h"
 
 int main( int argc, char** argv ) {
@@ -68,18 +69,28 @@ int main( int argc, char** argv ) {
 	std::cout << "Deleted everything:" << dslac3d.getMatrix().isIdentity() << std::endl;
 	std::cout << "Deleted everything, det=" << dslac3d.det() << std::endl;
 
-	SlacOperatorMatrix dslacNf1( N, N+1, dim, 1 );
+	SlacOperatorMatrix dslacNf1( N, 1, dim, 1 );
 	std::cout << "Single Flavour: " << std::endl << dslacNf1.getMatrix() << std::endl;
-	SlacOperatorMatrix dslacNf2( N, N+1, dim, 2 );
+	SlacOperatorMatrix dslacNf2( N, 1, dim, 2 );
 	std::cout << "Two Flavour: " << std::endl << dslacNf2.getMatrix() << std::endl;
 	std::cout << "Two Flavour determinant: " << std::endl << dslacNf2.det() << std::endl;
 	dslacNf2.erase( 0, 0, 0, 1 );
+	dslacNf2.erase( 1, 1, 0, 1 );
 	dslacNf2.erase( 0, 0, 1, 0 );
+	dslacNf2.erase( 1, 1, 1, 0 );
 	std::cout << "Two Flavour deleted: " << std::endl << dslacNf2.getMatrix() << std::endl;
 	std::cout << "Two Flavour deleted determinant: " << std::endl << dslacNf2.det() << std::endl;
 	dslacNf2.setFull();
-	dslacNf2.erase( 0, 0, 0, 0 );
-	dslacNf2.erase( 0, 0, 1, 1 );
+
+	std::ranlux48 rndGen;
+	FieldBoolean fbool( N, 2, 2, &rndGen, zeroInit );
+	fbool.Print();
+	fbool.setValue( 1, 0, 0, 0, 1 );
+	fbool.setValue( 1, 1, 1, 0, 1 );
+	fbool.setValue( 1, 0, 0, 1, 0 );
+	fbool.setValue( 1, 1, 1, 1, 0 );
+	fbool.Print();
+	dslacNf2.erase( fbool );
 	std::cout << "Two Flavour deleted: " << std::endl << dslacNf2.getMatrix() << std::endl;
 	std::cout << "Two Flavour deleted determinant: " << std::endl << dslacNf2.det() << std::endl;
 //	std::cout << std::endl << "Truely erasing cols from slac matrix:" << std::endl;

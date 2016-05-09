@@ -49,11 +49,6 @@ public:
 	Eigen::ArrayXi nyOld;
 	Eigen::ArrayXi nyNew;
 
-	Eigen::ArrayXi nzOld;
-	Eigen::ArrayXi nzNew;
-	Eigen::ArrayXi nwOld;
-	Eigen::ArrayXi nwNew;
-
 	size_t acceptanceCounter;
 	Complex det;
 	Complex detOld;

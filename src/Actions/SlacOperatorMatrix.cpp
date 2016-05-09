@@ -93,30 +93,30 @@ void SlacOperatorMatrix::erase( size_t x, size_t spin, size_t flavour1, size_t f
 	size_t rowIndex = N*( dimSpinor*flavour1 + spin ) + x;
 	size_t colIndex = N*( dimSpinor*flavour2 + spin ) + x;
 
-	if( rowMap( rowIndex ) == -1 ) {
-		std::cerr << "Row already deleted!" << std::endl;
-//		exit(1);
-	} else if ( colMap( colIndex ) == -1 ) {
-		std::cerr << "Col already deleted!" << std::endl;
-//		exit(1);
-	}
+//	if( rowMap( rowIndex ) == -1 ) {
+//		std::cerr << "Row already deleted!" << std::endl;
+////		exit(1);
+//	} else if ( colMap( colIndex ) == -1 ) {
+//		std::cerr << "Col already deleted!" << std::endl;
+////		exit(1);
+//	}
 
 	dslac.row(rowIndex) = Eigen::RowVectorXcd::Zero( dslac.cols() );
 	dslac.col(colIndex) = Eigen::VectorXcd::Zero( dslac.rows() );
 
 	// set crossing entry correct to get correct full determinant
-	if( ( rowMap( rowIndex ) + colMap( colIndex ) ) % 2 == 0 )
+//	if( ( rowMap( rowIndex ) + colMap( colIndex ) ) % 2 == 0 )
 		dslac(rowIndex,colIndex) = 1.;
-	else
-		dslac(rowIndex,colIndex) = -1.;
+//	else
+//		dslac(rowIndex,colIndex) = -1.;
 
 	// update row and col maps
-	rowMap( rowIndex ) = -1;
-	int tailSize = rowMap.size() - rowIndex;
-	rowMap.tail( tailSize ) -= Eigen::VectorXi::Ones(tailSize);
-	colMap( colIndex ) = -1;
-	tailSize = colMap.size() - colIndex;
-	colMap.tail( tailSize ) -= Eigen::VectorXi::Ones(tailSize);
+//	rowMap( rowIndex ) = -1;
+//	int tailSize = rowMap.size() - rowIndex;
+//	rowMap.tail( tailSize ) -= Eigen::VectorXi::Ones(tailSize);
+//	colMap( colIndex ) = -1;
+//	tailSize = colMap.size() - colIndex;
+//	colMap.tail( tailSize ) -= Eigen::VectorXi::Ones(tailSize);
 }
 
 void SlacOperatorMatrix::setFull() {

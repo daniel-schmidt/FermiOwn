@@ -19,6 +19,7 @@ public:
 	bool getValue( size_t x, size_t spin, size_t flavour1, size_t flavour2 ) const;
 	void setValue( bool val, size_t x, size_t spin, size_t flavour1, size_t flavour2 );
 	void invert(size_t x, size_t spin, size_t flavour1, size_t flavour2);
+	void enforceConstraint( size_t x, size_t spin, size_t a, size_t b );
 	bool constraintViolated( size_t x) const;
 
 	/**

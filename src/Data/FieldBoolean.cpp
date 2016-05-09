@@ -12,12 +12,12 @@ namespace FermiOwn {
 FieldBoolean::FieldBoolean( const size_t latticeVolume,
 		const size_t numberOfSpins, const size_t numberOfFlavours,
 		std::ranlux48 * rndGen, InitType init ) :
-												Field<bool>( latticeVolume, numberOfFlavours*numberOfFlavours* numberOfSpins, rndGen, init ),
-												numSpins(numberOfSpins),
-												numFlavours(numberOfFlavours),
-												numColsPerSpin(numFlavours*numFlavours)
-												{
-												}
+														Field<bool>( latticeVolume, numberOfFlavours*numberOfFlavours* numberOfSpins, rndGen, init ),
+														numSpins(numberOfSpins),
+														numFlavours(numberOfFlavours),
+														numColsPerSpin(numFlavours*numFlavours)
+														{
+														}
 
 FieldBoolean::~FieldBoolean() {
 }
@@ -34,6 +34,22 @@ void FieldBoolean::invert(size_t x, size_t spin, size_t flavour1, size_t flavour
 	data( x, colIndex( spin, flavour1, flavour2 ) ) = !data( x, colIndex( spin, flavour1, flavour2 ) );
 }
 
+void FieldBoolean::enforceConstraint( size_t x, size_t spin, size_t a, size_t b ) {
+
+	if( getValue( x, spin, a, b ) ) {
+		if( a==b ) {
+			for( size_t flavour = 0; flavour < numFlavours; flavour++ ) {
+				if( flavour != a ) {
+					setValue( false, x, spin, a, flavour );
+					setValue( false, x, spin, flavour, a );
+				}
+			}
+		} else {
+			setValue( false, x, spin, a, a );
+			setValue( false, x, spin, b, b );
+		}
+	}
+}
 bool FieldBoolean::constraintViolated( size_t x ) const {
 
 	//checking kxab = kxba
