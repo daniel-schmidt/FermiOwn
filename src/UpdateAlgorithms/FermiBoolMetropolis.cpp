@@ -111,23 +111,27 @@ void FermiBoolMetropolis::sumAllConfs() {
 		}
 //		kxiab.Print();
 
-		size_t k = kxiab.sumAll();
-		size_t ntilde = kxiab.countOffdiagonal2();
-		double factor = 1.;
-		for( size_t x = 0; x< lat.getVol(); x++ ) {
-			auto nx = kxiab.countSummedSpin( x );
-			factor *= getHypergeometricFactor( nx(1), nx(2) );
-		}
-		factor *= std::pow( 2., ntilde );
-		Complex dw = std::pow( Complex(-kappa), double(k)/2. );
-
-		slac.erase( kxiab );
-		det = slac.det();
-		slac.setFull();
-
-		sum += factor*dw*det;
+		sum += calculateWeight();
 	}
 	std::cout << 2./kappa << "\t" << sum << std::endl;
+}
+
+Complex FermiBoolMetropolis::calculateWeight() {
+	size_t k = kxiab.sumAll();
+	size_t ntilde = kxiab.countOffdiagonal2();
+	double factor = 1.;
+	for( size_t x = 0; x< lat.getVol(); x++ ) {
+		auto nx = kxiab.countSummedSpin( x );
+		factor *= getHypergeometricFactor( nx(1), nx(2) );
+	}
+	factor *= std::pow( 2., ntilde );
+	Complex dw = std::pow( Complex(-kappa), double(k)/2. );
+
+	slac.erase( kxiab );
+	det = slac.det();
+	slac.setFull();
+
+	return factor*dw*det;
 }
 
 bool FermiBoolMetropolis::updateField() {

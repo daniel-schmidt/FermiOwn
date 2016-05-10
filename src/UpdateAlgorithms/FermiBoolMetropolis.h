@@ -30,6 +30,7 @@ public:
 	bool updateField( size_t x, size_t spin, size_t a, size_t b );
 	void updateNaive( size_t x );
 
+	Complex calculateWeight();
 	Complex calculateWeight( int dk, int dntilde );
 	bool accept( Complex weight );
 
