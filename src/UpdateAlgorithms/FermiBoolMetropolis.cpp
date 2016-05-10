@@ -36,32 +36,55 @@ FermiBoolMetropolis::~FermiBoolMetropolis() {
 
 bool FermiBoolMetropolis::updateField() {
 
+//	std::cout << "Field before update " << std::endl;
+//	kxiab.Print();
 	oldField = kxiab;
 	int dk = -kxiab.sumAll();
 	int dntilde = -kxiab.countOffdiagonal2();
 
 	// draw random point, spin and 2 flavours
 	int x = intV_dist(*rndGen);
-	int spin = intSpin_dist(*rndGen);
-	int a = intNf_dist(*rndGen);
-	int b = intNf_dist(*rndGen);
+
+
 	nxOld = kxiab.countSummedSpin( x );
-	bool success = updateField( x, spin, a, b );
-	if( !success ) return false;
+	updateNaive( x );
+	updateNaive( x );
+	updateNaive( x );
+	updateNaive( x );
+//	if( !success ) return false;
 	nxNew = kxiab.countSummedSpin( x );
 
 	// draw second point, spin, flavours
-	x = intV_dist(*rndGen);
-	spin = intSpin_dist(*rndGen);
-	a = intNf_dist(*rndGen);
-	b = intNf_dist(*rndGen);
-	nyOld = kxiab.countSummedSpin( x );
-	success = updateField( x, spin, a, b );
-	if( !success ) return false;
-	nyNew = kxiab.countSummedSpin( x );
 
+	int mu = int2mu_dist(*rndGen);
+	int y = lat.getNeighbours(x)[mu];
+	nyOld = kxiab.countSummedSpin( y );
+	if( x!=y ) {
+		updateNaive( y );
+		updateNaive( y );
+		updateNaive( y );
+		updateNaive( y );
+	}
+	nyNew = kxiab.countSummedSpin( y );
+
+
+	if( kxiab.constraintViolated( x ) || kxiab.constraintViolated( y ) ) {
+//				std::cout << "x violated! Reset and continue loop..." << std::endl;
+				kxiab = oldField;
+				return false;
+	}
+
+//	std::cout << "nyOld: " <<std::endl<< nyOld << std::endl << " nxOld: " <<std::endl << nxOld << std::endl;
+//	std::cout << "nyNew: " <<std::endl<< nyNew << std::endl << " nxNew: " <<std::endl << nxNew << std::endl;
+	if( nyNew(1) == 1 || nxNew(1) == 1 ) {
+		std::cout << "Something terrible went wrong." <<std::endl;
+		exit(1);
+	}
 	dk += kxiab.sumAll();
 	dntilde += kxiab.countOffdiagonal2();
+
+//	std::cout << "Field before accept: " << std::endl;
+//	kxiab.Print();
 
 	Complex weight = calculateWeight( dk, dntilde );
 
@@ -70,7 +93,20 @@ bool FermiBoolMetropolis::updateField() {
 	//	}
 
 	bool accepted = accept( weight );
+//	std::cout << "Accepted: " << accepted << ", field after update:" << std::endl;
+//	kxiab.Print();
 	return accepted;
+}
+
+void FermiBoolMetropolis::updateNaive( size_t x ) {
+	if( intSpin_dist(*rndGen) ) {
+
+		int spin = intSpin_dist(*rndGen);
+		int a = intNf_dist(*rndGen);
+		int b = intNf_dist(*rndGen);
+
+		kxiab.invert( x, spin, a, b );
+	}
 }
 
 bool FermiBoolMetropolis::updateField( size_t x, size_t spin, size_t a, size_t b ) {
@@ -121,17 +157,17 @@ Complex FermiBoolMetropolis::calculateWeight( int dk, int dntilde ) {
 	det = slac.det();
 	slac.setFull();
 
-	double factor = getHypergeometricFactor( nxNew(1), nxNew(2) ) * getHypergeometricFactor( nyNew(1), nyNew(2) ) ;
+	double factor = getHypergeometricFactor( nxNew(1), nxNew(2) )  * getHypergeometricFactor( nyNew(1), nyNew(2) );
 	factor /= getHypergeometricFactor( nxOld(1), nxOld(2) ) * getHypergeometricFactor( nyOld(1), nyOld(2) );
 
 	//					std::cout << "\tfactor1=" << factor;
 
 	//	if( dntilde != 0 ) std::cerr << "\tdntilde = " << dntilde << std::endl;
 	factor *= std::pow( 2, dntilde );
-	double dw = std::pow(-kappa, double(dk)/2.);
+	Complex dw = std::pow( Complex(-kappa), double(dk)/2. );
 	Complex detRatio = det/detOld;
-	fWeight << std::real(detRatio) << "\t" << std::imag(detRatio) << "\t" << dw << "\t" << std::fabs(factor*dw*(det/detOld)) << std::endl;
-//	std::cout << std::real(detRatio) << "\t" << std::imag(detRatio) << "\t" << dw << "\t" << std::fabs(factor*dw*(det/detOld)) << std::endl;
+	fWeight << std::real(detRatio) << "\t" << std::imag(detRatio) << "\t" << dw << "\t" << std::real(factor*dw*(detRatio)) << "\t" << std::imag(factor*dw*(detRatio)) << std::endl;
+//	std::cout << "reDet=" << std::real(detRatio) << "\t imDet=" << std::imag(detRatio) << "\t dk=" << dk << "\t kappa=" << kappa << "\t dw=" << dw << "\t factor=" << factor << "\t" << std::fabs(factor*dw*(detRatio)) << std::endl;
 	return factor*dw*(det/detOld);
 }
 

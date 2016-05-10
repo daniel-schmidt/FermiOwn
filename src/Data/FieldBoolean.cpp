@@ -90,6 +90,23 @@ bool FieldBoolean::constraintViolated( size_t x ) const {
 			if( constrSum > 1 ) return true;
 		}
 	}
+
+	int count = 0;
+	for( size_t flavour1 = 0; flavour1 < numFlavours; flavour1++ ) {
+		int constrSum = 0;
+		for( size_t spin = 0; spin < numSpins; spin++ ) {
+			constrSum += data( x, colIndex( spin, flavour1, flavour1 ) );
+		}
+		if( 1 == constrSum ) {
+			count++;
+		}
+	}
+//	std::cout << "count = " << count << std::endl;
+	if( count % 2 != 0 ) {
+//		std::cout << "returning true" << std::endl;
+		return true;
+	}
+
 	return false;
 }
 
