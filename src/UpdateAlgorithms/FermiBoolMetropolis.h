@@ -23,6 +23,7 @@ public:
 	FermiBoolMetropolis( FieldBoolean& boolField, SlacOperatorMatrix& slacMat, const Lattice& lattice, double lambda, size_t numFlavours, std::ranlux48* randomGenerator );
 	virtual ~FermiBoolMetropolis();
 
+	void sumAllConfs();
 	void generateAllowedConfs( size_t numFlavours );
 
 	bool updateField();

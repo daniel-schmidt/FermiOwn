@@ -42,9 +42,10 @@ void  FermiBoolMetropolis::generateAllowedConfs( size_t numFlavours ) {
 	size_t numCols = (numFlavours*numFlavours)*2;
 	size_t numConfigs = 1;
 	numConfigs = numConfigs << numCols;
+//	std::cout << "Num cols " << numCols << std::endl;
 	allowedConfs = Eigen::MatrixXi::Zero( numConfigs, numCols );
-	std::cout << numConfigs << std::endl;
-
+//	std::cout << numConfigs << std::endl;
+//	std::cout << allowedConfs << std::endl;
 	size_t numAllowedConfs = 0;
 	for( size_t conf = 0; conf < numConfigs; conf++ ) {
 		size_t bits = conf;
@@ -73,7 +74,60 @@ void  FermiBoolMetropolis::generateAllowedConfs( size_t numFlavours ) {
 		}
 	}
 	allowedConfs.conservativeResize( numAllowedConfs, Eigen::NoChange );
-	std::cout << "All configs:" << std::endl << allowedConfs << std::endl;
+//	std::cout << "All configs:" << std::endl << allowedConfs << std::endl;
+}
+
+void FermiBoolMetropolis::sumAllConfs() {
+	size_t confsPerX = allowedConfs.rows();
+	size_t numConfigs = std::pow( confsPerX, lat.getVol() );
+//	std::cout << "numConfigs: " << numConfigs << std::endl;
+
+	Complex sum = 0.;
+
+	for( size_t conf = 0; conf < numConfigs; conf++ ) {
+		size_t confNum = conf;
+//		std::cout << "Conf " << conf << " confNum: ";
+
+		Eigen::VectorXi confList = Eigen::VectorXi::Zero( lat.getVol() );
+		size_t count = 0;
+		while( confNum >= confsPerX ) {
+			confList( count ) = confNum % confsPerX;
+			confNum /= confsPerX;
+			count ++;
+		}
+
+		confList( count ) = confNum;
+//		std::cout << std::endl<< confList <<std::endl;
+
+		for( size_t x = 0; x < lat.getVol(); x++ ) {
+			size_t newConfIndex = confList( x );
+			for( size_t spin = 0; spin < 2; spin++ ) {
+				for( size_t a = 0; a < Nf; a++ ) {
+					for( size_t b = 0; b < Nf; b++ ) {
+						kxiab.setValue( bool(allowedConfs( newConfIndex, spin*Nf*Nf + b*Nf + a)), x, spin, a, b );
+					}
+				}
+			}
+		}
+//		kxiab.Print();
+
+		size_t k = kxiab.sumAll();
+		size_t ntilde = kxiab.countOffdiagonal2();
+		double factor = 1.;
+		for( size_t x = 0; x< lat.getVol(); x++ ) {
+			auto nx = kxiab.countSummedSpin( x );
+			factor *= getHypergeometricFactor( nx(1), nx(2) );
+		}
+		factor *= std::pow( 2., ntilde );
+		Complex dw = std::pow( Complex(-kappa), double(k)/2. );
+
+		slac.erase( kxiab );
+		det = slac.det();
+		slac.setFull();
+
+		sum += factor*dw*det;
+	}
+	std::cout << 2./kappa << "\t" << sum << std::endl;
 }
 
 bool FermiBoolMetropolis::updateField() {

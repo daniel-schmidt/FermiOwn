@@ -57,16 +57,18 @@ int main( int argc, char** argv ) {
 		}
 		FermiBoolMetropolis updater( kxiab, slac, lat, lambda, Nf, &gen );
 
-		double av_k = 0.;
+		updater.sumAllConfs();
 
-		for( int measure = 0; measure < numMeasures+numThermal; measure++) {
-			for( int i = 0; i < upPerMeasure; i++ ) {
-				updater.updateField();
-			}
-			if( measure >= numThermal ) av_k += kxiab.sumAll()/double(2*V);
-		}
-		av_k/=double(numMeasures);
-		double accrate = updater.acceptanceCounter/double((numMeasures+numThermal)*upPerMeasure);
-		std::cerr << lambda << "\t" << av_k << "\t" << accrate << std::endl;
+//		double av_k = 0.;
+
+//		for( int measure = 0; measure < numMeasures+numThermal; measure++) {
+//			for( int i = 0; i < upPerMeasure; i++ ) {
+//				updater.updateField();
+//			}
+//			if( measure >= numThermal ) av_k += kxiab.sumAll()/double(2*V);
+//		}
+//		av_k/=double(numMeasures);
+//		double accrate = updater.acceptanceCounter/double((numMeasures+numThermal)*upPerMeasure);
+//		std::cerr << lambda << "\t" << av_k << "\t" << accrate << std::endl;
 	}
 }
