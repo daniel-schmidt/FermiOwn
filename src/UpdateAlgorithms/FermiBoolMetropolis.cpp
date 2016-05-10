@@ -11,6 +11,7 @@ namespace FermiOwn {
 
 FermiBoolMetropolis::FermiBoolMetropolis( FieldBoolean& boolField, SlacOperatorMatrix& slacMat, const Lattice & lattice, double lambda, size_t numFlavours, std::ranlux48* randomGenerator ) :
 							kappa( 2./lambda ),
+							Nf( numFlavours ),
 							kxiab( boolField ),
 							oldField(kxiab),
 							slac(slacMat),
@@ -24,6 +25,9 @@ FermiBoolMetropolis::FermiBoolMetropolis( FieldBoolean& boolField, SlacOperatorM
 							acceptanceCounter(0),
 							fWeight( "weight" + std::to_string(lambda) + ".dat" )
 {
+	generateAllowedConfs( numFlavours );
+	intConfIndex = std::uniform_int_distribution<int>( 0, allowedConfs.rows()-1 );
+
 	slac.erase( kxiab );
 	detOld = slac.det();
 	slac.setFull();
@@ -32,6 +36,44 @@ FermiBoolMetropolis::FermiBoolMetropolis( FieldBoolean& boolField, SlacOperatorM
 }
 
 FermiBoolMetropolis::~FermiBoolMetropolis() {
+}
+
+void  FermiBoolMetropolis::generateAllowedConfs( size_t numFlavours ) {
+	size_t numCols = (numFlavours*numFlavours)*2;
+	size_t numConfigs = 1;
+	numConfigs = numConfigs << numCols;
+	allowedConfs = Eigen::MatrixXi::Zero( numConfigs, numCols );
+	std::cout << numConfigs << std::endl;
+
+	size_t numAllowedConfs = 0;
+	for( size_t conf = 0; conf < numConfigs; conf++ ) {
+		size_t bits = conf;
+		size_t bits2 = conf;
+		FieldBoolean fConf( 1, 2, numFlavours, NULL, zeroInit );
+
+		for( size_t spin = 0; spin < 2; spin++ ) {
+			for( size_t a = 0; a < numFlavours; a++ ) {
+				for( size_t b = 0; b < numFlavours; b++ ) {
+					if( bits2 % 2 == 1 ) {
+						fConf.setValue( true, 0, spin, a, b );
+					}
+					bits2 = bits2 >> 1;
+				}
+			}
+		}
+
+		if( !fConf.constraintViolated(0) ) {
+			for( size_t bit = 0; bit < numCols; bit++ ) {
+				if( bits % 2 == 1 ) {
+					allowedConfs( numAllowedConfs, numCols-1-bit ) = 1;
+				}
+				bits = bits >> 1;
+			}
+			numAllowedConfs ++;
+		}
+	}
+	allowedConfs.conservativeResize( numAllowedConfs, Eigen::NoChange );
+	std::cout << "All configs:" << std::endl << allowedConfs << std::endl;
 }
 
 bool FermiBoolMetropolis::updateField() {
@@ -47,10 +89,16 @@ bool FermiBoolMetropolis::updateField() {
 
 
 	nxOld = kxiab.countSummedSpin( x );
-	updateNaive( x );
-	updateNaive( x );
-	updateNaive( x );
-	updateNaive( x );
+	int newConfIndex = intConfIndex( *rndGen );
+//	std::cout << "Setting x=" << x << " to conf " << newConfIndex << std::endl;
+	for( size_t spin = 0; spin < 2; spin++ ) {
+		for( size_t a = 0; a < Nf; a++ ) {
+			for( size_t b = 0; b < Nf; b++ ) {
+				kxiab.setValue( bool(allowedConfs( newConfIndex, spin*Nf*Nf + b*Nf + a)), x, spin, a, b );
+			}
+		}
+	}
+
 //	if( !success ) return false;
 	nxNew = kxiab.countSummedSpin( x );
 
@@ -60,16 +108,23 @@ bool FermiBoolMetropolis::updateField() {
 	int y = lat.getNeighbours(x)[mu];
 	nyOld = kxiab.countSummedSpin( y );
 	if( x!=y ) {
-		updateNaive( y );
-		updateNaive( y );
-		updateNaive( y );
-		updateNaive( y );
+		int newConfIndex = intConfIndex( *rndGen );
+//		std::cout << "Setting y=" << y << " to conf " << newConfIndex << std::endl;
+		for( size_t spin = 0; spin < 2; spin++ ) {
+			for( size_t a = 0; a < Nf; a++ ) {
+				for( size_t b = 0; b < Nf; b++ ) {
+					kxiab.setValue( bool(allowedConfs( newConfIndex, spin*Nf*Nf + b*Nf + a)), y, spin, a, b );
+				}
+			}
+		}
 	}
 	nyNew = kxiab.countSummedSpin( y );
 
 
+//	std::cout << "Field before accept: " << std::endl;
+//	kxiab.Print();
 	if( kxiab.constraintViolated( x ) || kxiab.constraintViolated( y ) ) {
-//				std::cout << "x violated! Reset and continue loop..." << std::endl;
+				std::cout << "x violated! Reset and continue loop..." << std::endl << std::endl;
 				kxiab = oldField;
 				return false;
 	}
@@ -83,8 +138,6 @@ bool FermiBoolMetropolis::updateField() {
 	dk += kxiab.sumAll();
 	dntilde += kxiab.countOffdiagonal2();
 
-//	std::cout << "Field before accept: " << std::endl;
-//	kxiab.Print();
 
 	Complex weight = calculateWeight( dk, dntilde );
 
@@ -93,7 +146,7 @@ bool FermiBoolMetropolis::updateField() {
 	//	}
 
 	bool accepted = accept( weight );
-//	std::cout << "Accepted: " << accepted << ", field after update:" << std::endl;
+//	std::cout << "Accepted: " << accepted << ", field after update:" << std::endl << std::endl;
 //	kxiab.Print();
 	return accepted;
 }
@@ -163,11 +216,11 @@ Complex FermiBoolMetropolis::calculateWeight( int dk, int dntilde ) {
 	//					std::cout << "\tfactor1=" << factor;
 
 	//	if( dntilde != 0 ) std::cerr << "\tdntilde = " << dntilde << std::endl;
-	factor *= std::pow( 2, dntilde );
+	factor *= std::pow( 2., dntilde );
 	Complex dw = std::pow( Complex(-kappa), double(dk)/2. );
 	Complex detRatio = det/detOld;
 	fWeight << std::real(detRatio) << "\t" << std::imag(detRatio) << "\t" << dw << "\t" << std::real(factor*dw*(detRatio)) << "\t" << std::imag(factor*dw*(detRatio)) << std::endl;
-//	std::cout << "reDet=" << std::real(detRatio) << "\t imDet=" << std::imag(detRatio) << "\t dk=" << dk << "\t kappa=" << kappa << "\t dw=" << dw << "\t factor=" << factor << "\t" << std::fabs(factor*dw*(detRatio)) << std::endl;
+//	std::cout << "reDet=" << std::real(detRatio) << "\t imDet=" << std::imag(detRatio) << "\t dk=" << dk << "\t kappa=" << kappa << "\t dw=" << dw << "\t factor=" << factor << "\t dnt=" << dntilde << "\t" << std::fabs(factor*dw*(detRatio)) << std::endl;
 	return factor*dw*(det/detOld);
 }
 

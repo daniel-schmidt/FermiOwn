@@ -40,6 +40,7 @@ SlacOperatorMatrix::SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t
 	dz = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor,dimSpinor), dz ).eval();
 	dslac = Gammas[0]*dx+Gammas[1]*dy+Gammas[2]*dz;
 	dslac = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(Nf,Nf), dslac ).eval();
+	dslac *= I;
 	fullSlac = dslac;
 	resetMaps();
 }
@@ -52,7 +53,7 @@ const Eigen::MatrixXcd SlacOperatorMatrix::getMatrix() const {
 }
 
 const Complex SlacOperatorMatrix::det() const {
-	return (dslac*I).determinant();
+	return dslac.determinant();
 }
 
 //void SlacOperatorMatrix::deletePoint(size_t x) {

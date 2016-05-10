@@ -23,6 +23,8 @@ public:
 	FermiBoolMetropolis( FieldBoolean& boolField, SlacOperatorMatrix& slacMat, const Lattice& lattice, double lambda, size_t numFlavours, std::ranlux48* randomGenerator );
 	virtual ~FermiBoolMetropolis();
 
+	void generateAllowedConfs( size_t numFlavours );
+
 	bool updateField();
 	bool updateField( size_t x, size_t spin, size_t a, size_t b );
 	void updateNaive( size_t x );
@@ -34,6 +36,7 @@ public:
 	double getHypergeometricFactor( int n1, int n2 );
 
 	double kappa;
+	size_t Nf;
 	FieldBoolean & kxiab;
 	FieldBoolean oldField;
 	SlacOperatorMatrix& slac;
@@ -44,11 +47,14 @@ public:
 	std::uniform_int_distribution<int> int2mu_dist;
 	std::uniform_int_distribution<int> intNf_dist;
 	std::uniform_int_distribution<int> intSpin_dist;
+	std::uniform_int_distribution<int> intConfIndex;
 
 	Eigen::ArrayXi nxOld;
 	Eigen::ArrayXi nxNew;
 	Eigen::ArrayXi nyOld;
 	Eigen::ArrayXi nyNew;
+
+	Eigen::MatrixXi allowedConfs;	//TODO: should have a boolean type...
 
 	size_t acceptanceCounter;
 	Complex det;

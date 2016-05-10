@@ -19,7 +19,7 @@ namespace FermiOwn {
 	typedef Eigen::Matrix< bool, Eigen::Dynamic, Eigen::Dynamic > MatrixXb;
 
 	const double PI = 3.14159265358979;
-	const Complex I = Complex(0,1);
+	const Complex I = Complex(0.,1.);
 	const double ZERO_TOL = 1e-10;
 } // namespace FermiOwn
 
