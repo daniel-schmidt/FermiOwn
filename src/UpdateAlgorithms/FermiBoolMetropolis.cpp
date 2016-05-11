@@ -142,6 +142,7 @@ bool FermiBoolMetropolis::updateField() {
 	int dk = -kxiab.sumAll();
 	int dntilde = -kxiab.countOffdiagonal2();
 
+	Complex weight = 1./calculateWeight();
 	// draw random point, spin and 2 flavours
 	int x = intV_dist(*rndGen);
 
@@ -197,12 +198,13 @@ bool FermiBoolMetropolis::updateField() {
 	dntilde += kxiab.countOffdiagonal2();
 
 
-	Complex weight = calculateWeight( dk, dntilde );
+
+//	Complex weight = calculateWeight( dk, dntilde );
 
 	//	if( imag(weight) > ZERO_TOL || ( std::fabs(weight) > ZERO_TOL && std::real(weight) < 0 ) ) {
 	//		std::cerr << "Warning, non-positive weight: " << weight << std::endl;
 	//	}
-
+	weight *= calculateWeight();
 	bool accepted = accept( weight );
 //	std::cout << "Accepted: " << accepted << ", field after update:" << std::endl << std::endl;
 //	kxiab.Print();

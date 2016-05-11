@@ -38,13 +38,15 @@ int main( int argc, char** argv ) {
 	// initialize classes
 	Lattice lat( Nt, Ns, dim );
 	SlacOperatorMatrix slac( Nt, Ns, dim, Nf );
-//	std::cout << slac.getMatrix() << std::endl << std::endl;
+	//	std::cout << slac.getMatrix() << std::endl << std::endl;
 
 	// initialize random number generator and distributions
 	std::ranlux48 gen;
 
+
 	for( int step = 0; step < 10; step++ ) {
 		lambda += 0.1;
+		std::ofstream kfile( "avk" + std::to_string(lambda) + ".dat" );
 
 		// initialize single-flavour part to true, the rest to false
 		FieldBoolean kxiab( lat.getVol(), numSpin, Nf, &gen, zeroInit );
@@ -57,18 +59,24 @@ int main( int argc, char** argv ) {
 		}
 		FermiBoolMetropolis updater( kxiab, slac, lat, lambda, Nf, &gen );
 
-		updater.sumAllConfs();
+		//		updater.sumAllConfs();
 
-//		double av_k = 0.;
+		double av_k = 0.;
 
-//		for( int measure = 0; measure < numMeasures+numThermal; measure++) {
-//			for( int i = 0; i < upPerMeasure; i++ ) {
-//				updater.updateField();
-//			}
-//			if( measure >= numThermal ) av_k += kxiab.sumAll()/double(2*V);
-//		}
-//		av_k/=double(numMeasures);
-//		double accrate = updater.acceptanceCounter/double((numMeasures+numThermal)*upPerMeasure);
-//		std::cerr << lambda << "\t" << av_k << "\t" << accrate << std::endl;
+		for( int measure = 0; measure < numMeasures+numThermal; measure++) {
+			for( int i = 0; i < upPerMeasure; i++ ) {
+				updater.updateField();
+			}
+			if( measure >= numThermal )
+			{
+				double k = kxiab.sumAll()/double(2*V);
+				av_k += k;
+				kfile << k << "\t" << std::endl;
+			}
+		}
+		av_k/=double(numMeasures);
+		double accrate = updater.acceptanceCounter/double((numMeasures+numThermal)*upPerMeasure);
+		std::cerr << lambda << "\t" << av_k << "\t" << accrate << std::endl;
+		kfile.close();
 	}
 }
