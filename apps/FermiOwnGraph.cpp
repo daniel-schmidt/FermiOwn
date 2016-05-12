@@ -50,13 +50,13 @@ int main( int argc, char** argv ) {
 
 		// initialize single-flavour part to true, the rest to false
 		FieldBoolean kxiab( lat.getVol(), numSpin, Nf, &gen, zeroInit );
-		for( int a = 0; a < Nf; a++ ) {
-			for( int spin = 0; spin < numSpin; spin++ ) {
-				for( size_t x = 0; x < lat.getVol(); x++ ) {
-					kxiab.setValue( true, x, spin, a, a );
-				}
-			}
-		}
+//		for( int a = 0; a < Nf; a++ ) {
+//			for( int spin = 0; spin < numSpin; spin++ ) {
+//				for( size_t x = 0; x < lat.getVol(); x++ ) {
+//					kxiab.setValue( true, x, spin, a, a );
+//				}
+//			}
+//		}
 		FermiBoolMetropolis updater( kxiab, slac, lat, lambda, Nf, &gen );
 
 		//		updater.sumAllConfs();

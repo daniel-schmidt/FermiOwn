@@ -139,63 +139,66 @@ bool FermiBoolMetropolis::updateField() {
 //	std::cout << "Field before update " << std::endl;
 //	kxiab.Print();
 	oldField = kxiab;
-	int dk = -kxiab.sumAll();
-	int dntilde = -kxiab.countOffdiagonal2();
+//	int dk = -kxiab.sumAll();
+//	int dntilde = -kxiab.countOffdiagonal2();
 
 	Complex weight = 1./calculateWeight();
+
 	// draw random point, spin and 2 flavours
-	int x = intV_dist(*rndGen);
 
 
-	nxOld = kxiab.countSummedSpin( x );
-	int newConfIndex = intConfIndex( *rndGen );
-//	std::cout << "Setting x=" << x << " to conf " << newConfIndex << std::endl;
-	for( size_t spin = 0; spin < 2; spin++ ) {
-		for( size_t a = 0; a < Nf; a++ ) {
-			for( size_t b = 0; b < Nf; b++ ) {
-				kxiab.setValue( bool(allowedConfs( newConfIndex, spin*Nf*Nf + b*Nf + a)), x, spin, a, b );
+	for( int cnt=0; cnt < 4; cnt++ ) {
+//	nxOld = kxiab.countSummedSpin( x );
+		int x = intV_dist(*rndGen);
+		int newConfIndex = intConfIndex( *rndGen );
+	//	std::cout << "Setting x=" << x << " to conf " << newConfIndex << std::endl;
+		for( size_t spin = 0; spin < 2; spin++ ) {
+			for( size_t a = 0; a < Nf; a++ ) {
+				for( size_t b = 0; b < Nf; b++ ) {
+					kxiab.setValue( bool(allowedConfs( newConfIndex, spin*Nf*Nf + b*Nf + a)), x, spin, a, b );
+				}
 			}
 		}
 	}
 
 //	if( !success ) return false;
-	nxNew = kxiab.countSummedSpin( x );
+//	nxNew = kxiab.countSummedSpin( x );
 
 	// draw second point, spin, flavours
 
-	int mu = int2mu_dist(*rndGen);
-	int y = lat.getNeighbours(x)[mu];
-	nyOld = kxiab.countSummedSpin( y );
-	if( x!=y ) {
-		int newConfIndex = intConfIndex( *rndGen );
-//		std::cout << "Setting y=" << y << " to conf " << newConfIndex << std::endl;
-		for( size_t spin = 0; spin < 2; spin++ ) {
-			for( size_t a = 0; a < Nf; a++ ) {
-				for( size_t b = 0; b < Nf; b++ ) {
-					kxiab.setValue( bool(allowedConfs( newConfIndex, spin*Nf*Nf + b*Nf + a)), y, spin, a, b );
-				}
-			}
-		}
-	}
-	nyNew = kxiab.countSummedSpin( y );
+//	int mu = int2mu_dist(*rndGen);
+//	int y = lat.getNeighbours(x)[mu];
+//	nyOld = kxiab.countSummedSpin( y );
+//	if( x!=y ) {
+//		int newConfIndex = intConfIndex( *rndGen );
+////		std::cout << "Setting y=" << y << " to conf " << newConfIndex << std::endl;
+//		for( size_t spin = 0; spin < 2; spin++ ) {
+//			for( size_t a = 0; a < Nf; a++ ) {
+//				for( size_t b = 0; b < Nf; b++ ) {
+//					kxiab.setValue( bool(allowedConfs( newConfIndex, spin*Nf*Nf + b*Nf + a)), y, spin, a, b );
+//				}
+//			}
+//		}
+//	}
+//	nyNew = kxiab.countSummedSpin( y );
 
 
 //	std::cout << "Field before accept: " << std::endl;
 //	kxiab.Print();
-	if( kxiab.constraintViolated( x ) || kxiab.constraintViolated( y ) ) {
-				std::cout << "x violated! Reset and continue loop..." << std::endl << std::endl;
-				kxiab = oldField;
-				return false;
-	}
+//	if( kxiab.constraintViolated( x ) || kxiab.constraintViolated( y ) ) {
+//				std::cout << "x violated! Reset and continue loop..." << std::endl << std::endl;
+//				kxiab = oldField;
+//				return false;
+//	}
 
 //	std::cout << "nyOld: " <<std::endl<< nyOld << std::endl << " nxOld: " <<std::endl << nxOld << std::endl;
 //	std::cout << "nyNew: " <<std::endl<< nyNew << std::endl << " nxNew: " <<std::endl << nxNew << std::endl;
-	if( nyNew(1) == 1 || nxNew(1) == 1 ) {
-		std::cout << "Something terrible went wrong." <<std::endl;
-		exit(1);
-	}
-	dk += kxiab.sumAll();
-	dntilde += kxiab.countOffdiagonal2();
+//	if( nyNew(1) == 1 || nxNew(1) == 1 ) {
+//		std::cout << "Something terrible went wrong." <<std::endl;
+//		exit(1);
+//	}
+//	dk += kxiab.sumAll();
+//	dntilde += kxiab.countOffdiagonal2();
 
 
 
