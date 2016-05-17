@@ -17,9 +17,7 @@ SlacOperatorMatrix::SlacOperatorMatrix( size_t size ) :
 SlacOperatorMatrix::SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t numFlavours ) :
 														N(Nt*Ns*Ns),
 														dimSpinor(2),
-														Nf(numFlavours),
-														rowMap(N*numFlavours*dimSpinor),
-														colMap(N*numFlavours*dimSpinor)
+														Nf(numFlavours)
 {
 	using namespace Eigen;
 	if( dim != 3 ) {
@@ -42,7 +40,9 @@ SlacOperatorMatrix::SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t
 	dslac = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(Nf,Nf), dslac ).eval();
 	dslac *= I;
 	fullSlac = dslac;
-	resetMaps();
+
+	detVal = dslac.determinant();
+	inverse = dslac.inverse();
 }
 
 SlacOperatorMatrix::~SlacOperatorMatrix() {}
@@ -53,9 +53,12 @@ const Eigen::MatrixXcd SlacOperatorMatrix::getMatrix() const {
 }
 
 const Complex SlacOperatorMatrix::det() const {
-	return dslac.determinant();
+	return detVal;
 }
 
+size_t SlacOperatorMatrix::matIndex( size_t x, size_t spin, size_t flavour ) {
+	return N*( dimSpinor*flavour + spin ) + x;
+}
 //void SlacOperatorMatrix::deletePoint(size_t x) {
 //	dslac.row(x) = Eigen::RowVectorXcd::Zero( dslac.cols() );
 //	dslac.col(x) = Eigen::VectorXcd::Zero( dslac.rows() );
@@ -91,45 +94,50 @@ void SlacOperatorMatrix::erase( size_t x, size_t spin, size_t flavour1, size_t f
 		std::cerr << "Trying to erase col/row at flavour1=" << flavour1 << " or flavour2=" << flavour2 <<  ", which is larger or equal than Nf=" << Nf << std::endl;
 		exit(1);
 	}
-	size_t rowIndex = N*( dimSpinor*flavour1 + spin ) + x;
-	size_t colIndex = N*( dimSpinor*flavour2 + spin ) + x;
 
-//	if( rowMap( rowIndex ) == -1 ) {
-//		std::cerr << "Row already deleted!" << std::endl;
-////		exit(1);
-//	} else if ( colMap( colIndex ) == -1 ) {
-//		std::cerr << "Col already deleted!" << std::endl;
-////		exit(1);
-//	}
-
-	dslac.row(rowIndex) = Eigen::RowVectorXcd::Zero( dslac.cols() );
-	dslac.col(colIndex) = Eigen::VectorXcd::Zero( dslac.rows() );
+	dslac.row( matIndex( x, spin, flavour1 ) ) = Eigen::RowVectorXcd::Zero( dslac.cols() );
+	dslac.col( matIndex( x, spin, flavour2 ) ) = Eigen::VectorXcd::Zero( dslac.rows() );
 
 	// set crossing entry correct to get correct full determinant
-//	if( ( rowMap( rowIndex ) + colMap( colIndex ) ) % 2 == 0 )
-		dslac(rowIndex,colIndex) = 1.;
-//	else
-//		dslac(rowIndex,colIndex) = -1.;
+	dslac(  matIndex( x, spin, flavour1 ), matIndex( x, spin, flavour2 ) ) = 1.;
+}
 
-	// update row and col maps
-//	rowMap( rowIndex ) = -1;
-//	int tailSize = rowMap.size() - rowIndex;
-//	rowMap.tail( tailSize ) -= Eigen::VectorXi::Ones(tailSize);
-//	colMap( colIndex ) = -1;
-//	tailSize = colMap.size() - colIndex;
-//	colMap.tail( tailSize ) -= Eigen::VectorXi::Ones(tailSize);
+void SlacOperatorMatrix::update( size_t a, size_t b, size_t m, size_t n ) {
+
+	Complex detCoeff = inverse( n, m ) * inverse( b, a ) - inverse( n, a ) * inverse( b, m );
+	if( n==b && m==a ) detCoeff += inverse( b, a ); // Kronecker delta
+
+	detVal *= detCoeff;
+
+	Eigen::VectorXcd colM = inverse.col( m );
+	if( a==m ) colM(b) += 1.;
+	Eigen::RowVectorXcd rowN = inverse.row( n );
+	if( n==b ) rowN( a ) += 1.;
+	Eigen::VectorXcd colA = inverse.col( a );
+	Eigen::RowVectorXcd rowB = inverse.row( b );
+
+
+	Eigen::MatrixXcd updateMat = Eigen::KroneckerProduct<Eigen::VectorXcd, Eigen::RowVectorXcd>( colM, rowN );
+	updateMat *= inverse( b, a );
+
+	updateMat -= inverse( n, a ) * Eigen::KroneckerProduct<Eigen::VectorXcd, Eigen::RowVectorXcd>( colM, rowB );
+	updateMat -= inverse( b, m ) * Eigen::KroneckerProduct<Eigen::VectorXcd, Eigen::RowVectorXcd>( colA, rowN );
+
+	Complex coeff = inverse( n, m );
+	if( n==b && m==a ) coeff += 1.;
+
+	updateMat += coeff * Eigen::KroneckerProduct<Eigen::VectorXcd, Eigen::RowVectorXcd>( colA, rowB );
+
+	updateMat /= detCoeff;
+
+	inverse -= updateMat;
+	inverse( n, m ) += 1.;
+	inverse( b, a ) += 1.;
+
 }
 
 void SlacOperatorMatrix::setFull() {
 	dslac = fullSlac;
-	resetMaps();
-}
-
-void SlacOperatorMatrix::resetMaps() {
-	for( int i = 0; i < rowMap.size(); i++ ) {
-		rowMap(i) = i;
-		colMap(i) = i;
-	}
 }
 
 //void SlacOperatorMatrix::addPoint(size_t x) {

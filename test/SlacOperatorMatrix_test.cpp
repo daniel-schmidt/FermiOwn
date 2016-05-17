@@ -94,6 +94,14 @@ int main( int argc, char** argv ) {
 	dslacNf2.erase( fbool );
 	std::cout << "Two Flavour deleted: " << std::endl << dslacNf2.getMatrix() << std::endl;
 	std::cout << "Two Flavour deleted determinant: " << std::endl << dslacNf2.det() << std::endl;
+
+	std::cout << std::endl << "Testing Woodbury update" << std::endl;
+	dslacNf2.setFull();
+	dslacNf2.update( 5, 0, 6, 1  );
+//	std::cout << "Matrix after update: " << std::endl << dslacNf2.getMatrix() << std::endl;
+	std::cout << "det=" << dslacNf2.det() << " and should be " << dslacNf2.getMatrix().determinant() << std::endl;
+	std::cout << "inverse=" << std::endl << dslacNf2.inverse << std::endl;
+
 //	std::cout << std::endl << "Truely erasing cols from slac matrix:" << std::endl;
 //	VectorXb kx0 = VectorXb::Constant(N*(N-1)*(N-1), true );
 //	VectorXb kx1 = VectorXb::Constant(N*(N-1)*(N-1), true );
