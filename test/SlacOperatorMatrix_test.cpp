@@ -90,9 +90,9 @@ int main( int argc, char** argv ) {
 	fbool.setValue( 1, 0, 0, 1, 0 );
 	fbool.setValue( 1, 1, 1, 1, 0 );
 	fbool.Print();
-	std::cout << "n2t: " << fbool.countOffdiagonal2();
+	std::cout << "n2t: " << fbool.countOffdiagonal2() << std::endl;
 	dslacNf2.erase( fbool );
-	std::cout << "Two Flavour deleted: " << std::endl << dslacNf2.getMatrix() << std::endl;
+	std::cout << "Two Flavour deleted: " << std::endl << dslacNf2.getMatrix().determinant() << std::endl;
 	std::cout << "Two Flavour deleted determinant: " << std::endl << dslacNf2.det() << std::endl;
 
 	std::cout << std::endl << "Testing Woodbury update" << std::endl;

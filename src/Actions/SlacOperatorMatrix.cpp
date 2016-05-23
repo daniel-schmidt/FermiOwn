@@ -42,7 +42,9 @@ SlacOperatorMatrix::SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t
 	fullSlac = dslac;
 
 	detVal = dslac.determinant();
+	fullDet = detVal;
 	inverse = dslac.inverse();
+	fullInverse = inverse;
 }
 
 SlacOperatorMatrix::~SlacOperatorMatrix() {}
@@ -69,17 +71,43 @@ size_t SlacOperatorMatrix::matIndex( size_t x, size_t spin, size_t flavour ) {
 //}
 
 void SlacOperatorMatrix::erase( const FieldBoolean& kxiab ) {
+//	size_t fx = 0;
+//	size_t fspin = 0;
+//	size_t ff1 = 0;
+//	size_t ff2 = 0;
+	std::vector< size_t > cols;
+	std::vector< size_t > rows;
+	bool firstSet = false;
+	std::cout << "Index list: " << std::endl;
 	for( size_t flavour1 = 0; flavour1 < Nf; flavour1++ ) {
 		for( size_t flavour2 = 0; flavour2 < Nf; flavour2++ ) {
 			for( size_t spin = 0; spin < dimSpinor; spin++ ) {
 				for( size_t x = 0; x < N; x++ ) {
 					if( kxiab.getValue( x, spin, flavour1, flavour2 ) ) {
-						erase( x, spin, flavour1, flavour2 );
+						std::cout << "(" << matIndex(x, spin, flavour1) << ", " << matIndex( x, spin, flavour2 ) << ")" << std::endl;
+						cols.push_back( matIndex(x, spin, flavour1) );
+						rows.push_back( matIndex(x, spin, flavour2) );
+//						erase( x, spin, flavour1, flavour2 );
+//						if( firstSet ) {
+////							std::cout << "firstSet" << std::endl;
+//							update( matIndex( x, spin, flavour1), matIndex( x, spin, flavour2 ), matIndex( fx, fspin, ff1 ), matIndex( fx, fspin, ff2 ) );
+//							firstSet = false;
+//						} else {
+////							std::cout << "not firstSet" << std::endl;
+//							fx = x;
+//							fspin = spin;
+//							ff1 = flavour1;
+//							ff2 = flavour2;
+//							firstSet = true;
+//						}
 					}
 				}
 			}
 		}
 	}
+	update( rows, cols );
+	exit(0);
+	if( firstSet ) std::cout << "First still set, thats bad..." << std::endl;
 }
 
 void SlacOperatorMatrix::erase( size_t x, size_t spin, size_t flavour1, size_t flavour2 ) {
@@ -101,14 +129,43 @@ void SlacOperatorMatrix::erase( size_t x, size_t spin, size_t flavour1, size_t f
 	// set crossing entry correct to get correct full determinant
 	dslac(  matIndex( x, spin, flavour1 ), matIndex( x, spin, flavour2 ) ) = 1.;
 }
+void SlacOperatorMatrix::update( std::vector<size_t> rows, std::vector<size_t> cols ) {
+	Eigen::MatrixXcd submat( rows.size(), cols.size() );
+	Eigen::MatrixXcd colmat( rows.size(), dslac.cols() );
+	Eigen::MatrixXcd rowmat( dslac.rows(), cols.size() );
 
+	for( size_t colIndex = 0; colIndex < cols.size(); colIndex++ ) {
+		rowmat.col( colIndex ) = inverse.col( cols[colIndex] );
+		for( size_t rowIndex = 0; rowIndex < rows.size(); rowIndex++ ) {
+			// fill colmat at first iteraton through the outer loop
+			if( colIndex == 0 ) {
+				colmat.row( rowIndex ) = inverse.row( rows[rowIndex] );
+			}
+			submat( rowIndex, colIndex ) = inverse( cols[rowIndex], rows[colIndex] );
+		}
+	}
+	std::cout << submat.inverse() << std::endl;
+	detVal *= submat.determinant();
+	std::cout << "Det: " << detVal << std::endl;
+
+	std::cout << "rowmat: " << std::endl << rowmat << std::endl;
+	std::cout << "colmat: " << std::endl << colmat << std::endl;
+
+	inverse -= rowmat * (submat.inverse() ) * colmat;
+	for( size_t index = 0; index < cols.size(); index++ ) {
+			inverse( rows[index], cols[index] ) += 1.;
+	}
+	std::cout << "Inverse: " << std::endl << inverse << std::endl;
+
+}
 void SlacOperatorMatrix::update( size_t a, size_t b, size_t m, size_t n ) {
 
 	Complex detCoeff = inverse( n, m ) * inverse( b, a ) - inverse( n, a ) * inverse( b, m );
 	if( n==b && m==a ) detCoeff += inverse( b, a ); // Kronecker delta
 
+	std::cout << "detCoeff: " << detCoeff;
 	detVal *= detCoeff;
-
+	std::cout << " new detVal: " << detVal << std::endl;
 	Eigen::VectorXcd colM = inverse.col( m );
 	if( a==m ) colM(b) += 1.;
 	Eigen::RowVectorXcd rowN = inverse.row( n );
@@ -138,6 +195,8 @@ void SlacOperatorMatrix::update( size_t a, size_t b, size_t m, size_t n ) {
 
 void SlacOperatorMatrix::setFull() {
 	dslac = fullSlac;
+	detVal = fullDet;
+	inverse = fullInverse;
 }
 
 //void SlacOperatorMatrix::addPoint(size_t x) {

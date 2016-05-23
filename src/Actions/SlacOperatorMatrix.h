@@ -33,6 +33,7 @@ public:
 	void erase( size_t x, size_t spin, size_t flavour1, size_t flavour2 );
 
 	void update( size_t row1, size_t col1, size_t row2, size_t col2 );
+	void update( std::vector<size_t> rows, std::vector<size_t> cols );
 
 	void setFull();
 
@@ -46,8 +47,10 @@ private:
 	size_t Nf;					///< number of flavours
 	Eigen::MatrixXcd dslac;
 	Eigen::MatrixXcd fullSlac;
+	Eigen::MatrixXcd fullInverse;
 
 	Complex detVal;
+	Complex fullDet;
 
 	CliffordAlgebra cliff;
 };
