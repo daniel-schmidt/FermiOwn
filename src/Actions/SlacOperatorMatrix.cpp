@@ -78,13 +78,13 @@ void SlacOperatorMatrix::erase( const FieldBoolean& kxiab ) {
 	std::vector< size_t > cols;
 	std::vector< size_t > rows;
 	bool firstSet = false;
-	std::cout << "Index list: " << std::endl;
+//	std::cout << "Index list: " << std::endl;
 	for( size_t flavour1 = 0; flavour1 < Nf; flavour1++ ) {
 		for( size_t flavour2 = 0; flavour2 < Nf; flavour2++ ) {
 			for( size_t spin = 0; spin < dimSpinor; spin++ ) {
 				for( size_t x = 0; x < N; x++ ) {
 					if( kxiab.getValue( x, spin, flavour1, flavour2 ) ) {
-						std::cout << "(" << matIndex(x, spin, flavour1) << ", " << matIndex( x, spin, flavour2 ) << ")" << std::endl;
+//						std::cout << "(" << matIndex(x, spin, flavour1) << ", " << matIndex( x, spin, flavour2 ) << ")" << std::endl;
 						cols.push_back( matIndex(x, spin, flavour1) );
 						rows.push_back( matIndex(x, spin, flavour2) );
 //						erase( x, spin, flavour1, flavour2 );
@@ -106,8 +106,8 @@ void SlacOperatorMatrix::erase( const FieldBoolean& kxiab ) {
 		}
 	}
 	update( rows, cols );
-	exit(0);
-	if( firstSet ) std::cout << "First still set, thats bad..." << std::endl;
+//	exit(0);
+//	if( firstSet ) std::cout << "First still set, thats bad..." << std::endl;
 }
 
 void SlacOperatorMatrix::erase( size_t x, size_t spin, size_t flavour1, size_t flavour2 ) {
@@ -144,18 +144,18 @@ void SlacOperatorMatrix::update( std::vector<size_t> rows, std::vector<size_t> c
 			submat( rowIndex, colIndex ) = inverse( cols[rowIndex], rows[colIndex] );
 		}
 	}
-	std::cout << submat.inverse() << std::endl;
+//	std::cout << submat.inverse() << std::endl;
 	detVal *= submat.determinant();
-	std::cout << "Det: " << detVal << std::endl;
+//	std::cout << "Det: " << detVal << std::endl;
 
-	std::cout << "rowmat: " << std::endl << rowmat << std::endl;
-	std::cout << "colmat: " << std::endl << colmat << std::endl;
+//	std::cout << "rowmat: " << std::endl << rowmat << std::endl;
+//	std::cout << "colmat: " << std::endl << colmat << std::endl;
 
-	inverse -= rowmat * (submat.inverse() ) * colmat;
-	for( size_t index = 0; index < cols.size(); index++ ) {
-			inverse( rows[index], cols[index] ) += 1.;
-	}
-	std::cout << "Inverse: " << std::endl << inverse << std::endl;
+//	inverse -= rowmat * (submat.inverse() ) * colmat;
+//	for( size_t index = 0; index < cols.size(); index++ ) {
+//			inverse( rows[index], cols[index] ) += 1.;
+//	}
+//	std::cout << "Inverse: " << std::endl << inverse << std::endl;
 
 }
 void SlacOperatorMatrix::update( size_t a, size_t b, size_t m, size_t n ) {
