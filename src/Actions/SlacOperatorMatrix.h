@@ -33,7 +33,9 @@ public:
 	void erase( size_t x, size_t spin, size_t flavour1, size_t flavour2 );
 
 	void update( size_t row1, size_t col1, size_t row2, size_t col2 );
-	void update( std::vector<size_t> rows, std::vector<size_t> cols );
+	void deleteEntries( std::vector<size_t> rows, std::vector<size_t> cols );
+	void addEntries( std::vector<size_t> rows, std::vector<size_t> cols );
+	void update( FieldBoolean kxiab, FieldBoolean changed );
 
 	void setFull();
 
@@ -53,6 +55,9 @@ private:
 	Complex fullDet;
 
 	CliffordAlgebra cliff;
+
+	std::vector<size_t> deletedRows;
+	std::vector<size_t> deletedCols;
 };
 
 } /* namespace FermiOwn */

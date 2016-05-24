@@ -31,6 +31,7 @@ public:
 	void updateNaive( size_t x );
 
 	Complex calculateWeight();
+	Complex calculateWeightChange();
 	Complex calculateWeight( int dk, int dntilde );
 	bool accept( Complex weight );
 

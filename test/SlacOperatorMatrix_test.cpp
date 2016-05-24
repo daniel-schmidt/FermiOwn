@@ -92,15 +92,38 @@ int main( int argc, char** argv ) {
 	fbool.Print();
 	std::cout << "n2t: " << fbool.countOffdiagonal2() << std::endl;
 	dslacNf2.erase( fbool );
-	std::cout << "Two Flavour deleted: " << std::endl << dslacNf2.getMatrix().determinant() << std::endl;
+	std::cout << "Two Flavour deleted: " << std::endl << dslacNf2.getMatrix() << std::endl;
 	std::cout << "Two Flavour deleted determinant: " << std::endl << dslacNf2.det() << std::endl;
 
 	std::cout << std::endl << "Testing Woodbury update" << std::endl;
-	dslacNf2.setFull();
-	dslacNf2.update( 5, 0, 6, 1  );
-//	std::cout << "Matrix after update: " << std::endl << dslacNf2.getMatrix() << std::endl;
+//	dslacNf2.setFull();
+
+	FieldBoolean fold = fbool;
+	fbool.invert( 0, 1, 0, 0 );
+	fbool.invert( 0, 1, 1, 1 );
+	fbool.invert( 1, 0, 0, 0 );
+	fbool.invert( 1, 0, 1, 1 );
+	fbool.Print();
+	dslacNf2.update( fbool, fbool.different( fold ) );
+	std::cout << "Matrix after update: " << std::endl << dslacNf2.getMatrix() << std::endl;
 	std::cout << "det=" << dslacNf2.det() << " and should be " << dslacNf2.getMatrix().determinant() << std::endl;
-	std::cout << "inverse=" << std::endl << dslacNf2.inverse << std::endl;
+	std::cout << "inverse*matrix: " << std::endl << dslacNf2.inverse * dslacNf2.getMatrix() << std::endl;
+
+	std::cout << std::endl << std::endl << "Testing re-adding update" << std::endl;
+	fold = fbool;
+	fbool.invert( 0, 1, 0, 0 );
+	fbool.invert( 0, 1, 1, 1 );
+	fbool.invert( 1, 0, 0, 0 );
+	fbool.invert( 1, 0, 1, 1 );
+//	fbool.invert( 0, 0, 0, 1 );
+//	fbool.invert( 0, 0, 1, 0 );
+//	fbool.invert( 1, 1, 0, 1 );
+//	fbool.invert( 1, 1, 1, 0 );
+	fbool.Print();
+	dslacNf2.update( fbool, fbool.different( fold ) );
+	std::cout << "Matrix after update: " << std::endl << dslacNf2.getMatrix() << std::endl;
+	std::cout << "det=" << dslacNf2.det() << " and should be " << dslacNf2.getMatrix().determinant() << std::endl;
+	std::cout << "inverse*matrix: " << std::endl << dslacNf2.inverse * dslacNf2.getMatrix() << std::endl;
 
 //	std::cout << std::endl << "Truely erasing cols from slac matrix:" << std::endl;
 //	VectorXb kx0 = VectorXb::Constant(N*(N-1)*(N-1), true );

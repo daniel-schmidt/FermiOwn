@@ -147,6 +147,13 @@ size_t FieldBoolean::countOffdiagonal2() const {
 	return count;
 }
 
+FieldBoolean FieldBoolean::different( FieldBoolean other ) const {
+	FieldBoolean difference = other;
+	difference *= 0;
+	difference.data = data.cwiseNotEqual(other.data);
+	return difference;
+}
+
 /*
  * Private Functions
  *****************************************************************************/
