@@ -127,11 +127,7 @@ Complex FermiBoolMetropolis::calculateWeight() {
 	factor *= std::pow( 2., ntilde );
 	Complex dw = std::pow( Complex(-kappa), double(k)/2. );
 
-	slac.erase( kxiab );
-	det = slac.det();
-	slac.setFull();
-
-	return factor*dw*det;
+	return factor*dw;
 }
 
 Complex FermiBoolMetropolis::calculateWeightChange() {
@@ -160,10 +156,17 @@ bool FermiBoolMetropolis::updateField() {
 //	std::cout << "Field before update " << std::endl;
 //	kxiab.Print();
 	oldField = kxiab;
+	SlacOperatorMatrix oldSlac = slac;
 //	int dk = -kxiab.sumAll();
 //	int dntilde = -kxiab.countOffdiagonal2();
 
 	Complex weight = 1./calculateWeight();
+
+//	slac.erase( kxiab );
+	det = slac.det();
+//	std::cout << "before: " << det << " ";
+//	slac.setFull();
+	weight /= det;
 
 	// draw random point, spin and 2 flavours
 
@@ -182,54 +185,29 @@ bool FermiBoolMetropolis::updateField() {
 		}
 	}
 
-//	if( !success ) return false;
-//	nxNew = kxiab.countSummedSpin( x );
-
-	// draw second point, spin, flavours
-
-//	int mu = int2mu_dist(*rndGen);
-//	int y = lat.getNeighbours(x)[mu];
-//	nyOld = kxiab.countSummedSpin( y );
-//	if( x!=y ) {
-//		int newConfIndex = intConfIndex( *rndGen );
-////		std::cout << "Setting y=" << y << " to conf " << newConfIndex << std::endl;
-//		for( size_t spin = 0; spin < 2; spin++ ) {
-//			for( size_t a = 0; a < Nf; a++ ) {
-//				for( size_t b = 0; b < Nf; b++ ) {
-//					kxiab.setValue( bool(allowedConfs( newConfIndex, spin*Nf*Nf + b*Nf + a)), y, spin, a, b );
-//				}
-//			}
-//		}
-//	}
-//	nyNew = kxiab.countSummedSpin( y );
-
-
-//	std::cout << "Field before accept: " << std::endl;
-//	kxiab.Print();
-//	if( kxiab.constraintViolated( x ) || kxiab.constraintViolated( y ) ) {
-//				std::cout << "x violated! Reset and continue loop..." << std::endl << std::endl;
-//				kxiab = oldField;
-//				return false;
-//	}
-
-//	std::cout << "nyOld: " <<std::endl<< nyOld << std::endl << " nxOld: " <<std::endl << nxOld << std::endl;
-//	std::cout << "nyNew: " <<std::endl<< nyNew << std::endl << " nxNew: " <<std::endl << nxNew << std::endl;
-//	if( nyNew(1) == 1 || nxNew(1) == 1 ) {
-//		std::cout << "Something terrible went wrong." <<std::endl;
-//		exit(1);
-//	}
-//	dk += kxiab.sumAll();
-//	dntilde += kxiab.countOffdiagonal2();
-
-
-
-//	Complex weight = calculateWeight( dk, dntilde );
-
-	//	if( imag(weight) > ZERO_TOL || ( std::fabs(weight) > ZERO_TOL && std::real(weight) < 0 ) ) {
-	//		std::cerr << "Warning, non-positive weight: " << weight << std::endl;
-	//	}
 	weight *= calculateWeight();
+//	slac.erase( kxiab );
+
+	FieldBoolean changed = kxiab.different(oldField);
+	slac.update( kxiab, changed );
+	det = slac.det();
+//	Eigen::MatrixXcd upSlac = slac.getMatrix();
+//	slac.setFull();
+//	slac.erase( kxiab );
+//	det = slac.det();
+//	if( !upSlac.isApprox( slac.getMatrix() ) ) {
+//		std::cout << "Matrix falsch!" << std::endl << upSlac << std::endl<< std::endl << slac.getMatrix() << std::endl;
+//	}
+//	std::cout << abs( updateDet-det ) << std::endl;
+//	if( abs( updateDet-det ) > 1e-10 ) {
+//		std::cout << "update: " << updateDet << " ";
+//		std::cout << "full: " << det << std::endl;
+//	}
+//	slac.setFull();
+	weight *= det;
 	bool accepted = accept( weight );
+
+	if( !accepted ) slac = oldSlac;
 //	std::cout << "Accepted: " << accepted << ", field after update:" << std::endl << std::endl;
 //	kxiab.Print();
 	return accepted;

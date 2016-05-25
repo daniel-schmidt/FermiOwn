@@ -62,6 +62,7 @@ public:
 	size_t acceptanceCounter;
 	Complex det;
 	Complex detOld;
+	Complex weightOld;
 	std::ofstream fWeight;
 };
 

@@ -10,14 +10,14 @@
 namespace FermiOwn {
 
 SlacOperatorMatrix::SlacOperatorMatrix( size_t size ) :
-																N(size),
-																dslac(make1D(size))
+																				N(size),
+																				dslac(make1D(size))
 {}
 
 SlacOperatorMatrix::SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t numFlavours ) :
-																N(Nt*Ns*Ns),
-																dimSpinor(2),
-																Nf(numFlavours)
+																				N(Nt*Ns*Ns),
+																				dimSpinor(2),
+																				Nf(numFlavours)
 {
 	using namespace Eigen;
 	if( dim != 3 ) {
@@ -77,7 +77,7 @@ void SlacOperatorMatrix::erase( const FieldBoolean& kxiab ) {
 	//	size_t ff2 = 0;
 	std::vector< size_t > cols;
 	std::vector< size_t > rows;
-	bool firstSet = false;
+	//	bool firstSet = false;
 	//	std::cout << "Index list: " << std::endl;
 	for( size_t flavour1 = 0; flavour1 < Nf; flavour1++ ) {
 		for( size_t flavour2 = 0; flavour2 < Nf; flavour2++ ) {
@@ -168,13 +168,13 @@ void SlacOperatorMatrix::deleteEntries( std::vector<size_t> rows, std::vector<si
 		deletedRows.push_back( rows[index] );
 	}
 
-	std::cout << "Deleted:" << std::endl;
-	for( auto col : deletedCols ) std::cout << col << ", ";
-	std::cout << std::endl;
-	for( auto row : deletedRows ) std::cout << row << ", ";
-	std::cout << std::endl;
-	//	std::cout << "Inverse: " << std::endl << inverse << std::endl;
-
+//		std::cout << "Deleted:" << std::endl;
+//		for( auto col : deletedCols ) std::cout << col << ", ";
+//		std::cout << std::endl;
+//		for( auto row : deletedRows ) std::cout << row << ", ";
+//		std::cout << std::endl;
+//		std::cout << "Inverse: " << std::endl << inverse << std::endl;
+//		std::cout << "del: " << detVal << " ";
 }
 
 void SlacOperatorMatrix::addEntries( std::vector<size_t> rows, std::vector<size_t> cols ) {
@@ -183,46 +183,65 @@ void SlacOperatorMatrix::addEntries( std::vector<size_t> rows, std::vector<size_
 		exit(1);
 	}
 
-	for( size_t index = 0; index < cols.size(); index++ ) {
-		deletedCols.erase( std::remove( deletedCols.begin(), deletedCols.end(), cols[index] ), deletedCols.end() );
-		deletedRows.erase( std::remove( deletedRows.begin(), deletedRows.end(), rows[index] ), deletedRows.end() );
-//		deletedCols.erase( cols[index] ); //TODO: returns number of deleted elements, should be checked to be 1 and not 0
-//		deletedRows.erase( rows[index] ); //TODO: returns number of deleted elements, should be checked to be 1 and not 0
-	}
-
-	std::cout << "Deleted:" << std::endl;
-	for( auto col : deletedCols ) std::cout << col << ", ";
-	std::cout << std::endl;
-	for( auto row : deletedRows ) std::cout << row << ", ";
-	std::cout << std::endl;
-
-	for( size_t index = 0; index < cols.size(); index++ ) {
-		// replace added cols/rows by their original value in the full slac operator
-		Eigen::VectorXcd colUpdate = fullSlac.col( cols[index] );
-		Eigen::RowVectorXcd rowUpdate = fullSlac.row( rows[index] );
-
-		// do not update, if cols/rows are still deleted, so replace them by their current values.
-		for( auto deletedCol : deletedCols ) {
-			rowUpdate( deletedCol ) = dslac( rows[index], deletedCol );
-		}
-		for( auto deletedRow : deletedRows ) {
-			colUpdate( deletedRow ) = dslac( deletedRow, cols[index]);
+	if( rows.size() != 0 ) {
+//		std::cout << "adding" << std::endl;
+		for( size_t index = 0; index < cols.size(); index++ ) {
+			deletedCols.erase( std::remove( deletedCols.begin(), deletedCols.end(), cols[index] ), deletedCols.end() );
+			deletedRows.erase( std::remove( deletedRows.begin(), deletedRows.end(), rows[index] ), deletedRows.end() );
 		}
 
-		dslac.col( cols[index] ) = colUpdate;
-		dslac.row( rows[index] ) = rowUpdate;
-	}
+//			std::cout << "Deleted:" << std::endl;
+//			for( auto col : deletedCols ) std::cout << col << ", ";
+//			std::cout << std::endl;
+//			for( auto row : deletedRows ) std::cout << row << ", ";
+//			std::cout << std::endl;
 
-	inverse = dslac.inverse();
+		for( size_t index = 0; index < cols.size(); index++ ) {
+			// replace added cols/rows by their original value in the full slac operator
+			Eigen::VectorXcd colUpdate = fullSlac.col( cols[index] );
+			Eigen::RowVectorXcd rowUpdate = fullSlac.row( rows[index] );
 
-	Eigen::MatrixXcd submat( rows.size(), cols.size() );
-	for( size_t colIndex = 0; colIndex < cols.size(); colIndex++ ) {
-		for( size_t rowIndex = 0; rowIndex < rows.size(); rowIndex++ ) {
-			submat( rowIndex, colIndex ) = inverse( cols[rowIndex], rows[colIndex] );
+//			std::cout << "colUpdate before: " << std::endl << colUpdate << std::endl;
+//			std::cout << "rowUpdate before: " << std::endl << rowUpdate << std::endl;
+
+			// do not update, if cols/rows are still deleted, so replace them by their current values.
+			for( auto deletedCol : deletedCols ) {
+				rowUpdate( deletedCol ) = dslac( rows[index], deletedCol );
+			}
+			for( auto deletedRow : deletedRows ) {
+				colUpdate( deletedRow ) = dslac( deletedRow, cols[index]);
+			}
+
+//			std::cout << "colUpdate after: " << std::endl << colUpdate << std::endl;
+//			std::cout << "rowUpdate after: " << std::endl << rowUpdate << std::endl;
+
+			dslac.col( cols[index] ) = colUpdate;
+			dslac.row( rows[index] ) = rowUpdate;
 		}
-	}
 
-	detVal /= submat.determinant();
+		Eigen::FullPivLU< Eigen::MatrixXcd > lu( dslac );
+		if( lu.isInvertible() ) {
+			inverse = lu.inverse();
+			//	inverse = dslac.inverse();
+
+			//		Eigen::MatrixXcd submat( rows.size(), cols.size() );
+			//		for( size_t colIndex = 0; colIndex < cols.size(); colIndex++ ) {
+			//			for( size_t rowIndex = 0; rowIndex < rows.size(); rowIndex++ ) {
+			//				submat( rowIndex, colIndex ) = inverse( cols[rowIndex], rows[colIndex] );
+			//			}
+			//		}
+//					std::cout << "invertible " << std::endl;
+			//		Complex subDet = submat.determinant();
+			//		std::cout << " subDet=" << subDet;
+			//		detVal /= submat.determinant();
+//			detVal = lu.determinant();
+		} else {
+//			detVal = 0.;
+//					std::cout << "novertible " << std::endl;
+		}
+		detVal = dslac.determinant();
+	}
+	//	std::cout << "add: " << detVal << " ";
 }
 
 void SlacOperatorMatrix::update( FieldBoolean kxiab, FieldBoolean changed ) {
@@ -293,6 +312,8 @@ void SlacOperatorMatrix::setFull() {
 	dslac = fullSlac;
 	detVal = fullDet;
 	inverse = fullInverse;
+	deletedCols.clear();
+	deletedRows.clear();
 }
 
 //void SlacOperatorMatrix::addPoint(size_t x) {
