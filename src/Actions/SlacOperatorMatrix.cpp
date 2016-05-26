@@ -222,24 +222,23 @@ void SlacOperatorMatrix::addEntries( std::vector<size_t> rows, std::vector<size_
 		Eigen::FullPivLU< Eigen::MatrixXcd > lu( dslac );
 		if( lu.isInvertible() ) {
 			inverse = lu.inverse();
-			//	inverse = dslac.inverse();
 
-			//		Eigen::MatrixXcd submat( rows.size(), cols.size() );
-			//		for( size_t colIndex = 0; colIndex < cols.size(); colIndex++ ) {
-			//			for( size_t rowIndex = 0; rowIndex < rows.size(); rowIndex++ ) {
-			//				submat( rowIndex, colIndex ) = inverse( cols[rowIndex], rows[colIndex] );
-			//			}
-			//		}
-//					std::cout << "invertible " << std::endl;
-			//		Complex subDet = submat.determinant();
-			//		std::cout << " subDet=" << subDet;
-			//		detVal /= submat.determinant();
-//			detVal = lu.determinant();
+//					Eigen::MatrixXcd submat( rows.size(), cols.size() );
+//					for( size_t colIndex = 0; colIndex < cols.size(); colIndex++ ) {
+//						for( size_t rowIndex = 0; rowIndex < rows.size(); rowIndex++ ) {
+//							submat( rowIndex, colIndex ) = inverse( cols[rowIndex], rows[colIndex] );
+//						}
+//					}
+////					std::cout << "invertible " << std::endl;
+//			//		Complex subDet = submat.determinant();
+////					std::cout << " subDet=" << subDet;
+//					detVal /= submat.determinant();
+			detVal = lu.determinant();
 		} else {
-//			detVal = 0.;
+			detVal = 0.;
 //					std::cout << "novertible " << std::endl;
 		}
-		detVal = dslac.determinant();
+//		detVal = dslac.determinant();
 	}
 	//	std::cout << "add: " << detVal << " ";
 }
