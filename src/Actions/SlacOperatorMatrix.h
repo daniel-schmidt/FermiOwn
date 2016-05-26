@@ -33,6 +33,9 @@ public:
 	void erase( size_t x, size_t spin, size_t flavour1, size_t flavour2 );
 
 	void update( size_t row1, size_t col1, size_t row2, size_t col2 );
+
+	void WoodburyUpdate( Eigen::MatrixXcd U, Eigen::MatrixXcd V );
+
 	void deleteEntries( std::vector<size_t> rows, std::vector<size_t> cols );
 	void addEntries( std::vector<size_t> rows, std::vector<size_t> cols );
 	void update( FieldBoolean kxiab, FieldBoolean changed );

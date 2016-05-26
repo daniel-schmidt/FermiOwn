@@ -184,7 +184,29 @@ void SlacOperatorMatrix::addEntries( std::vector<size_t> rows, std::vector<size_
 	}
 
 	if( rows.size() != 0 ) {
-//		std::cout << "adding" << std::endl;
+		Eigen::MatrixXcd subMat( rows.size(), cols.size() );
+//		Eigen::MatrixXcd invSubMat( rows.size(), cols.size() );
+		auto slacOld = dslac;
+		for( size_t colIndex = 0; colIndex < cols.size(); colIndex++ ) {
+			for( size_t rowIndex = 0; rowIndex < rows.size(); rowIndex++ ) {
+				subMat( rowIndex, colIndex ) = -fullSlac( rows[rowIndex], cols[colIndex] )-dslac( rows[rowIndex], cols[colIndex] );
+//				invSubMat( rowIndex, colIndex ) = inverse( cols[rowIndex], rows[colIndex] );
+//				invSubMat( rowIndex, colIndex ) = inverse( cols[colIndex], rows[rowIndex] );
+			}
+		}
+//		std::cout << "Old detVal: " << detVal << std::endl;
+//		Complex testdet = (subMat * invSubMat + Eigen::MatrixXcd::Identity( rows.size(), rows.size() )).determinant();
+//		Eigen::FullPivLU< Eigen::MatrixXcd > subLU( subMat );
+//		Complex testdet;
+//		if( subLU.isInvertible() ) {
+//			testdet = ( subLU.inverse() + invSubMat ).determinant();
+//			testdet *= subLU.determinant();
+//			testdet *= detVal;
+//		} else {
+//			testdet = 0;
+//		}
+
+//				std::cout << "adding" << std::endl;
 		for( size_t index = 0; index < cols.size(); index++ ) {
 			deletedCols.erase( std::remove( deletedCols.begin(), deletedCols.end(), cols[index] ), deletedCols.end() );
 			deletedRows.erase( std::remove( deletedRows.begin(), deletedRows.end(), rows[index] ), deletedRows.end() );
@@ -195,33 +217,52 @@ void SlacOperatorMatrix::addEntries( std::vector<size_t> rows, std::vector<size_
 //			std::cout << std::endl;
 //			for( auto row : deletedRows ) std::cout << row << ", ";
 //			std::cout << std::endl;
-
+		Eigen::MatrixXcd colUpdate( dslac.cols(), rows.size() );
+		Eigen::MatrixXcd rowUpdate( cols.size(), dslac.rows() );
+		Eigen::MatrixXcd onesCol = Eigen::MatrixXcd::Zero( cols.size(), dslac.rows() );
+		Eigen::MatrixXcd onesRow = Eigen::MatrixXcd::Zero( dslac.cols(), rows.size() );
+//		std::cout << "colUpdate before: " << std::endl << colUpdate << std::endl;
+//		std::cout << "rowUpdate before: " << std::endl << rowUpdate << std::endl;
 		for( size_t index = 0; index < cols.size(); index++ ) {
 			// replace added cols/rows by their original value in the full slac operator
-			Eigen::VectorXcd colUpdate = fullSlac.col( cols[index] );
-			Eigen::RowVectorXcd rowUpdate = fullSlac.row( rows[index] );
+			Eigen::VectorXcd colVec = fullSlac.col( cols[index] );
+			Eigen::RowVectorXcd rowVec = fullSlac.row( rows[index] );
 
 //			std::cout << "colUpdate before: " << std::endl << colUpdate << std::endl;
 //			std::cout << "rowUpdate before: " << std::endl << rowUpdate << std::endl;
 
 			// do not update, if cols/rows are still deleted, so replace them by their current values.
 			for( auto deletedCol : deletedCols ) {
-				rowUpdate( deletedCol ) = dslac( rows[index], deletedCol );
+				rowVec( deletedCol ) = dslac( rows[index], deletedCol );
 			}
 			for( auto deletedRow : deletedRows ) {
-				colUpdate( deletedRow ) = dslac( deletedRow, cols[index]);
+				colVec( deletedRow ) = dslac( deletedRow, cols[index]);
 			}
 
-//			std::cout << "colUpdate after: " << std::endl << colUpdate << std::endl;
-//			std::cout << "rowUpdate after: " << std::endl << rowUpdate << std::endl;
+			colUpdate.col( index ) = colVec;
+			rowUpdate.row( index ) = rowVec;
 
-			dslac.col( cols[index] ) = colUpdate;
-			dslac.row( rows[index] ) = rowUpdate;
+			onesRow( rows[index], index ) = 1.;
+			onesCol( index, cols[index] ) = 1.;
+
+//			dslac.col( cols[index] ) = colVec;
+//			dslac.row( rows[index] ) = rowVec;
 		}
+//		std::cout << "colUpdate after: " << std::endl << colUpdate << std::endl;
+//		std::cout << "rowUpdate after: " << std::endl << rowUpdate << std::endl;
 
-		Eigen::FullPivLU< Eigen::MatrixXcd > lu( dslac );
-		if( lu.isInvertible() ) {
-			inverse = lu.inverse();
+		colUpdate += onesRow*subMat;
+
+		WoodburyUpdate( onesRow, rowUpdate );
+		WoodburyUpdate( colUpdate, onesCol );
+//		if( !abs( detVal ) < 10e-10 ) {
+//		}
+
+//		Complex testdet = detVal;
+
+//		Eigen::FullPivLU< Eigen::MatrixXcd > lu( dslac );
+//		if( lu.isInvertible() ) {
+//			inverse = lu.inverse();
 
 //					Eigen::MatrixXcd submat( rows.size(), cols.size() );
 //					for( size_t colIndex = 0; colIndex < cols.size(); colIndex++ ) {
@@ -233,14 +274,38 @@ void SlacOperatorMatrix::addEntries( std::vector<size_t> rows, std::vector<size_
 //			//		Complex subDet = submat.determinant();
 ////					std::cout << " subDet=" << subDet;
 //					detVal /= submat.determinant();
-			detVal = lu.determinant();
-		} else {
-			detVal = 0.;
+//			detVal = lu.determinant();
+//		} else {
+//			detVal = 0.;
 //					std::cout << "novertible " << std::endl;
-		}
+//		}
+
+//		if( abs(testdet - detVal) > 10e-10 ) {
+//			std::cout << "Determinant different: ";
+//			std::cout << testdet << " and " << detVal << std::endl;
+//			std::cout << subMat << std::endl << slacOld << std::endl << std::endl << dslac << std::endl;
+//			std::cout << "Rows:";
+//			for( auto row : rows ) { std::cout << row << " ";}
+//			std::cout << "Cols: ";
+//			for( auto col : cols ) std::cout << col << " ";
+//		}
 //		detVal = dslac.determinant();
 	}
 	//	std::cout << "add: " << detVal << " ";
+}
+
+void SlacOperatorMatrix::WoodburyUpdate( Eigen::MatrixXcd U, Eigen::MatrixXcd V ) {
+	dslac += U * V;
+	Eigen::MatrixXcd subMat = V * inverse * U + Eigen::MatrixXcd::Identity( V.rows(), U.cols() );
+//	std::cout << "subMat:" << std::endl << subMat << std::endl << std::endl;
+	Eigen::FullPivLU< Eigen::MatrixXcd > subLU( subMat );
+	if( subLU.isInvertible() ) {
+		detVal *= subMat.determinant();
+		inverse -= inverse * U * subMat.inverse() * V * inverse;
+	} else {
+		std::cout << "Warningbla" << std::endl;
+		detVal = 0.;
+	}
 }
 
 void SlacOperatorMatrix::update( FieldBoolean kxiab, FieldBoolean changed ) {
@@ -268,7 +333,8 @@ void SlacOperatorMatrix::update( FieldBoolean kxiab, FieldBoolean changed ) {
 	}
 
 	deleteEntries( rowsDel, colsDel );
-	addEntries( rowsAdd, colsAdd );
+	if( abs( detVal ) > 10e-10 )
+		addEntries( rowsAdd, colsAdd );
 
 }
 
