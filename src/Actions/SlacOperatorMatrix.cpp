@@ -61,53 +61,23 @@ const Complex SlacOperatorMatrix::det() const {
 size_t SlacOperatorMatrix::matIndex( size_t x, size_t spin, size_t flavour ) {
 	return N*( dimSpinor*flavour + spin ) + x;
 }
-//void SlacOperatorMatrix::deletePoint(size_t x) {
-//	dslac.row(x) = Eigen::RowVectorXcd::Zero( dslac.cols() );
-//	dslac.col(x) = Eigen::VectorXcd::Zero( dslac.rows() );
-//	dslac(x,x) = 1.;
-//	dslac.row(x+N) = Eigen::RowVectorXcd::Zero( dslac.cols() );
-//	dslac.col(x+N) = Eigen::VectorXcd::Zero( dslac.rows() );
-//	dslac(x+N,x+N) = 1.;
-//}
 
 void SlacOperatorMatrix::erase( const FieldBoolean& kxiab ) {
-	//	size_t fx = 0;
-	//	size_t fspin = 0;
-	//	size_t ff1 = 0;
-	//	size_t ff2 = 0;
 	std::vector< size_t > cols;
 	std::vector< size_t > rows;
-	//	bool firstSet = false;
-	//	std::cout << "Index list: " << std::endl;
 	for( size_t flavour1 = 0; flavour1 < Nf; flavour1++ ) {
 		for( size_t flavour2 = 0; flavour2 < Nf; flavour2++ ) {
 			for( size_t spin = 0; spin < dimSpinor; spin++ ) {
 				for( size_t x = 0; x < N; x++ ) {
 					if( kxiab.getValue( x, spin, flavour1, flavour2 ) ) {
-						//						std::cout << "(" << matIndex(x, spin, flavour1) << ", " << matIndex( x, spin, flavour2 ) << ")" << std::endl;
 						cols.push_back( matIndex(x, spin, flavour1) );
 						rows.push_back( matIndex(x, spin, flavour2) );
-						//						erase( x, spin, flavour1, flavour2 );
-						//						if( firstSet ) {
-						////							std::cout << "firstSet" << std::endl;
-						//							update( matIndex( x, spin, flavour1), matIndex( x, spin, flavour2 ), matIndex( fx, fspin, ff1 ), matIndex( fx, fspin, ff2 ) );
-						//							firstSet = false;
-						//						} else {
-						////							std::cout << "not firstSet" << std::endl;
-						//							fx = x;
-						//							fspin = spin;
-						//							ff1 = flavour1;
-						//							ff2 = flavour2;
-						//							firstSet = true;
-						//						}
 					}
 				}
 			}
 		}
 	}
 	deleteEntries( rows, cols );
-	//	exit(0);
-	//	if( firstSet ) std::cout << "First still set, thats bad..." << std::endl;
 }
 
 void SlacOperatorMatrix::erase( size_t x, size_t spin, size_t flavour1, size_t flavour2 ) {
@@ -149,12 +119,8 @@ void SlacOperatorMatrix::deleteEntries( std::vector<size_t> rows, std::vector<si
 			submat( rowIndex, colIndex ) = inverse( cols[rowIndex], rows[colIndex] );
 		}
 	}
-	//	std::cout << submat.inverse() << std::endl;
-	detVal *= submat.determinant();
-	//	std::cout << "Det: " << detVal << std::endl;
 
-	//	std::cout << "rowmat: " << std::endl << rowmat << std::endl;
-	//	std::cout << "colmat: " << std::endl << colmat << std::endl;
+	detVal *= submat.determinant();
 
 	inverse -= rowmat * (submat.inverse() ) * colmat;
 	for( size_t index = 0; index < cols.size(); index++ ) {
@@ -167,14 +133,6 @@ void SlacOperatorMatrix::deleteEntries( std::vector<size_t> rows, std::vector<si
 		deletedCols.push_back( cols[index] );		//TODO: check return value, if we had this element already in the set
 		deletedRows.push_back( rows[index] );
 	}
-
-//		std::cout << "Deleted:" << std::endl;
-//		for( auto col : deletedCols ) std::cout << col << ", ";
-//		std::cout << std::endl;
-//		for( auto row : deletedRows ) std::cout << row << ", ";
-//		std::cout << std::endl;
-//		std::cout << "Inverse: " << std::endl << inverse << std::endl;
-//		std::cout << "del: " << detVal << " ";
 }
 
 void SlacOperatorMatrix::addEntries( std::vector<size_t> rows, std::vector<size_t> cols ) {
@@ -185,51 +143,25 @@ void SlacOperatorMatrix::addEntries( std::vector<size_t> rows, std::vector<size_
 
 	if( rows.size() != 0 ) {
 		Eigen::MatrixXcd subMat( rows.size(), cols.size() );
-//		Eigen::MatrixXcd invSubMat( rows.size(), cols.size() );
-		auto slacOld = dslac;
 		for( size_t colIndex = 0; colIndex < cols.size(); colIndex++ ) {
 			for( size_t rowIndex = 0; rowIndex < rows.size(); rowIndex++ ) {
 				subMat( rowIndex, colIndex ) = -fullSlac( rows[rowIndex], cols[colIndex] )-dslac( rows[rowIndex], cols[colIndex] );
-//				invSubMat( rowIndex, colIndex ) = inverse( cols[rowIndex], rows[colIndex] );
-//				invSubMat( rowIndex, colIndex ) = inverse( cols[colIndex], rows[rowIndex] );
 			}
 		}
-//		std::cout << "Old detVal: " << detVal << std::endl;
-//		Complex testdet = (subMat * invSubMat + Eigen::MatrixXcd::Identity( rows.size(), rows.size() )).determinant();
-//		Eigen::FullPivLU< Eigen::MatrixXcd > subLU( subMat );
-//		Complex testdet;
-//		if( subLU.isInvertible() ) {
-//			testdet = ( subLU.inverse() + invSubMat ).determinant();
-//			testdet *= subLU.determinant();
-//			testdet *= detVal;
-//		} else {
-//			testdet = 0;
-//		}
 
-//				std::cout << "adding" << std::endl;
 		for( size_t index = 0; index < cols.size(); index++ ) {
 			deletedCols.erase( std::remove( deletedCols.begin(), deletedCols.end(), cols[index] ), deletedCols.end() );
 			deletedRows.erase( std::remove( deletedRows.begin(), deletedRows.end(), rows[index] ), deletedRows.end() );
 		}
 
-//			std::cout << "Deleted:" << std::endl;
-//			for( auto col : deletedCols ) std::cout << col << ", ";
-//			std::cout << std::endl;
-//			for( auto row : deletedRows ) std::cout << row << ", ";
-//			std::cout << std::endl;
 		Eigen::MatrixXcd colUpdate( dslac.cols(), rows.size() );
 		Eigen::MatrixXcd rowUpdate( cols.size(), dslac.rows() );
 		Eigen::MatrixXcd onesCol = Eigen::MatrixXcd::Zero( cols.size(), dslac.rows() );
 		Eigen::MatrixXcd onesRow = Eigen::MatrixXcd::Zero( dslac.cols(), rows.size() );
-//		std::cout << "colUpdate before: " << std::endl << colUpdate << std::endl;
-//		std::cout << "rowUpdate before: " << std::endl << rowUpdate << std::endl;
 		for( size_t index = 0; index < cols.size(); index++ ) {
 			// replace added cols/rows by their original value in the full slac operator
 			Eigen::VectorXcd colVec = fullSlac.col( cols[index] );
 			Eigen::RowVectorXcd rowVec = fullSlac.row( rows[index] );
-
-//			std::cout << "colUpdate before: " << std::endl << colUpdate << std::endl;
-//			std::cout << "rowUpdate before: " << std::endl << rowUpdate << std::endl;
 
 			// do not update, if cols/rows are still deleted, so replace them by their current values.
 			for( auto deletedCol : deletedCols ) {
@@ -245,65 +177,25 @@ void SlacOperatorMatrix::addEntries( std::vector<size_t> rows, std::vector<size_
 			onesRow( rows[index], index ) = 1.;
 			onesCol( index, cols[index] ) = 1.;
 
-//			dslac.col( cols[index] ) = colVec;
-//			dslac.row( rows[index] ) = rowVec;
+			dslac.col( cols[index] ) = colVec;
+			dslac.row( rows[index] ) = rowVec;
 		}
-//		std::cout << "colUpdate after: " << std::endl << colUpdate << std::endl;
-//		std::cout << "rowUpdate after: " << std::endl << rowUpdate << std::endl;
 
 		colUpdate += onesRow*subMat;
 
-		WoodburyUpdate( onesRow, rowUpdate );
+		WoodburyUpdate( onesRow, rowUpdate );	// seems like we have to do this update first to avoid det=0, likely because of the subMat update
 		WoodburyUpdate( colUpdate, onesCol );
-//		if( !abs( detVal ) < 10e-10 ) {
-//		}
-
-//		Complex testdet = detVal;
-
-//		Eigen::FullPivLU< Eigen::MatrixXcd > lu( dslac );
-//		if( lu.isInvertible() ) {
-//			inverse = lu.inverse();
-
-//					Eigen::MatrixXcd submat( rows.size(), cols.size() );
-//					for( size_t colIndex = 0; colIndex < cols.size(); colIndex++ ) {
-//						for( size_t rowIndex = 0; rowIndex < rows.size(); rowIndex++ ) {
-//							submat( rowIndex, colIndex ) = inverse( cols[rowIndex], rows[colIndex] );
-//						}
-//					}
-////					std::cout << "invertible " << std::endl;
-//			//		Complex subDet = submat.determinant();
-////					std::cout << " subDet=" << subDet;
-//					detVal /= submat.determinant();
-//			detVal = lu.determinant();
-//		} else {
-//			detVal = 0.;
-//					std::cout << "novertible " << std::endl;
-//		}
-
-//		if( abs(testdet - detVal) > 10e-10 ) {
-//			std::cout << "Determinant different: ";
-//			std::cout << testdet << " and " << detVal << std::endl;
-//			std::cout << subMat << std::endl << slacOld << std::endl << std::endl << dslac << std::endl;
-//			std::cout << "Rows:";
-//			for( auto row : rows ) { std::cout << row << " ";}
-//			std::cout << "Cols: ";
-//			for( auto col : cols ) std::cout << col << " ";
-//		}
-//		detVal = dslac.determinant();
 	}
-	//	std::cout << "add: " << detVal << " ";
 }
 
 void SlacOperatorMatrix::WoodburyUpdate( Eigen::MatrixXcd U, Eigen::MatrixXcd V ) {
-	dslac += U * V;
-	Eigen::MatrixXcd subMat = V * inverse * U + Eigen::MatrixXcd::Identity( V.rows(), U.cols() );
-//	std::cout << "subMat:" << std::endl << subMat << std::endl << std::endl;
+	Eigen::MatrixXcd Vdinverse = V*inverse;
+	Eigen::MatrixXcd subMat = Vdinverse * U + Eigen::MatrixXcd::Identity( V.rows(), U.cols() );
 	Eigen::FullPivLU< Eigen::MatrixXcd > subLU( subMat );
 	if( subLU.isInvertible() ) {
-		detVal *= subMat.determinant();
-		inverse -= inverse * U * subMat.inverse() * V * inverse;
+		detVal *= subLU.determinant();
+		inverse -= inverse * U * subLU.inverse() * Vdinverse; // this is much faster than using *= operator with id - U*...
 	} else {
-		std::cout << "Warningbla" << std::endl;
 		detVal = 0.;
 	}
 }
@@ -381,13 +273,6 @@ void SlacOperatorMatrix::setFull() {
 	deletedRows.clear();
 }
 
-//void SlacOperatorMatrix::addPoint(size_t x) {
-//	dslac.row(x) = fullSlac.row(x);
-//	dslac.row(x+N) = fullSlac.row(x+N);
-//	dslac.col(x) = fullSlac.col(x);
-//	dslac.col(x+N) = fullSlac.col(x+N);
-//}
-
 Eigen::MatrixXcd SlacOperatorMatrix::make1D( size_t size) {
 	Eigen::MatrixXcd ret( size, size );
 	for( size_t i = 0; i < size; i++ ) {
@@ -402,65 +287,6 @@ Eigen::MatrixXcd SlacOperatorMatrix::make1D( size_t size) {
 	}
 	return ret;
 }
-
-//void SlacOperatorMatrix::eraseCol( size_t x, size_t spin ) {
-//	// check for correct input
-//	if( x >= N ) {
-//		std::cerr << "Trying to erase a column at x=" << x << ", which is larger than the lattice volume!" << std::endl;
-//		exit(1);
-//	} else if ( spin >= dimSpinor ) {
-//		std::cerr << "Trying to erase a column at spin=" << spin << ", which is larger than the spinor size!" << std::endl;
-//		exit(1);
-//	}
-//}
-//
-//void SlacOperatorMatrix::eraseCols( VectorXb kx0, VectorXb kx1 ) {
-//	assert( kx0.size() == N && kx1.size() == N );
-//
-//	int cols = kx0.size() - kx0.count() + kx1.size() - kx1.count(); // new number of columns
-//	Eigen::MatrixXcd newSlac( dslac.rows(), cols );
-//
-//	int colIndex = 0;
-//
-//	for( size_t x = 0; x < N; x++ ) {
-//		if( !kx0(x) ) {
-//			newSlac.col( colIndex ) = dslac.col( x );
-//			colIndex++;
-//		}
-//	}
-//	for( size_t x = 0; x < N; x++ ) {
-//		if( !kx1(x) ) {
-//			newSlac.col( colIndex ) = dslac.col( x + N );
-//			colIndex++;
-//		}
-//	}
-//	dslac = newSlac;
-//}
-//
-//void SlacOperatorMatrix::eraseRows( VectorXb kx0, VectorXb kx1 ) {
-//	assert( kx0.size() == N && kx1.size() == N );
-//
-//	int rows = kx0.size() - kx0.count() + kx1.size() - kx1.count(); // new number of rows
-//	Eigen::MatrixXcd newSlac( rows, dslac.cols() );
-//
-//	int rowIndex = 0;
-//
-//	// first spinor component
-//	for( size_t x = 0; x < N; x++ ) {
-//		if( !kx0(x) ) {
-//			newSlac.row( rowIndex ) = dslac.row( x );
-//			rowIndex++;
-//		}
-//	}
-//	// second spinor component
-//	for( size_t x = 0; x < N; x++ ) {
-//		if( !kx1(x) ) {
-//			newSlac.row( rowIndex ) = dslac.row( x + N );
-//			rowIndex++;
-//		}
-//	}
-//	dslac = newSlac;
-//}
 
 } /* namespace FermiOwn */
 
