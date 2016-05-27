@@ -10,14 +10,14 @@
 namespace FermiOwn {
 
 SlacOperatorMatrix::SlacOperatorMatrix( size_t size ) :
-																				N(size),
-																				dslac(make1D(size))
+																						N(size),
+																						dslac(make1D(size))
 {}
 
 SlacOperatorMatrix::SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t numFlavours ) :
-																				N(Nt*Ns*Ns),
-																				dimSpinor(2),
-																				Nf(numFlavours)
+																						N(Nt*Ns*Ns),
+																						dimSpinor(2),
+																						Nf(numFlavours)
 {
 	using namespace Eigen;
 	if( dim != 3 ) {
@@ -99,6 +99,95 @@ void SlacOperatorMatrix::erase( size_t x, size_t spin, size_t flavour1, size_t f
 	// set crossing entry correct to get correct full determinant
 	dslac(  matIndex( x, spin, flavour1 ), matIndex( x, spin, flavour2 ) ) = 1.;
 }
+
+void SlacOperatorMatrix::combined( std::vector<size_t> addRows, std::vector<size_t> addCols, std::vector<size_t> delRows, std::vector<size_t> delCols) {
+	if( addRows.size() != addCols.size() || delRows.size() != delCols.size() ) {
+		std::cerr << "Trying to add not the same number of rows/cols. This should be impossible!" << std::endl;
+		exit(1);
+	}
+
+	// number of rows/cols to modify
+	size_t updateRank = addCols.size() + delCols.size();
+
+	if( addRows.size() != 0 ) {
+		Eigen::MatrixXcd subMat( updateRank, updateRank );
+		for( size_t colIndex = 0; colIndex < updateRank; colIndex++ ) {
+			for( size_t rowIndex = 0; rowIndex < updateRank; rowIndex++ ) {
+				if( colIndex < addRows.size() && rowIndex < addRows.size() ) {
+					subMat( rowIndex, colIndex ) = -fullSlac( addRows[rowIndex], addCols[colIndex] )-dslac( addRows[rowIndex], addCols[colIndex] );
+				} else if( colIndex >= addRows.size() && rowIndex >= addRows.size() ) {
+					subMat( rowIndex, colIndex ) = dslac( delRows[ rowIndex-addRows.size() ], delCols[ colIndex-addRows.size() ] );
+					if( colIndex == rowIndex ) subMat( rowIndex, colIndex ) += 1.;
+				} else {
+					subMat( rowIndex, colIndex ) = 0.;
+				}
+			}
+		}
+
+		std::cout << "submat: " << std::endl << subMat << std::endl;
+
+		for( size_t index = 0; index < addCols.size(); index++ ) {
+			deletedCols.erase( std::remove( deletedCols.begin(), deletedCols.end(), addCols[index] ), deletedCols.end() );
+			deletedRows.erase( std::remove( deletedRows.begin(), deletedRows.end(), addRows[index] ), deletedRows.end() );
+		}
+
+		Eigen::MatrixXcd colUpdate( dslac.cols(), updateRank );
+		Eigen::MatrixXcd rowUpdate( updateRank, dslac.rows() );
+		Eigen::MatrixXcd onesCol = Eigen::MatrixXcd::Zero( updateRank, dslac.rows() );
+		Eigen::MatrixXcd onesRow = Eigen::MatrixXcd::Zero( dslac.cols(), updateRank );
+		for( size_t index = 0; index < updateRank; index++ ) {
+
+			Eigen::VectorXcd colVec;
+			Eigen::RowVectorXcd rowVec;
+
+			if( index < addRows.size() ) {
+				// replace added cols/rows by their original value in the full slac operator
+				colVec = fullSlac.col( addCols[index] );
+				rowVec = fullSlac.row( addRows[index] );
+				// do not update, if cols/rows are still deleted, so replace them by their current values.
+				for( auto deletedCol : deletedCols ) {
+					rowVec( deletedCol ) = dslac( addRows[index], deletedCol );
+				}
+				for( auto deletedRow : deletedRows ) {
+					colVec( deletedRow ) = dslac( deletedRow, addCols[index]);
+				}
+				onesRow( addRows[index], index ) = 1.;
+				onesCol( index, addCols[index] ) = 1.;
+
+				dslac.col( addCols[index] ) = colVec;
+				dslac.row( addRows[index] ) = rowVec;
+
+			} else {
+				colVec = Eigen::VectorXcd::Zero( dslac.rows() );
+				rowVec = Eigen::RowVectorXcd::Zero( dslac.cols() );
+
+				onesRow( delRows[ index-addRows.size() ], index ) = 1.;
+				onesCol( index, delCols[ index-addRows.size() ] ) = 1.;
+
+				dslac.col( delCols[ index-addRows.size() ] ) = colVec;
+				dslac.row( delRows[ index-addRows.size() ] ) = rowVec;
+
+				dslac( delRows[index-addRows.size()], delCols[index-addRows.size()] ) = 1.;
+
+				deletedCols.push_back( delCols[index-addRows.size()] );		//TODO: check return value, if we had this element already in the set
+				deletedRows.push_back( delRows[index-addRows.size()] );
+			}
+
+			colUpdate.col( index ) = colVec;
+			rowUpdate.row( index ) = rowVec;
+		}
+
+		colUpdate += onesRow*subMat;
+
+		std::cout << "rowUp" << std::endl << rowUpdate << std::endl << std::endl;
+		std::cout << "colUp" << std::endl << colUpdate << std::endl << std::endl;
+		WoodburyUpdate( onesRow, rowUpdate );	// seems like we have to do this update first to avoid det=0, likely because of the subMat update
+		WoodburyUpdate( colUpdate, onesCol );
+	} else {
+		deleteEntries( delRows, delCols );
+	}
+}
+
 void SlacOperatorMatrix::deleteEntries( std::vector<size_t> rows, std::vector<size_t> cols ) {
 	if( rows.size() != cols.size() ) {
 		std::cerr << "Trying to delete not the same number of rows/cols. This should be impossible!" << std::endl;
@@ -200,7 +289,7 @@ void SlacOperatorMatrix::WoodburyUpdate( Eigen::MatrixXcd U, Eigen::MatrixXcd V 
 	}
 }
 
-void SlacOperatorMatrix::update( FieldBoolean kxiab, FieldBoolean changed ) {
+void SlacOperatorMatrix::update( FieldBoolean kxiab, FieldBoolean changed, bool combinedUp ) {
 	std::vector<size_t> rowsAdd;
 	std::vector<size_t> rowsDel;
 	std::vector<size_t> colsAdd;
@@ -224,9 +313,24 @@ void SlacOperatorMatrix::update( FieldBoolean kxiab, FieldBoolean changed ) {
 		}
 	}
 
-	deleteEntries( rowsDel, colsDel );
-	if( abs( detVal ) > 10e-10 )
-		addEntries( rowsAdd, colsAdd );
+	std::cout << "Delete: ";
+	for( size_t col : colsDel) std::cout << col << " ";
+	std::cout << std::endl;
+	for( size_t row : rowsDel ) std::cout << row << " ";
+	std::cout << std::endl << " Add: ";
+	for( size_t col : colsAdd ) std::cout << col << " ";
+	std::cout << std::endl;
+	for( size_t row : rowsAdd ) std::cout << row << " ";
+	std::cout << std::endl;
+
+
+	if( combinedUp ) {
+		combined( rowsAdd, colsAdd, rowsDel, colsDel );
+	} else {
+		deleteEntries( rowsDel, colsDel );
+		if( abs( detVal ) > 10e-10 )
+			addEntries( rowsAdd, colsAdd );
+	}
 
 }
 

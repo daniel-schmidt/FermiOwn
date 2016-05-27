@@ -36,9 +36,10 @@ public:
 
 	void WoodburyUpdate( Eigen::MatrixXcd U, Eigen::MatrixXcd V );
 
+	void combined( std::vector<size_t> addRows, std::vector<size_t> addCols, std::vector<size_t> delRows, std::vector<size_t> delCols);
 	void deleteEntries( std::vector<size_t> rows, std::vector<size_t> cols );
 	void addEntries( std::vector<size_t> rows, std::vector<size_t> cols );
-	void update( FieldBoolean kxiab, FieldBoolean changed );
+	void update( FieldBoolean kxiab, FieldBoolean changed, bool combinedUp=false );
 
 	void setFull();
 

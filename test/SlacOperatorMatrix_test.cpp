@@ -125,6 +125,23 @@ int main( int argc, char** argv ) {
 	std::cout << "det=" << dslacNf2.det() << " and should be " << dslacNf2.getMatrix().determinant() << std::endl;
 	std::cout << "inverse*matrix: " << std::endl << dslacNf2.inverse * dslacNf2.getMatrix() << std::endl;
 
+	std::cout << "Testing combined update." << std::endl;
+	fold = fbool;
+	fbool.invert( 0, 1, 0, 0 );
+	fbool.invert( 0, 1, 1, 1 );
+	fbool.invert( 1, 0, 0, 0 );
+	fbool.invert( 1, 0, 1, 1 );
+	fbool.invert( 0, 0, 0, 1 );
+	fbool.invert( 0, 0, 1, 0 );
+	fbool.invert( 1, 1, 0, 1 );
+	fbool.invert( 1, 1, 1, 0 );
+	fbool.Print();
+	dslacNf2.update( fbool, fbool.different( fold ), true );
+	std::cout << "Matrix after combined update: " << std::endl << dslacNf2.getMatrix() << std::endl;
+	std::cout << "det=" << dslacNf2.det() << " and should be " << dslacNf2.getMatrix().determinant() << std::endl;
+	std::cout << "inverse*matrix: " << std::endl << (dslacNf2.inverse * dslacNf2.getMatrix())/*.isApprox( Eigen::MatrixXcd::Identity(dslacNf2.getMatrix().rows(), dslacNf2.getMatrix().cols()) )*/ << std::endl;
+
+
 //	std::cout << std::endl << "Truely erasing cols from slac matrix:" << std::endl;
 //	VectorXb kx0 = VectorXb::Constant(N*(N-1)*(N-1), true );
 //	VectorXb kx1 = VectorXb::Constant(N*(N-1)*(N-1), true );
