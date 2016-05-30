@@ -189,7 +189,7 @@ bool FermiBoolMetropolis::updateField() {
 //	slac.erase( kxiab );
 
 	FieldBoolean changed = kxiab.different(oldField);
-	slac.update( kxiab, changed );
+	slac.update( kxiab, changed, true );
 	det = slac.det();
 //	Eigen::MatrixXcd upSlac = slac.getMatrix();
 //	slac.setFull();
