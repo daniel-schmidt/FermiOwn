@@ -34,16 +34,16 @@ int main( int argc, char** argv ) {
 
 	Eigen::Matrix4cd sol4;
 	sol4 << 0., 1.11072, -0.785398, 1.11072,
-		  -1.11072, 0., 1.11072, -0.785398,
-		   0.785398, -1.11072, 0., 1.11072,
-		  -1.11072, 0.785398, -1.11072, 0.;
+			-1.11072, 0., 1.11072, -0.785398,
+			0.785398, -1.11072, 0., 1.11072,
+			-1.11072, 0.785398, -1.11072, 0.;
 
 	Eigen::MatrixXcd sol5(5,5);
 	sol5 << 0., 1.06896, -0.660653, 0.660653, -1.06896,
-		-1.06896, 0., 1.06896, -0.660653, 0.660653,
-		 0.660653, -1.06896, 0., 1.06896, -0.660653,
-		 -0.660653, 0.660653, -1.06896, 0., 1.06896,
-		 1.06896, -0.660653, 0.660653, -1.06896, 0.;
+			-1.06896, 0., 1.06896, -0.660653, 0.660653,
+			0.660653, -1.06896, 0., 1.06896, -0.660653,
+			-0.660653, 0.660653, -1.06896, 0., 1.06896,
+			1.06896, -0.660653, 0.660653, -1.06896, 0.;
 
 	Eigen::MatrixXcd sol(N,N);
 	switch ( N ) {
@@ -61,107 +61,154 @@ int main( int argc, char** argv ) {
 	size_t dim = 3;
 	SlacOperatorMatrix dslac3d( N, N+1, dim, Nf );
 	std::cout << "Full determinant:" << dslac3d.det() << std::endl;
-//	dslac.setFull();
-	for( size_t x = 0; x < N*(N+1)*(N+1); x++ ) {
-		dslac3d.erase( x, 0, 0, 0);
-		dslac3d.erase( x, 1, 0, 0);
-	}
-	std::cout << "Deleted everything:" << dslac3d.getMatrix().isIdentity() << std::endl;
-	std::cout << "Deleted everything, det=" << dslac3d.det() << std::endl;
-
-	SlacOperatorMatrix dslacNf1( N, 1, dim, 1 );
-	std::cout << "Single Flavour: " << std::endl << dslacNf1.getMatrix() << std::endl;
-	SlacOperatorMatrix dslacNf2( N, 1, dim, 2 );
-	std::cout << "Two Flavour: " << std::endl << dslacNf2.getMatrix() << std::endl;
+	//	dslac.setFull();
+	//	for( size_t x = 0; x < N*(N+1)*(N+1); x++ ) {
+	//		dslac3d.erase( x, 0, 0, 0);
+	//		dslac3d.erase( x, 1, 0, 0);
+	//	}
+	//	std::cout << "Deleted everything:" << dslac3d.getMatrix().isIdentity() << std::endl;
+	//	std::cout << "Deleted everything, det=" << dslac3d.det() << std::endl;
+	//
+	//	SlacOperatorMatrix dslacNf1( N, 1, dim, 1 );
+	//	std::cout << "Single Flavour: " << std::endl << dslacNf1.getMatrix() << std::endl;
+	SlacOperatorMatrix dslacNf2( 2, 3, dim, 2 );
+	std::cout << "Two Flavour full matrix: " << std::endl << dslacNf2.getMatrix() << std::endl;
 	std::cout << "Two Flavour determinant: " << std::endl << dslacNf2.det() << std::endl;
-	dslacNf2.erase( 0, 0, 0, 1 );
-	dslacNf2.erase( 1, 1, 0, 1 );
-	dslacNf2.erase( 0, 0, 1, 0 );
-	dslacNf2.erase( 1, 1, 1, 0 );
-	std::cout << "Two Flavour deleted: " << std::endl << dslacNf2.getMatrix() << std::endl;
-	std::cout << "Two Flavour deleted determinant: " << std::endl << dslacNf2.det() << std::endl;
-	dslacNf2.setFull();
+	//	dslacNf2.erase( 0, 0, 0, 1 );
+	//	dslacNf2.erase( 1, 1, 0, 1 );
+	//	dslacNf2.erase( 0, 0, 1, 0 );
+	//	dslacNf2.erase( 1, 1, 1, 0 );
+	//	std::cout << "Two Flavour deleted: " << std::endl << dslacNf2.getMatrix() << std::endl;
+	//	std::cout << "Two Flavour deleted determinant: " << std::endl << dslacNf2.det() << std::endl;
+	//	dslacNf2.setFull();
 
 	std::ranlux48 rndGen;
-	FieldBoolean fbool( N, 2, 2, &rndGen, zeroInit );
-	fbool.Print();
+	FieldBoolean fbool( 2*3*3, 2, 2, &rndGen, zeroInit );
+	FieldBoolean fboolInitial = fbool;
 	fbool.setValue( 1, 0, 0, 0, 1 );
 	fbool.setValue( 1, 1, 1, 0, 1 );
 	fbool.setValue( 1, 0, 0, 1, 0 );
 	fbool.setValue( 1, 1, 1, 1, 0 );
 	fbool.Print();
-	std::cout << "n2t: " << fbool.countOffdiagonal2() << std::endl;
-	dslacNf2.erase( fbool );
-	std::cout << "Two Flavour deleted: " << std::endl << dslacNf2.getMatrix() << std::endl;
-	std::cout << "Two Flavour deleted determinant: " << std::endl << dslacNf2.det() << std::endl;
+	FieldBoolean diff = fbool.different( fboolInitial );
 
-	std::cout << std::endl << "Testing Woodbury update" << std::endl;
-//	dslacNf2.setFull();
+	std::vector< Complex > dets;
+	for( int i = 0; i < 3; i++ ) {
+		std::cout << std::endl << "Testing algorithm " <<  i << std::endl;
+		dslacNf2.update( fbool, diff, static_cast<SlacOperatorMatrix::updateType>( 0  ) );
+		std::cout << "Two Flavour deleted: " << std::endl << dslacNf2.getMatrix() << std::endl;
+		std::cout << "Two Flavour deleted determinant: " << std::endl << dslacNf2.det() << std::endl;
+		dets.push_back( dslacNf2.det() );
+		dslacNf2.setFull();
+	}
 
-	FieldBoolean fold = fbool;
-	fbool.invert( 0, 1, 0, 0 );
-	fbool.invert( 0, 1, 1, 1 );
-	fbool.invert( 1, 0, 0, 0 );
-	fbool.invert( 1, 0, 1, 1 );
-	fbool.Print();
-	dslacNf2.update( fbool, fbool.different( fold ) );
-	std::cout << "Matrix after update: " << std::endl << dslacNf2.getMatrix() << std::endl;
-	std::cout << "det=" << dslacNf2.det() << " and should be " << dslacNf2.getMatrix().determinant() << std::endl;
-	std::cout << "inverse*matrix: " << std::endl << dslacNf2.inverse * dslacNf2.getMatrix() << std::endl;
+	if( abs( dets[0] - dets[1] ) > 1e-10 ) std::cout << "Difference between erase and separate." << std::endl;
+	if( abs( dets[0] - dets[2] ) > 1e-10 ) std::cout << "Difference between erase and combined." << std::endl;
 
-	std::cout << std::endl << std::endl << "Testing re-adding update" << std::endl;
-	fold = fbool;
-	fbool.invert( 0, 1, 0, 0 );
-	fbool.invert( 0, 1, 1, 1 );
-	fbool.invert( 1, 0, 0, 0 );
-	fbool.invert( 1, 0, 1, 1 );
-//	fbool.invert( 0, 0, 0, 1 );
-//	fbool.invert( 0, 0, 1, 0 );
-//	fbool.invert( 1, 1, 0, 1 );
-//	fbool.invert( 1, 1, 1, 0 );
-	fbool.Print();
-	dslacNf2.update( fbool, fbool.different( fold ) );
-	std::cout << "Matrix after update: " << std::endl << dslacNf2.getMatrix() << std::endl;
-	std::cout << "det=" << dslacNf2.det() << " and should be " << dslacNf2.getMatrix().determinant() << std::endl;
-	std::cout << "inverse*matrix: " << std::endl << dslacNf2.inverse * dslacNf2.getMatrix() << std::endl;
+	std::cout << "Testing simultaneous add and delete" << std::endl;
+	fboolInitial = fbool;
+	//	fbool.invert( 0, 1, 0, 0 );
+	//	fbool.invert( 0, 1, 1, 1 );
+	//	fbool.invert( 1, 0, 0, 0 );
+	//	fbool.invert( 1, 0, 1, 1 );
+	//	fbool.invert( 0, 0, 0, 1 );
+	//	fbool.invert( 0, 0, 1, 0 );
+	//	fbool.invert( 1, 1, 0, 1 );
+	//	fbool.invert( 1, 1, 1, 0 );
 
-	std::cout << "Testing combined update." << std::endl;
-	fold = fbool;
-	fbool.invert( 0, 1, 0, 0 );
-	fbool.invert( 0, 1, 1, 1 );
-	fbool.invert( 1, 0, 0, 0 );
-	fbool.invert( 1, 0, 1, 1 );
-	fbool.invert( 0, 0, 0, 1 );
-	fbool.invert( 0, 0, 1, 0 );
-	fbool.invert( 1, 1, 0, 1 );
-	fbool.invert( 1, 1, 1, 0 );
-	fbool.Print();
-	dslacNf2.update( fbool, fbool.different( fold ), true );
-	std::cout << "Matrix after combined update: " << std::endl << dslacNf2.getMatrix() << std::endl;
-	std::cout << "det=" << dslacNf2.det() << " and should be " << dslacNf2.getMatrix().determinant() << std::endl;
-	std::cout << "inverse*matrix: " << std::endl << (dslacNf2.inverse * dslacNf2.getMatrix())/*.isApprox( Eigen::MatrixXcd::Identity(dslacNf2.getMatrix().rows(), dslacNf2.getMatrix().cols()) )*/ << std::endl;
+	for( size_t x = 0; x < 2*3*3; x++ ) {
+		for( size_t spin = 0; spin < 2; spin++ ) {
+			for( size_t flavour1 = 0; flavour1 <=1; flavour1++ ) {
+				for( size_t flavour2 = 0; flavour2 <= 1; flavour2 ++ ) {
+					fbool.invert( x, spin, flavour1, flavour2 );
+					fbool.enforceConstraint(x, spin, flavour1, flavour2 );
+					fbool.Print();
+					diff = fbool.different( fboolInitial );
 
 
-//	std::cout << std::endl << "Truely erasing cols from slac matrix:" << std::endl;
-//	VectorXb kx0 = VectorXb::Constant(N*(N-1)*(N-1), true );
-//	VectorXb kx1 = VectorXb::Constant(N*(N-1)*(N-1), true );
-//
-//	kx0( 2 ) = false;
-//	kx0( 4 ) = false;
-//
-//	dslac3d.setFull();
-//	std::cout << "before:" << std::endl << dslac3d.getMatrix() << std::endl;
-//	dslac3d.eraseCols( kx0, kx1 );
-//	std::cout << "after erasing cols:" << std::endl << dslac3d.getMatrix() << std::endl;
-//	kx0( 2 ) = true;
-//	kx0( 4 ) = true;
-//	kx0( 15 ) = false;
-//	kx0( 16 ) = false;
-//	dslac3d.eraseRows( kx0, kx1 );
-//	std::cout << "after erasing rows:" << std::endl << dslac3d.getMatrix() << std::endl;
-//	dslac3d.addPoint( 5 );
-//	std::cout << dslac3d.getMatrix() << std::endl;
-//	std::cout << "without 6: " << dslac3d.det() << std::endl;
-//	dslac3d.addPoint( 6 );
-//	std::cout << "full: " << dslac3d.det() << std::endl;
+					for( int i = 0; i < 3; i++ ) {
+						std::cout << std::endl << "Testing algorithm " <<  i << std::endl;
+						dslacNf2.update( fbool, diff, static_cast<SlacOperatorMatrix::updateType>( 0  ) );
+//						std::cout << "Two Flavour deleted: " << std::endl << dslacNf2.getMatrix() << std::endl;
+						std::cout << "Two Flavour deleted determinant: " << std::endl << dslacNf2.det() << std::endl;
+						dets.push_back( dslacNf2.det() );
+						dslacNf2.setFull();
+					}
+
+					if( abs( dets[0] - dets[1] ) > 1e-10 ) std::cout << "Difference between erase and separate." << std::endl;
+					if( abs( dets[0] - dets[2] ) > 1e-10 ) std::cout << "Difference between erase and combined." << std::endl;
+				}
+			}
+		}
+	}
+
+
+	//	std::cout << std::endl << "Testing Woodbury update" << std::endl;
+	//
+	//	FieldBoolean fold = fbool;
+	//	fbool.invert( 0, 1, 0, 0 );
+	//	fbool.invert( 0, 1, 1, 1 );
+	//	fbool.invert( 1, 0, 0, 0 );
+	//	fbool.invert( 1, 0, 1, 1 );
+	//	fbool.Print();
+	//	dslacNf2.update( fbool, fbool.different( fold ) );
+	//	std::cout << "Matrix after update: " << std::endl << dslacNf2.getMatrix() << std::endl;
+	//	std::cout << "det=" << dslacNf2.det() << " and should be " << dslacNf2.getMatrix().determinant() << std::endl;
+	//	std::cout << "inverse*matrix: " << std::endl << dslacNf2.inverse * dslacNf2.getMatrix() << std::endl;
+	//
+	//	std::cout << std::endl << std::endl << "Testing re-adding update" << std::endl;
+	//	fold = fbool;
+	//	fbool.invert( 0, 1, 0, 0 );
+	//	fbool.invert( 0, 1, 1, 1 );
+	//	fbool.invert( 1, 0, 0, 0 );
+	//	fbool.invert( 1, 0, 1, 1 );
+	////	fbool.invert( 0, 0, 0, 1 );
+	////	fbool.invert( 0, 0, 1, 0 );
+	////	fbool.invert( 1, 1, 0, 1 );
+	////	fbool.invert( 1, 1, 1, 0 );
+	//	fbool.Print();
+	//	dslacNf2.update( fbool, fbool.different( fold ) );
+	//	std::cout << "Matrix after update: " << std::endl << dslacNf2.getMatrix() << std::endl;
+	//	std::cout << "det=" << dslacNf2.det() << " and should be " << dslacNf2.getMatrix().determinant() << std::endl;
+	//	std::cout << "inverse*matrix: " << std::endl << dslacNf2.inverse * dslacNf2.getMatrix() << std::endl;
+	//
+	//	std::cout << "Testing combined update." << std::endl;
+	//	fold = fbool;
+	//	fbool.invert( 0, 1, 0, 0 );
+	//	fbool.invert( 0, 1, 1, 1 );
+	//	fbool.invert( 1, 0, 0, 0 );
+	//	fbool.invert( 1, 0, 1, 1 );
+	//	fbool.invert( 0, 0, 0, 1 );
+	//	fbool.invert( 0, 0, 1, 0 );
+	//	fbool.invert( 1, 1, 0, 1 );
+	//	fbool.invert( 1, 1, 1, 0 );
+	//	fbool.Print();
+	//	dslacNf2.update( fbool, fbool.different( fold ), true );
+	//	std::cout << "Matrix after combined update: " << std::endl << dslacNf2.getMatrix() << std::endl;
+	//	std::cout << "det=" << dslacNf2.det() << " and should be " << dslacNf2.getMatrix().determinant() << std::endl;
+	//	std::cout << "inverse*matrix: " << std::endl << (dslacNf2.inverse * dslacNf2.getMatrix())/*.isApprox( Eigen::MatrixXcd::Identity(dslacNf2.getMatrix().rows(), dslacNf2.getMatrix().cols()) )*/ << std::endl;
+
+
+	//	std::cout << std::endl << "Truely erasing cols from slac matrix:" << std::endl;
+	//	VectorXb kx0 = VectorXb::Constant(N*(N-1)*(N-1), true );
+	//	VectorXb kx1 = VectorXb::Constant(N*(N-1)*(N-1), true );
+	//
+	//	kx0( 2 ) = false;
+	//	kx0( 4 ) = false;
+	//
+	//	dslac3d.setFull();
+	//	std::cout << "before:" << std::endl << dslac3d.getMatrix() << std::endl;
+	//	dslac3d.eraseCols( kx0, kx1 );
+	//	std::cout << "after erasing cols:" << std::endl << dslac3d.getMatrix() << std::endl;
+	//	kx0( 2 ) = true;
+	//	kx0( 4 ) = true;
+	//	kx0( 15 ) = false;
+	//	kx0( 16 ) = false;
+	//	dslac3d.eraseRows( kx0, kx1 );
+	//	std::cout << "after erasing rows:" << std::endl << dslac3d.getMatrix() << std::endl;
+	//	dslac3d.addPoint( 5 );
+	//	std::cout << dslac3d.getMatrix() << std::endl;
+	//	std::cout << "without 6: " << dslac3d.det() << std::endl;
+	//	dslac3d.addPoint( 6 );
+	//	std::cout << "full: " << dslac3d.det() << std::endl;
 }

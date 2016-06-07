@@ -54,6 +54,10 @@ const Eigen::MatrixXcd SlacOperatorMatrix::getMatrix() const {
 	return dslac;
 }
 
+const Eigen::MatrixXcd SlacOperatorMatrix::getInverse() const {
+	return inverse;
+}
+
 const Complex SlacOperatorMatrix::det() const {
 	return detVal;
 }
@@ -62,23 +66,95 @@ size_t SlacOperatorMatrix::matIndex( size_t x, size_t spin, size_t flavour ) {
 	return N*( dimSpinor*flavour + spin ) + x;
 }
 
-void SlacOperatorMatrix::erase( const FieldBoolean& kxiab ) {
-	std::vector< size_t > cols;
-	std::vector< size_t > rows;
+void SlacOperatorMatrix::update( FieldBoolean kxiab, FieldBoolean changed, updateType upType ) {
+
+	// check what changed, and if it requires adding or deleting row/col pairs
+	std::vector<size_t> rowsAdd;
+	std::vector<size_t> rowsDel;
+	std::vector<size_t> colsAdd;
+	std::vector<size_t> colsDel;
+
 	for( size_t flavour1 = 0; flavour1 < Nf; flavour1++ ) {
 		for( size_t flavour2 = 0; flavour2 < Nf; flavour2++ ) {
 			for( size_t spin = 0; spin < dimSpinor; spin++ ) {
 				for( size_t x = 0; x < N; x++ ) {
-					if( kxiab.getValue( x, spin, flavour1, flavour2 ) ) {
-						cols.push_back( matIndex(x, spin, flavour1) );
-						rows.push_back( matIndex(x, spin, flavour2) );
+					if( changed.getValue( x, spin, flavour1, flavour2 ) ) {
+						if( kxiab.getValue( x, spin, flavour1, flavour2 ) ) {
+							colsDel.push_back( matIndex(x, spin, flavour1) );
+							rowsDel.push_back( matIndex(x, spin, flavour2) );
+						} else {
+							colsAdd.push_back( matIndex(x, spin, flavour1) );
+							rowsAdd.push_back( matIndex(x, spin, flavour2) );
+						}
 					}
 				}
 			}
 		}
 	}
-	deleteEntries( rows, cols );
+
+//	std::cout << "Delete: ";
+//	for( size_t col : colsDel) std::cout << col << " ";
+//	std::cout << std::endl;
+//	for( size_t row : rowsDel ) std::cout << row << " ";
+//	std::cout << std::endl << " Add: ";
+//	for( size_t col : colsAdd ) std::cout << col << " ";
+//	std::cout << std::endl;
+//	for( size_t row : rowsAdd ) std::cout << row << " ";
+//	std::cout << std::endl;
+
+	switch( upType ) {
+	case eraseUpdate:
+	{
+		setFull();
+		erase( kxiab );
+
+		Eigen::FullPivLU< Eigen::MatrixXcd > LUdecomp( dslac );
+		if( LUdecomp.isInvertible() ) {
+			inverse = LUdecomp.inverse();
+			detVal = LUdecomp.determinant();
+		} else {
+			detVal = 0.;
+		}
+		break;
+	}
+	case separateUpdate:
+		deleteEntries( rowsDel, colsDel );
+		if( abs( detVal ) > 10e-10 )
+			addEntries( rowsAdd, colsAdd );
+		break;
+	case combinedUpdate:
+		combined( rowsAdd, colsAdd, rowsDel, colsDel );
+		break;
+	}
 }
+
+void SlacOperatorMatrix::erase( const FieldBoolean& kxiab ) {
+//	std::vector< size_t > cols;
+//	std::vector< size_t > rows;
+	for( size_t flavour1 = 0; flavour1 < Nf; flavour1++ ) {
+		for( size_t flavour2 = 0; flavour2 < Nf; flavour2++ ) {
+			for( size_t spin = 0; spin < dimSpinor; spin++ ) {
+				for( size_t x = 0; x < N; x++ ) {
+					if( kxiab.getValue( x, spin, flavour1, flavour2 ) ) {
+//						cols.push_back( matIndex(x, spin, flavour1) );
+//						rows.push_back( matIndex(x, spin, flavour2) );
+						erase( x, spin, flavour1, flavour2 );
+					}
+				}
+			}
+		}
+	}
+//	deleteEntries( rows, cols );
+}
+
+
+
+
+/* =======================================================================================
+ * Private methods
+ * =======================================================================================
+ */
+
 
 void SlacOperatorMatrix::erase( size_t x, size_t spin, size_t flavour1, size_t flavour2 ) {
 	// check for correct input
@@ -138,8 +214,8 @@ void SlacOperatorMatrix::combined( std::vector<size_t> addRows, std::vector<size
 
 		Eigen::MatrixXcd slacOld = dslac;
 
-		Eigen::MatrixXcd colUpdate( dslac.cols(), updateRank );
-		Eigen::MatrixXcd rowUpdate( updateRank, dslac.rows() );
+		Eigen::MatrixXcd colUpdate( dslac.cols(), 2*updateRank );
+		Eigen::MatrixXcd rowUpdate( 2*updateRank, dslac.rows() );
 		Eigen::MatrixXcd onesCol = Eigen::MatrixXcd::Zero( updateRank, dslac.rows() );
 		Eigen::MatrixXcd onesRow = Eigen::MatrixXcd::Zero( dslac.cols(), updateRank );
 		for( size_t index = 0; index < updateRank; index++ ) {
@@ -191,11 +267,19 @@ void SlacOperatorMatrix::combined( std::vector<size_t> addRows, std::vector<size
 //		std::cout << "rowUp" << std::endl << rowUpdate << std::endl << std::endl;
 //		std::cout << "onesCol" << std::endl << onesCol << std::endl << std::endl;
 //		std::cout << "colUp" << std::endl << colUpdate << std::endl << std::endl;
-		WoodburyUpdate( colUpdate, onesCol );
-		WoodburyUpdate( onesRow, rowUpdate );	// seems like we have to do this update first to avoid det=0, likely because of the subMat update
+
+		for( size_t i = updateRank; i < 2*updateRank; i++ ) {
+			colUpdate.col( i ) = onesRow.col( i - updateRank );
+			rowUpdate.row( i ) = onesCol.row( i - updateRank );
+		}
+
+		WoodburyUpdate( colUpdate, rowUpdate );
+//		WoodburyUpdate( colUpdate, onesCol );
+//		WoodburyUpdate( onesRow, rowUpdate );	// seems like we have to do this update first to avoid det=0, likely because of the subMat update
 //		WoodburyUpdate( onesRow*subMat, onesCol );
 
-		dslac += onesRow*rowUpdate + colUpdate*onesCol;
+//		dslac += onesRow*rowUpdate + colUpdate*onesCol;
+		dslac += colUpdate * rowUpdate;
 //		std::cout << "slacOld:" << std::endl << slacOld << std::endl << std::endl;
 
 //	} else if( delRows.size() != 0 ) {
@@ -307,77 +391,6 @@ void SlacOperatorMatrix::WoodburyUpdate( Eigen::MatrixXcd U, Eigen::MatrixXcd V 
 //	std::cout << "Det>" << detVal << std::endl;
 }
 
-void SlacOperatorMatrix::update( FieldBoolean kxiab, FieldBoolean changed, updateType upType ) {
-	std::vector<size_t> rowsAdd;
-	std::vector<size_t> rowsDel;
-	std::vector<size_t> colsAdd;
-	std::vector<size_t> colsDel;
-
-	for( size_t flavour1 = 0; flavour1 < Nf; flavour1++ ) {
-		for( size_t flavour2 = 0; flavour2 < Nf; flavour2++ ) {
-			for( size_t spin = 0; spin < dimSpinor; spin++ ) {
-				for( size_t x = 0; x < N; x++ ) {
-					if( changed.getValue( x, spin, flavour1, flavour2 ) ) {
-						if( kxiab.getValue( x, spin, flavour1, flavour2 ) ) {
-							colsDel.push_back( matIndex(x, spin, flavour1) );
-							rowsDel.push_back( matIndex(x, spin, flavour2) );
-						} else {
-							colsAdd.push_back( matIndex(x, spin, flavour1) );
-							rowsAdd.push_back( matIndex(x, spin, flavour2) );
-						}
-					}
-				}
-			}
-		}
-	}
-
-//	std::cout << "Delete: ";
-//	for( size_t col : colsDel) std::cout << col << " ";
-//	std::cout << std::endl;
-//	for( size_t row : rowsDel ) std::cout << row << " ";
-//	std::cout << std::endl << " Add: ";
-//	for( size_t col : colsAdd ) std::cout << col << " ";
-//	std::cout << std::endl;
-//	for( size_t row : rowsAdd ) std::cout << row << " ";
-//	std::cout << std::endl;
-
-	Eigen::MatrixXcd oldSlac = dslac;
-	Complex detOld = detVal;
-	Eigen::MatrixXcd oldInv = inverse;
-
-	setFull();
-	erase( kxiab );
-	Complex detErase = dslac.determinant();
-	std::cout << "erase: " << detErase;
-
-	dslac = oldSlac;
-	detVal = detOld;
-	inverse = oldInv;
-
-	if( combinedUp ) {
-		combined( rowsAdd, colsAdd, rowsDel, colsDel );
-	} else {
-		deleteEntries( rowsDel, colsDel );
-		if( abs( detVal ) > 10e-10 )
-			addEntries( rowsAdd, colsAdd );
-	}
-	std::cout << "\tWoodbury: " << detVal;
-	Complex detWood = detVal;
-
-	dslac = oldSlac;
-	detVal = detOld;
-	inverse = oldInv;
-
-	deleteEntries( rowsDel, colsDel );
-	if( abs( detVal ) > 10e-10 )
-		addEntries( rowsAdd, colsAdd );
-	std::cout << "\tdel/add: " << detVal << std::endl;
-
-	if( abs( detVal - detErase) > 1e-10 ) std::cout << "Add/Del wrong." << std::endl;
-	if( abs( detWood - detErase) > 1e-10 ) std::cout << "Woodbury wrong." << std::endl;
-
-	detVal = detErase;
-}
 
 void SlacOperatorMatrix::update( size_t a, size_t b, size_t m, size_t n ) {
 

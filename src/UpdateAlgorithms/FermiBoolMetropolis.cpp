@@ -144,7 +144,7 @@ Complex FermiBoolMetropolis::calculateWeightChange() {
 	FieldBoolean changed = kxiab.different(oldField);
 
 //	slac.erase( kxiab );
-	slac.update( kxiab, changed );
+	slac.update( kxiab, changed, SlacOperatorMatrix::separateUpdate );
 	det = slac.det();
 //	slac.setFull();
 
@@ -189,7 +189,7 @@ bool FermiBoolMetropolis::updateField() {
 //	slac.erase( kxiab );
 
 	FieldBoolean changed = kxiab.different(oldField);
-	slac.update( kxiab, changed, true );
+	slac.update( kxiab, changed, SlacOperatorMatrix::separateUpdate );
 	det = slac.det();
 //	Eigen::MatrixXcd upSlac = slac.getMatrix();
 //	slac.setFull();
@@ -267,23 +267,23 @@ bool FermiBoolMetropolis::updateField( size_t x, size_t spin, size_t a, size_t b
 
 Complex FermiBoolMetropolis::calculateWeight( int dk, int dntilde ) {
 	//				std::cout << "Matrix before erase: " << std::endl << slac.getMatrix() << std::endl << std::endl;
-	slac.erase( kxiab );
-	//				std::cout << slac.getMatrix() << std::endl << std::endl;
-	det = slac.det();
-	slac.setFull();
-
-	double factor = getHypergeometricFactor( nxNew(1), nxNew(2) )  * getHypergeometricFactor( nyNew(1), nyNew(2) );
-	factor /= getHypergeometricFactor( nxOld(1), nxOld(2) ) * getHypergeometricFactor( nyOld(1), nyOld(2) );
-
-	//					std::cout << "\tfactor1=" << factor;
-
-	//	if( dntilde != 0 ) std::cerr << "\tdntilde = " << dntilde << std::endl;
-	factor *= std::pow( 2., dntilde );
-	Complex dw = std::pow( Complex(-kappa), double(dk)/2. );
-	Complex detRatio = det/detOld;
-	fWeight << std::real(detRatio) << "\t" << std::imag(detRatio) << "\t" << dw << "\t" << std::real(factor*dw*(detRatio)) << "\t" << std::imag(factor*dw*(detRatio)) << std::endl;
-//	std::cout << "reDet=" << std::real(detRatio) << "\t imDet=" << std::imag(detRatio) << "\t dk=" << dk << "\t kappa=" << kappa << "\t dw=" << dw << "\t factor=" << factor << "\t dnt=" << dntilde << "\t" << std::fabs(factor*dw*(detRatio)) << std::endl;
-	return factor*dw*(det/detOld);
+//	slac.erase( kxiab );
+//	//				std::cout << slac.getMatrix() << std::endl << std::endl;
+//	det = slac.det();
+//	slac.setFull();
+//
+//	double factor = getHypergeometricFactor( nxNew(1), nxNew(2) )  * getHypergeometricFactor( nyNew(1), nyNew(2) );
+//	factor /= getHypergeometricFactor( nxOld(1), nxOld(2) ) * getHypergeometricFactor( nyOld(1), nyOld(2) );
+//
+//	//					std::cout << "\tfactor1=" << factor;
+//
+//	//	if( dntilde != 0 ) std::cerr << "\tdntilde = " << dntilde << std::endl;
+//	factor *= std::pow( 2., dntilde );
+//	Complex dw = std::pow( Complex(-kappa), double(dk)/2. );
+//	Complex detRatio = det/detOld;
+//	fWeight << std::real(detRatio) << "\t" << std::imag(detRatio) << "\t" << dw << "\t" << std::real(factor*dw*(detRatio)) << "\t" << std::imag(factor*dw*(detRatio)) << std::endl;
+////	std::cout << "reDet=" << std::real(detRatio) << "\t imDet=" << std::imag(detRatio) << "\t dk=" << dk << "\t kappa=" << kappa << "\t dw=" << dw << "\t factor=" << factor << "\t dnt=" << dntilde << "\t" << std::fabs(factor*dw*(detRatio)) << std::endl;
+//	return factor*dw*(det/detOld);
 }
 
 bool FermiBoolMetropolis::accept( Complex weight ) {

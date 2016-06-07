@@ -56,6 +56,12 @@ public:
 	const Eigen::MatrixXcd getMatrix() const;
 
 	/**
+	 * @brief Allowes read access to the inverse of the current operator
+	 * @return the inverse
+	 */
+	const Eigen::MatrixXcd getInverse() const;
+
+	/**
 	 * @brief Returns the determinant of the current matrix.
 	 *
 	 * @return The determinant.
@@ -87,6 +93,15 @@ public:
 	 */
 	void setFull();
 
+	/**
+	 * @brief Deletes rows and columns corresponding to entries set in the input field.
+	 * Translates the entries in the field to physical parameters and calls the single-
+	 * point erase method.
+	 *
+	 * @param kxiab is a boolean field, where "true" indicates, that the corresponding row/column pair should be deleted from the matrix
+	 */
+	void erase( const FieldBoolean& kxiab );
+
 private:
 
 	/**
@@ -106,8 +121,18 @@ private:
 	 * @param V
 	 */
 	void WoodburyUpdate( Eigen::MatrixXcd U, Eigen::MatrixXcd V );
+
+	/**
+	 * @brief Replace a single row and column by 0, with a 1 in the crossing entry
+	 * The row and column to delete is determined by the physical parameters passed in.
+	 *
+	 * @param x is the spacetime point
+	 * @param spin is the spinor component ( can be 0 or 1 )
+	 * @param flavour1 is the number of flavour for the row to access
+	 * @param flavour2 is the number of flavour for the column to access
+	 */
 	void erase( size_t x, size_t spin, size_t flavour1, size_t flavour2 );
-	void erase( const FieldBoolean& kxiab );
+
 	void combined( std::vector<size_t> addRows, std::vector<size_t> addCols, std::vector<size_t> delRows, std::vector<size_t> delCols);
 	void deleteEntries( std::vector<size_t> rows, std::vector<size_t> cols );
 	void addEntries( std::vector<size_t> rows, std::vector<size_t> cols );
@@ -125,7 +150,7 @@ private:
 	Complex fullDet;				//TODO: not needed?
 
 	CliffordAlgebra cliff;				///< The Clifford algebra used in the operator, necessary to get the gamma-matrices during construction of the operator.
-										//TODO: needed only at construction, perhaps not necessary as field
+	//TODO: needed only at construction, perhaps not necessary as field
 
 	std::vector<size_t> deletedRows;	///< Vector keeping all indices of rows, that are deleted from the matrix
 	std::vector<size_t> deletedCols;	///< Vector keeping all indices of columns, that are deleted from the matrix
