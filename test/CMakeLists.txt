@@ -48,3 +48,9 @@ do_slac_test( 5, "Size 5 works!" )
 # TODO: refine regex to find whole det, not just decimal places...
 add_test( SlacOperatorMatrix_testDet SlacOperatorMatrix_test 4 )
 set_tests_properties( SlacOperatorMatrix_testDet PROPERTIES PASS_REGULAR_EXPRESSION "69524" )
+
+add_executable( ConfigGenerator_test "ConfigGenerator_test.cpp" )
+target_link_libraries( ConfigGenerator_test Actions )
+
+add_executable( WeightFunction_test "WeightFunction_test.cpp" )
+target_link_libraries( WeightFunction_test Actions )

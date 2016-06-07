@@ -9,11 +9,12 @@
 
 namespace FermiOwn {
 
-ConfigGenerator::ConfigGenerator( size_t latticeVolume, size_t numSpins, size_t numFlavours ) :
+ConfigGenerator::ConfigGenerator( size_t numSpins, size_t numFlavours ) :
 	Nf( numFlavours ),
-	dimSpinor( numSpins ),
-	volume( latticeVolume )
-{}
+	dimSpinor( numSpins )
+{
+	if( dimSpinor != 2 ) std::cout << "Warning: ConfigGenerator called with spinor size != 2, this may not be implemented correctly!" << std::endl;
+}
 
 ConfigGenerator::~ConfigGenerator() {}
 
