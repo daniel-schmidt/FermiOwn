@@ -1,0 +1,57 @@
+/*
+ * ConfigGenerator.cpp
+ *
+ *  Created on: 07.06.2016
+ *      Author: dschmidt
+ */
+
+#include "ConfigGenerator.h"
+
+namespace FermiOwn {
+
+ConfigGenerator::ConfigGenerator( size_t latticeVolume, size_t numSpins, size_t numFlavours ) :
+	Nf( numFlavours ),
+	dimSpinor( numSpins ),
+	volume( latticeVolume )
+{}
+
+ConfigGenerator::~ConfigGenerator() {}
+
+void  ConfigGenerator::generateAllowedConfs() {
+
+	//TODO: this should check somehow, if all configs fit in memory...
+	size_t numCols = (Nf*Nf)*dimSpinor;
+	size_t numConfigs = 1;
+	numConfigs = numConfigs << numCols;
+	allowedConfs = Eigen::MatrixXi::Zero( numConfigs, numCols );
+	size_t numAllowedConfs = 0;
+	for( size_t conf = 0; conf < numConfigs; conf++ ) {
+		size_t bits = conf;
+		size_t bits2 = conf;
+		FieldBoolean fConf( 1, dimSpinor, Nf, NULL, zeroInit );
+
+		for( size_t spin = 0; spin < 2; spin++ ) {
+			for( size_t a = 0; a < Nf; a++ ) {
+				for( size_t b = 0; b < Nf; b++ ) {
+					if( bits2 % 2 == 1 ) {
+						fConf.setValue( true, 0, spin, a, b );
+					}
+					bits2 = bits2 >> 1;
+				}
+			}
+		}
+
+		if( !fConf.constraintViolated(0) ) {
+			for( size_t bit = 0; bit < numCols; bit++ ) {
+				if( bits % 2 == 1 ) {
+					allowedConfs( numAllowedConfs, numCols-1-bit ) = 1;
+				}
+				bits = bits >> 1;
+			}
+			numAllowedConfs ++;
+		}
+	}
+	allowedConfs.conservativeResize( numAllowedConfs, Eigen::NoChange );
+}
+
+} /* namespace FermiOwn */

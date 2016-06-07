@@ -30,6 +30,7 @@ enum InitType {
  */
 template<class ScalarType> class Field {
 public:
+	//TODO: remove dependence on random number generator, since we don't need it for boolean fields
 	Field( const size_t latticeVolume, const size_t DoF_per_Point, std::ranlux48 * rndGen, InitType init );
 	virtual ~Field();
 
