@@ -12,6 +12,9 @@
 
 namespace FermiOwn {
 
+/**
+ * @brief A field of boolean values with constraints.
+ */
 class FieldBoolean: public Field<bool> {
 public:
 	FieldBoolean( const size_t latticeVolume, const size_t numberOfSpin, const size_t numberOfFlavours, std::ranlux48 * rndGen, InitType init );
