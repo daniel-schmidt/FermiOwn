@@ -9,7 +9,7 @@
 
 namespace FermiOwn {
 
-ConfigGenerator::ConfigGenerator( size_t numSpins, size_t numFlavours ) :
+ConfigGenerator::ConfigGenerator( const size_t numSpins, const size_t numFlavours ) :
 	Nf( numFlavours ),
 	dimSpinor( numSpins )
 {
@@ -20,11 +20,18 @@ ConfigGenerator::~ConfigGenerator() {}
 
 void  ConfigGenerator::generateAllowedConfs() {
 
-	//TODO: this should check somehow, if all configs fit in memory...
 	size_t numCols = (Nf*Nf)*dimSpinor;
 	size_t numConfigs = 1;
 	numConfigs = numConfigs << numCols;
-	allowedConfs = Eigen::MatrixXi::Zero( numConfigs, numCols );
+
+	//TODO: implement something better, which doesn't need to allocate so much memory...
+	try {
+		allowedConfs = Eigen::MatrixXi::Zero( numConfigs, numCols );
+	} catch ( const std::bad_alloc& ) {
+		std::cerr << "ERROR: Not enough memory!" << std::endl;
+		std::cerr << "ConfigGenerator tries to allocate an array of size " << numConfigs << " x " << numCols << std::endl;
+		exit(1);
+	}
 	size_t numAllowedConfs = 0;
 	for( size_t conf = 0; conf < numConfigs; conf++ ) {
 		size_t bits = conf;
