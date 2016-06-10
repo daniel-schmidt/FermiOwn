@@ -18,6 +18,15 @@
 
 namespace FermiOwn {
 
+/**
+ * @brief A class for a matrix-representation of the SLAC derivative
+ *
+ * This class provides methods to add and remove rows and columns from the full matrix
+ * by a number of different methods.
+ * It keeps track of changes and updates the determinant and the inverse of the matrix
+ * using low-rank update formulae as the Woodbury lemma.
+ */
+
 class SlacOperatorMatrix {
 public:
 
@@ -35,7 +44,7 @@ public:
 	SlacOperatorMatrix( size_t size );
 
 	/**
-	 * @brief Constructor for a general SLAC operator matrix with flavour and spin
+	 * @brief Constructor for a general SLAC operator matrix with flavour and spin in any dimension
 	 *
 	 * Matrix size is Nt*Ns^(dim-1) * numFlavours * 2, where the factor of 2 is for the
 	 * irreducible number of spin degrees of freedom.
@@ -95,8 +104,9 @@ public:
 
 	/**
 	 * @brief Deletes rows and columns corresponding to entries set in the input field.
+	 *
 	 * Translates the entries in the field to physical parameters and calls the single-
-	 * point erase method.
+	 * point erase method. Afterwards, a full new calculation of determinant and inverse are performed.
 	 *
 	 * @param kxiab is a boolean field, where "true" indicates, that the corresponding row/column pair should be deleted from the matrix
 	 */

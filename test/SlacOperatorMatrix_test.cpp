@@ -8,6 +8,7 @@
 #include <iostream>
 #include <Eigen/Dense>
 #include "FieldBoolean.h"
+#include "ConfigGenerator.h"
 #include "SlacOperatorMatrix.h"
 
 int main( int argc, char** argv ) {
@@ -71,7 +72,7 @@ int main( int argc, char** argv ) {
 	//
 	//	SlacOperatorMatrix dslacNf1( N, 1, dim, 1 );
 	//	std::cout << "Single Flavour: " << std::endl << dslacNf1.getMatrix() << std::endl;
-	SlacOperatorMatrix dslacNf2( 2, 3, dim, 2 );
+	SlacOperatorMatrix dslacNf2( 4, 1, dim, 2 );
 	std::cout << "Two Flavour full matrix: " << std::endl << dslacNf2.getMatrix() << std::endl;
 	std::cout << "Two Flavour determinant: " << std::endl << dslacNf2.det() << std::endl;
 	//	dslacNf2.erase( 0, 0, 0, 1 );
@@ -82,133 +83,142 @@ int main( int argc, char** argv ) {
 	//	std::cout << "Two Flavour deleted determinant: " << std::endl << dslacNf2.det() << std::endl;
 	//	dslacNf2.setFull();
 
-	std::ranlux48 rndGen;
-	FieldBoolean fbool( 2*3*3, 2, 2, &rndGen, zeroInit );
-	FieldBoolean fboolInitial = fbool;
-	fbool.setValue( 1, 0, 0, 0, 1 );
-	fbool.setValue( 1, 1, 1, 0, 1 );
-	fbool.setValue( 1, 0, 0, 1, 0 );
-	fbool.setValue( 1, 1, 1, 1, 0 );
-	fbool.Print();
-	FieldBoolean diff = fbool.different( fboolInitial );
+	ConfigGenerator confGen( 2, 2 );
+	confGen.generateAllowedConfs();
+	MatrixXb allowedConfs = confGen.getAllConfs();
 
-	std::vector< Complex > dets;
-	for( int i = 0; i < 3; i++ ) {
-		std::cout << std::endl << "Testing algorithm " <<  i << std::endl;
-		dslacNf2.update( fbool, diff, static_cast<SlacOperatorMatrix::updateType>( 0  ) );
-		std::cout << "Two Flavour deleted: " << std::endl << dslacNf2.getMatrix() << std::endl;
-		std::cout << "Two Flavour deleted determinant: " << std::endl << dslacNf2.det() << std::endl;
-		dets.push_back( dslacNf2.det() );
+	FieldBoolean fbool( 4, 2, 2, NULL, zeroInit );
+
+	for( int row = 0; row < allowedConfs.rows(); row++ ) {
+		std::cout << "Testing configuration " << std::endl;
+		fbool.Print();
 		dslacNf2.setFull();
+		for( int i = 0; i < 3; i++ ) {
+			FieldBoolean oldField = fbool;
+			fbool.setRow( allowedConfs.row( row ), 0 );
+			fbool.setRow( allowedConfs.row( row ), 1 );
+			dslacNf2.update( fbool, fbool.different( oldField), static_cast<SlacOperatorMatrix::updateType>( i ) );
+			std::cout << dslacNf2.det() << " ";
+		}
+
+		std::cout << std::endl;
 	}
 
-	if( abs( dets[0] - dets[1] ) > 1e-10 ) std::cout << "Difference between erase and separate." << std::endl;
-	if( abs( dets[0] - dets[2] ) > 1e-10 ) std::cout << "Difference between erase and combined." << std::endl;
-
-	std::cout << "Testing simultaneous add and delete" << std::endl;
-	fboolInitial = fbool;
-	//	fbool.invert( 0, 1, 0, 0 );
-	//	fbool.invert( 0, 1, 1, 1 );
-	//	fbool.invert( 1, 0, 0, 0 );
-	//	fbool.invert( 1, 0, 1, 1 );
-	//	fbool.invert( 0, 0, 0, 1 );
-	//	fbool.invert( 0, 0, 1, 0 );
-	//	fbool.invert( 1, 1, 0, 1 );
-	//	fbool.invert( 1, 1, 1, 0 );
-
-	for( size_t x = 0; x < 2*3*3; x++ ) {
-		for( size_t spin = 0; spin < 2; spin++ ) {
-			for( size_t flavour1 = 0; flavour1 <=1; flavour1++ ) {
-				for( size_t flavour2 = 0; flavour2 <= 1; flavour2 ++ ) {
-					fbool.invert( x, spin, flavour1, flavour2 );
-					fbool.enforceConstraint(x, spin, flavour1, flavour2 );
-					fbool.Print();
-					diff = fbool.different( fboolInitial );
-
-
-					for( int i = 0; i < 3; i++ ) {
-						std::cout << std::endl << "Testing algorithm " <<  i << std::endl;
-						dslacNf2.update( fbool, diff, static_cast<SlacOperatorMatrix::updateType>( 0  ) );
-//						std::cout << "Two Flavour deleted: " << std::endl << dslacNf2.getMatrix() << std::endl;
-						std::cout << "Two Flavour deleted determinant: " << std::endl << dslacNf2.det() << std::endl;
-						dets.push_back( dslacNf2.det() );
-						dslacNf2.setFull();
-					}
-
-					if( abs( dets[0] - dets[1] ) > 1e-10 ) std::cout << "Difference between erase and separate." << std::endl;
-					if( abs( dets[0] - dets[2] ) > 1e-10 ) std::cout << "Difference between erase and combined." << std::endl;
-				}
+	for( int i = 0; i < 3; i++ ) {
+		std::cout << std::endl << "Testing algorithm " <<  i << std::endl;
+		dslacNf2.setFull();
+		for( int row = 0; row < allowedConfs.rows(); row++ ) {
+			FieldBoolean oldField = fbool;
+			SlacOperatorMatrix oldSlac = dslacNf2;
+			fbool.setRow( allowedConfs.row( row ), 0 );
+			fbool.setRow( allowedConfs.row( row ), 1 );
+			dslacNf2.update( fbool, fbool.different( oldField ), static_cast<SlacOperatorMatrix::updateType>( i ) );
+			//			fbool.Print();
+			std::cout << dslacNf2.det() << std::endl;
+			if( abs(dslacNf2.det()) < 1e-10 ) {
+				fbool = oldField;
+				dslacNf2 = oldSlac;
 			}
 		}
 	}
 
+	std::cout << "Testing fixed update sequence" << std::endl;
 
-	//	std::cout << std::endl << "Testing Woodbury update" << std::endl;
-	//
-	//	FieldBoolean fold = fbool;
-	//	fbool.invert( 0, 1, 0, 0 );
-	//	fbool.invert( 0, 1, 1, 1 );
-	//	fbool.invert( 1, 0, 0, 0 );
-	//	fbool.invert( 1, 0, 1, 1 );
-	//	fbool.Print();
-	//	dslacNf2.update( fbool, fbool.different( fold ) );
-	//	std::cout << "Matrix after update: " << std::endl << dslacNf2.getMatrix() << std::endl;
-	//	std::cout << "det=" << dslacNf2.det() << " and should be " << dslacNf2.getMatrix().determinant() << std::endl;
-	//	std::cout << "inverse*matrix: " << std::endl << dslacNf2.inverse * dslacNf2.getMatrix() << std::endl;
-	//
-	//	std::cout << std::endl << std::endl << "Testing re-adding update" << std::endl;
-	//	fold = fbool;
-	//	fbool.invert( 0, 1, 0, 0 );
-	//	fbool.invert( 0, 1, 1, 1 );
-	//	fbool.invert( 1, 0, 0, 0 );
-	//	fbool.invert( 1, 0, 1, 1 );
-	////	fbool.invert( 0, 0, 0, 1 );
-	////	fbool.invert( 0, 0, 1, 0 );
-	////	fbool.invert( 1, 1, 0, 1 );
-	////	fbool.invert( 1, 1, 1, 0 );
-	//	fbool.Print();
-	//	dslacNf2.update( fbool, fbool.different( fold ) );
-	//	std::cout << "Matrix after update: " << std::endl << dslacNf2.getMatrix() << std::endl;
-	//	std::cout << "det=" << dslacNf2.det() << " and should be " << dslacNf2.getMatrix().determinant() << std::endl;
-	//	std::cout << "inverse*matrix: " << std::endl << dslacNf2.inverse * dslacNf2.getMatrix() << std::endl;
-	//
-	//	std::cout << "Testing combined update." << std::endl;
-	//	fold = fbool;
-	//	fbool.invert( 0, 1, 0, 0 );
-	//	fbool.invert( 0, 1, 1, 1 );
-	//	fbool.invert( 1, 0, 0, 0 );
-	//	fbool.invert( 1, 0, 1, 1 );
-	//	fbool.invert( 0, 0, 0, 1 );
-	//	fbool.invert( 0, 0, 1, 0 );
-	//	fbool.invert( 1, 1, 0, 1 );
-	//	fbool.invert( 1, 1, 1, 0 );
-	//	fbool.Print();
-	//	dslacNf2.update( fbool, fbool.different( fold ), true );
-	//	std::cout << "Matrix after combined update: " << std::endl << dslacNf2.getMatrix() << std::endl;
-	//	std::cout << "det=" << dslacNf2.det() << " and should be " << dslacNf2.getMatrix().determinant() << std::endl;
-	//	std::cout << "inverse*matrix: " << std::endl << (dslacNf2.inverse * dslacNf2.getMatrix())/*.isApprox( Eigen::MatrixXcd::Identity(dslacNf2.getMatrix().rows(), dslacNf2.getMatrix().cols()) )*/ << std::endl;
+	for( int i = 0; i < 3; i++ ) {
+		std::cout << std::endl << "Testing algorithm " <<  i << std::endl;
+		SlacOperatorMatrix::updateType upType = static_cast<SlacOperatorMatrix::updateType>( i );
+		fbool = FieldBoolean( 4, 2, 2, NULL, zeroInit );
+		FieldBoolean fboolInitial = fbool;
+		fbool.setValue( 1, 0, 0, 0, 1 );
+		fbool.setValue( 1, 1, 1, 0, 1 );
+		fbool.setValue( 1, 0, 0, 1, 0 );
+		fbool.setValue( 1, 1, 1, 1, 0 );
+			fbool.Print();
 
+		dslacNf2.setFull();
+		std::cout << "Det before: " << dslacNf2.det() << std::endl;
+		FieldBoolean diff = fbool.different( fboolInitial );
+//		diff.Print();
+		dslacNf2.update( fbool, diff, upType );
+		std::cout << "Det after first delete: " << dslacNf2.det() << std::endl;
 
-	//	std::cout << std::endl << "Truely erasing cols from slac matrix:" << std::endl;
-	//	VectorXb kx0 = VectorXb::Constant(N*(N-1)*(N-1), true );
-	//	VectorXb kx1 = VectorXb::Constant(N*(N-1)*(N-1), true );
+		fbool.invert( 0, 1, 0, 0 );
+		fbool.invert( 0, 1, 1, 1 );
+		fbool.invert( 1, 0, 0, 0 );
+		fbool.invert( 1, 0, 1, 1 );
+		fbool.invert( 0, 0, 0, 1 );
+		fbool.invert( 0, 0, 1, 0 );
+		fbool.invert( 1, 1, 0, 1 );
+		fbool.invert( 1, 1, 1, 0 );
+		//	fbool.Print();
+		diff = fbool.different( fboolInitial );
+		//	diff.Print();
+
+		dslacNf2.update( fbool, diff, upType );
+		std::cout << "switching diag->off, det: " << dslacNf2.det() << std::endl;
+
+		fbool.invert( 0, 0, 0, 1 );
+		fbool.invert( 0, 0, 1, 0 );
+		fbool.invert( 1, 1, 0, 1 );
+		fbool.invert( 1, 1, 1, 0 );
+
+		diff = fbool.different( fboolInitial );
+		dslacNf2.update( fbool, diff, upType );
+		std::cout << "deleting more, det: " << dslacNf2.det() << std::endl;
+
+		fbool.invert( 0, 1, 0, 0 );
+		fbool.invert( 0, 1, 1, 1 );
+		fbool.invert( 1, 0, 0, 0 );
+		fbool.invert( 1, 0, 1, 1 );
+		fbool.invert( 0, 0, 0, 1 );
+		fbool.invert( 0, 0, 1, 0 );
+		fbool.invert( 1, 1, 0, 1 );
+		fbool.invert( 1, 1, 1, 0 );
+
+		diff = fbool.different( fboolInitial );
+		dslacNf2.update( fbool, diff, upType );
+		std::cout << "Full det again: " << dslacNf2.det() << std::endl;
+	}
+
+	//		std::vector< Complex > dets;
+	//	for( int i = 0; i < 3; i++ ) {
+	//		std::cout << std::endl << "Testing algorithm " <<  i << std::endl;
+	//		dslacNf2.update( fbool, diff, static_cast<SlacOperatorMatrix::updateType>( 0  ) );
+	//		std::cout << "Two Flavour deleted: " << std::endl << dslacNf2.getMatrix() << std::endl;
+	//		std::cout << "Two Flavour deleted determinant: " << std::endl << dslacNf2.det() << std::endl;
+	//		dets.push_back( dslacNf2.det() );
+	//		dslacNf2.setFull();
+	//	}
 	//
-	//	kx0( 2 ) = false;
-	//	kx0( 4 ) = false;
+	//	if( abs( dets[0] - dets[1] ) > 1e-10 ) std::cout << "Difference between erase and separate." << std::endl;
+	//	if( abs( dets[0] - dets[2] ) > 1e-10 ) std::cout << "Difference between erase and combined." << std::endl;
 	//
-	//	dslac3d.setFull();
-	//	std::cout << "before:" << std::endl << dslac3d.getMatrix() << std::endl;
-	//	dslac3d.eraseCols( kx0, kx1 );
-	//	std::cout << "after erasing cols:" << std::endl << dslac3d.getMatrix() << std::endl;
-	//	kx0( 2 ) = true;
-	//	kx0( 4 ) = true;
-	//	kx0( 15 ) = false;
-	//	kx0( 16 ) = false;
-	//	dslac3d.eraseRows( kx0, kx1 );
-	//	std::cout << "after erasing rows:" << std::endl << dslac3d.getMatrix() << std::endl;
-	//	dslac3d.addPoint( 5 );
-	//	std::cout << dslac3d.getMatrix() << std::endl;
-	//	std::cout << "without 6: " << dslac3d.det() << std::endl;
-	//	dslac3d.addPoint( 6 );
-	//	std::cout << "full: " << dslac3d.det() << std::endl;
+	//	std::cout << "Testing simultaneous add and delete" << std::endl;
+	//	fboolInitial = fbool;
+	//
+	//	for( size_t x = 0; x < 2*3*3; x++ ) {
+	//		for( size_t spin = 0; spin < 2; spin++ ) {
+	//			for( size_t flavour1 = 0; flavour1 <=1; flavour1++ ) {
+	//				for( size_t flavour2 = 0; flavour2 <= 1; flavour2 ++ ) {
+	//					fbool.invert( x, spin, flavour1, flavour2 );
+	//					fbool.enforceConstraint(x, spin, flavour1, flavour2 );
+	//					fbool.Print();
+	//					diff = fbool.different( fboolInitial );
+	//
+	//
+	//					for( int i = 0; i < 3; i++ ) {
+	//						std::cout << std::endl << "Testing algorithm " <<  i << std::endl;
+	//						dslacNf2.update( fbool, diff, static_cast<SlacOperatorMatrix::updateType>( 0  ) );
+	////						std::cout << "Two Flavour deleted: " << std::endl << dslacNf2.getMatrix() << std::endl;
+	//						std::cout << "Two Flavour deleted determinant: " << std::endl << dslacNf2.det() << std::endl;
+	//						dets.push_back( dslacNf2.det() );
+	//						dslacNf2.setFull();
+	//					}
+	//
+	//					if( abs( dets[0] - dets[1] ) > 1e-10 ) std::cout << "Difference between erase and separate." << std::endl;
+	//					if( abs( dets[0] - dets[2] ) > 1e-10 ) std::cout << "Difference between erase and combined." << std::endl;
+	//				}
+	//			}
+	//		}
+	//	}
 }

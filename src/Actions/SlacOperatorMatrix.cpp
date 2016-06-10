@@ -92,35 +92,29 @@ void SlacOperatorMatrix::update( FieldBoolean kxiab, FieldBoolean changed, updat
 		}
 	}
 
-//	std::cout << "Delete: ";
-//	for( size_t col : colsDel) std::cout << col << " ";
-//	std::cout << std::endl;
-//	for( size_t row : rowsDel ) std::cout << row << " ";
-//	std::cout << std::endl << " Add: ";
-//	for( size_t col : colsAdd ) std::cout << col << " ";
-//	std::cout << std::endl;
-//	for( size_t row : rowsAdd ) std::cout << row << " ";
-//	std::cout << std::endl;
+	std::cout << "Delete: " << std::endl;
+	for( size_t col : colsDel) std::cout << col << " ";
+	std::cout << std::endl;
+	for( size_t row : rowsDel ) std::cout << row << " ";
+	std::cout << std::endl << "Add: " << std::endl;
+	for( size_t col : colsAdd ) std::cout << col << " ";
+	std::cout << std::endl;
+	for( size_t row : rowsAdd ) std::cout << row << " ";
+	std::cout << std::endl;
 
 	switch( upType ) {
 	case eraseUpdate:
 	{
 		setFull();
 		erase( kxiab );
-
-		Eigen::FullPivLU< Eigen::MatrixXcd > LUdecomp( dslac );
-		if( LUdecomp.isInvertible() ) {
-			inverse = LUdecomp.inverse();
-			detVal = LUdecomp.determinant();
-		} else {
-			detVal = 0.;
-		}
 		break;
 	}
 	case separateUpdate:
 		deleteEntries( rowsDel, colsDel );
 		if( abs( detVal ) > 10e-10 )
 			addEntries( rowsAdd, colsAdd );
+		else
+			std::cerr << "Warning: separate Update of deleting and adding failed to add..." << std::endl;
 		break;
 	case combinedUpdate:
 		combined( rowsAdd, colsAdd, rowsDel, colsDel );
@@ -129,22 +123,25 @@ void SlacOperatorMatrix::update( FieldBoolean kxiab, FieldBoolean changed, updat
 }
 
 void SlacOperatorMatrix::erase( const FieldBoolean& kxiab ) {
-//	std::vector< size_t > cols;
-//	std::vector< size_t > rows;
 	for( size_t flavour1 = 0; flavour1 < Nf; flavour1++ ) {
 		for( size_t flavour2 = 0; flavour2 < Nf; flavour2++ ) {
 			for( size_t spin = 0; spin < dimSpinor; spin++ ) {
 				for( size_t x = 0; x < N; x++ ) {
 					if( kxiab.getValue( x, spin, flavour1, flavour2 ) ) {
-//						cols.push_back( matIndex(x, spin, flavour1) );
-//						rows.push_back( matIndex(x, spin, flavour2) );
 						erase( x, spin, flavour1, flavour2 );
 					}
 				}
 			}
 		}
 	}
-//	deleteEntries( rows, cols );
+
+	Eigen::FullPivLU< Eigen::MatrixXcd > LUdecomp( dslac );
+	if( LUdecomp.isInvertible() ) {
+		inverse = LUdecomp.inverse();
+		detVal = LUdecomp.determinant();
+	} else {
+		detVal = 0.;
+	}
 }
 
 
@@ -200,8 +197,6 @@ void SlacOperatorMatrix::combined( std::vector<size_t> addRows, std::vector<size
 			}
 		}
 
-//		std::cout << "submat: " << std::endl << subMat << std::endl;
-
 		for( size_t index = 0; index < addCols.size(); index++ ) {
 			deletedCols.erase( std::remove( deletedCols.begin(), deletedCols.end(), addCols[index] ), deletedCols.end() );
 			deletedRows.erase( std::remove( deletedRows.begin(), deletedRows.end(), addRows[index] ), deletedRows.end() );
@@ -256,23 +251,26 @@ void SlacOperatorMatrix::combined( std::vector<size_t> addRows, std::vector<size
 				colVec = -dslac.col( delCols[ index-addRows.size() ] );
 			}
 
-			colUpdate.col( index ) = colVec;
+			colUpdate.col( index+updateRank ) = colVec;
 			rowUpdate.row( index ) = rowVec;
 		}
 
-		colUpdate += 0.5*onesRow*subMat;
-		rowUpdate += 0.5*subMat*onesCol;
+//		colUpdate += 0.5*onesRow*subMat;
+		std::cout << "first rowUp" << std::endl << rowUpdate << std::endl << std::endl;
+		rowUpdate.topRows( updateRank ) = rowUpdate.topRows( updateRank ) + subMat*onesCol;
 
 //		std::cout << "onesRow" << std::endl << onesRow << std::endl << std::endl;
-//		std::cout << "rowUp" << std::endl << rowUpdate << std::endl << std::endl;
 //		std::cout << "onesCol" << std::endl << onesCol << std::endl << std::endl;
-//		std::cout << "colUp" << std::endl << colUpdate << std::endl << std::endl;
 
 		for( size_t i = updateRank; i < 2*updateRank; i++ ) {
-			colUpdate.col( i ) = onesRow.col( i - updateRank );
+			colUpdate.col( i - updateRank ) = onesRow.col( i - updateRank );
 			rowUpdate.row( i ) = onesCol.row( i - updateRank );
 		}
+		std::cout << "subMat" << std::endl << subMat << std::endl << std::endl;
+		std::cout << "rowUp" << std::endl << rowUpdate << std::endl << std::endl;
+		std::cout << "colUp" << std::endl << colUpdate << std::endl << std::endl;
 
+		std::cout << "outer: " << std::endl << colUpdate * rowUpdate << std::endl << std::endl;
 		WoodburyUpdate( colUpdate, rowUpdate );
 //		WoodburyUpdate( colUpdate, onesCol );
 //		WoodburyUpdate( onesRow, rowUpdate );	// seems like we have to do this update first to avoid det=0, likely because of the subMat update
