@@ -133,7 +133,7 @@ int main( int argc, char** argv ) {
 		fbool.setValue( 1, 1, 1, 0, 1 );
 		fbool.setValue( 1, 0, 0, 1, 0 );
 		fbool.setValue( 1, 1, 1, 1, 0 );
-			fbool.Print();
+		fbool.Print();
 
 		dslacNf2.setFull();
 		std::cout << "Det before: " << dslacNf2.det() << std::endl;
@@ -142,6 +142,7 @@ int main( int argc, char** argv ) {
 		dslacNf2.update( fbool, diff, upType );
 		std::cout << "Det after first delete: " << dslacNf2.det() << std::endl;
 
+		fboolInitial = fbool;
 		fbool.invert( 0, 1, 0, 0 );
 		fbool.invert( 0, 1, 1, 1 );
 		fbool.invert( 1, 0, 0, 0 );
@@ -150,13 +151,14 @@ int main( int argc, char** argv ) {
 		fbool.invert( 0, 0, 1, 0 );
 		fbool.invert( 1, 1, 0, 1 );
 		fbool.invert( 1, 1, 1, 0 );
-		//	fbool.Print();
+//		fbool.Print();
 		diff = fbool.different( fboolInitial );
-		//	diff.Print();
+		diff.Print();
 
 		dslacNf2.update( fbool, diff, upType );
-		std::cout << "switching diag->off, det: " << dslacNf2.det() << std::endl;
+		std::cout << "switched diag->off, det: " << dslacNf2.det() << std::endl;
 
+		fboolInitial = fbool;
 		fbool.invert( 0, 0, 0, 1 );
 		fbool.invert( 0, 0, 1, 0 );
 		fbool.invert( 1, 1, 0, 1 );
@@ -164,8 +166,10 @@ int main( int argc, char** argv ) {
 
 		diff = fbool.different( fboolInitial );
 		dslacNf2.update( fbool, diff, upType );
-		std::cout << "deleting more, det: " << dslacNf2.det() << std::endl;
+		diff.Print();
+		std::cout << "deleted more, det: " << dslacNf2.det() << std::endl;
 
+		fboolInitial = fbool;
 		fbool.invert( 0, 1, 0, 0 );
 		fbool.invert( 0, 1, 1, 1 );
 		fbool.invert( 1, 0, 0, 0 );
@@ -177,6 +181,7 @@ int main( int argc, char** argv ) {
 
 		diff = fbool.different( fboolInitial );
 		dslacNf2.update( fbool, diff, upType );
+		diff.Print();
 		std::cout << "Full det again: " << dslacNf2.det() << std::endl;
 	}
 
