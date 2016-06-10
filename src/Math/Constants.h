@@ -16,6 +16,7 @@ namespace FermiOwn {
 	typedef double Real;
 
 	typedef Eigen::Matrix< bool, Eigen::Dynamic, 1 > VectorXb;
+	typedef Eigen::Matrix< bool, 1, Eigen::Dynamic > RowVectorXb;
 	typedef Eigen::Matrix< bool, Eigen::Dynamic, Eigen::Dynamic > MatrixXb;
 
 	const double PI = 3.14159265358979;

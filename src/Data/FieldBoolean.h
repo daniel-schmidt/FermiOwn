@@ -19,8 +19,16 @@ class FieldBoolean: public Field<bool> {
 public:
 	FieldBoolean( const size_t latticeVolume, const size_t numberOfSpin, const size_t numberOfFlavours, std::ranlux48 * rndGen, InitType init );
 	virtual ~FieldBoolean();
+
+	//TODO: inline the getter and setter.
 	bool getValue( size_t x, size_t spin, size_t flavour1, size_t flavour2 ) const;
 	void setValue( bool val, size_t x, size_t spin, size_t flavour1, size_t flavour2 );
+	/**
+	 * @brief Set a full configuration at a single lattice point.
+	 * @param newRow is the new single-point configuration to set. Should be a boolean row vector of length spin*numberOfFlavours^2.
+	 * @param x is the physical point at which the new configuration is set. Corresponds to the row-index in the full field matrix.
+	 */
+	void setRow( const RowVectorXb & newRow, size_t x );
 	void invert(size_t x, size_t spin, size_t flavour1, size_t flavour2);
 	void enforceConstraint( size_t x, size_t spin, size_t a, size_t b );
 	bool constraintViolated( size_t x) const;

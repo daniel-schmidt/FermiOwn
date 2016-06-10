@@ -115,5 +115,15 @@ int main() {
 	fbool0.Print();
 	std::cout << std::endl;
 	fbool1.Print();
+
+	std::cout << std::endl << "Testing setting whole rows: " << std::endl;
+	RowVectorXb newRow(2*3*3);
+	newRow << 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1;
+	std::cout << newRow << std::endl << "This row should be found in the previous field in line 3 and 11:" << std::endl;
+	fbool1.setRow( newRow, 2);
+	fbool1.setRow( newRow, 10);
+
+	fbool1.Print();
+
 	return 0;
 }

@@ -30,6 +30,14 @@ void FieldBoolean::setValue(bool val, size_t x, size_t spin, size_t flavour1, si
 	data( x, colIndex( spin, flavour1, flavour2 ) ) = val;
 }
 
+void FieldBoolean::setRow( const RowVectorXb & newRow, size_t x ) {
+	if( newRow.size() == int(numColsPerSpin*numSpins) ) {
+		data.row( x ) = newRow;
+	} else {
+		std::cerr << "Warning: FieldBoolean sets a new row from a vector with wrong size of " << newRow.size() << " instead of " << numColsPerSpin*numSpins  << std::endl;
+	}
+}
+
 void FieldBoolean::invert(size_t x, size_t spin, size_t flavour1, size_t flavour2) {
 	data( x, colIndex( spin, flavour1, flavour2 ) ) = !data( x, colIndex( spin, flavour1, flavour2 ) );
 }
