@@ -25,7 +25,7 @@ int main( int argc, char** argv ) {
 
 	gen.generateAllowedConfs();
 
-	Eigen::MatrixXi allConfs = gen.getAllConfs();
+	MatrixXb allConfs = gen.getAllConfs();
 	std::cout << "Nf=" << numFlavours << " has " << allConfs.rows() << " allowed configurations:" << std::endl;
 	std::cout << allConfs << std::endl;
 

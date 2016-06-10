@@ -26,7 +26,7 @@ void  ConfigGenerator::generateAllowedConfs() {
 
 	//TODO: implement something better, which doesn't need to allocate so much memory...
 	try {
-		allowedConfs = Eigen::MatrixXi::Zero( numConfigs, numCols );
+		allowedConfs = MatrixXb::Zero( numConfigs, numCols );
 	} catch ( const std::bad_alloc& ) {
 		std::cerr << "ERROR: Not enough memory!" << std::endl;
 		std::cerr << "ConfigGenerator tries to allocate an array of size " << numConfigs << " x " << numCols << std::endl;
@@ -52,7 +52,7 @@ void  ConfigGenerator::generateAllowedConfs() {
 		if( !fConf.constraintViolated(0) ) {
 			for( size_t bit = 0; bit < numCols; bit++ ) {
 				if( bits % 2 == 1 ) {
-					allowedConfs( numAllowedConfs, numCols-1-bit ) = 1;
+					allowedConfs( numAllowedConfs, numCols-1-bit ) = true;
 				}
 				bits = bits >> 1;
 			}

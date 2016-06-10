@@ -51,15 +51,15 @@ public:
 	 *
 	 * @return A matrix, where each row represents an allowed configuration.
 	 */
-	inline Eigen::MatrixXi getAllConfs();
+	inline MatrixXb getAllConfs();
 
 private:
-	Eigen::MatrixXi allowedConfs;	//TODO: should have a boolean type...
+	MatrixXb allowedConfs;		///< matrix containing an allowed config in each row
 	const size_t Nf;			///< the number of flavours
-	const size_t dimSpinor;	///< the number of spinor components, should be always 2, since we work in the irreducible representation
+	const size_t dimSpinor;		///< the number of spinor components, should be always 2, since we work in the irreducible representation
 };
 
-inline Eigen::MatrixXi ConfigGenerator::getAllConfs() {
+inline MatrixXb ConfigGenerator::getAllConfs() {
 	return allowedConfs;
 }
 
