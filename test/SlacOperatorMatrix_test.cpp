@@ -58,7 +58,7 @@ int main( int argc, char** argv ) {
 	if(dslac.getMatrix().isApprox(sol, 1e-5) ) std::cout << "Size " << N << " works!" << std::endl;
 
 	std::cout << std::endl << "Testing 3d initialization:" << std::endl;
-	size_t Nf = 1;
+	size_t Nf = 2;
 	size_t dim = 3;
 	SlacOperatorMatrix dslac3d( N, N+1, dim, Nf );
 	std::cout << "Full determinant:" << dslac3d.det() << std::endl;

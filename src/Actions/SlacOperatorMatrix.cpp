@@ -10,14 +10,14 @@
 namespace FermiOwn {
 
 SlacOperatorMatrix::SlacOperatorMatrix( size_t size ) :
-																						N(size),
-																						dslac(make1D(size))
+																								N(size),
+																								dslac(make1D(size))
 {}
 
 SlacOperatorMatrix::SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t numFlavours ) :
-																						N(Nt*Ns*Ns),
-																						dimSpinor(2),
-																						Nf(numFlavours)
+																								N(Nt*Ns*Ns),
+																								dimSpinor(2),
+																								Nf(numFlavours)
 {
 	using namespace Eigen;
 	if( dim != 3 ) {
@@ -25,26 +25,87 @@ SlacOperatorMatrix::SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t
 		exit(1);
 	}
 	std::vector< Matrix2cd > gamma = cliff.getGammas();
-	std::vector< MatrixXcd > Gammas;
-	for( auto gammaMu : gamma) {
-		MatrixXcd GammaMu = KroneckerProduct<Matrix2cd, MatrixXcd>( gammaMu, MatrixXcd::Identity(N,N) );
-		Gammas.push_back(GammaMu);
+	MatrixXcd dx = make1D(Nt);
+	MatrixXcd dyz = make1D(Ns);
+	MatCoeffList coeffs;
+	for( size_t flavour = 0; flavour < Nf; flavour++ ) {
+		for( size_t spin1 = 0; spin1 < dimSpinor; spin1++ ) {
+			for( size_t spin2 = 0; spin2 < dimSpinor; spin2++ ) {
+				size_t internRowIndex = N*( dimSpinor*flavour + spin1 );
+				size_t internColIndex = N*( dimSpinor*flavour + spin2 );
+
+				// Matrix elements in x-direction
+				Complex matElem = gamma[0]( spin1, spin2 );
+				if( std::fabs( matElem ) > ZERO_TOL ) {
+					for( size_t r = 0; r < Ns*Ns; r++ ) {
+						for( size_t v = 0; v < Nt; v++ ) {
+							for( size_t u = v+1; u < Nt; u++ ) {
+								coeffs.push_back( Triplet<Complex>( internRowIndex + Nt*r + v, internColIndex + Nt*r + u, I*matElem*dx(v,u) ) );
+							}
+						}
+					}
+				}
+
+				matElem = gamma[1]( spin1, spin2 );
+				if( std::fabs( matElem ) > ZERO_TOL ) {
+					for( size_t q = 0; q < Ns; q++ ) {
+						for( size_t v = 0; v < Nt; v++ ) {
+							for( size_t r = 0; r < Ns; r++ ) {
+								for( size_t s = r+1; s < Ns; s++ ) {
+									coeffs.push_back( Triplet<Complex>( internRowIndex + Ns*Nt*q + Nt*r + v, internColIndex + Ns*Nt*q + Nt*s + v, I*matElem*dyz(r,s) ) );
+								}
+							}
+						}
+					}
+				}
+
+				matElem = gamma[2]( spin1, spin2 );
+				if( std::fabs( matElem ) > ZERO_TOL ) {
+					for( size_t v = 0; v < Ns*Nt; v++ ) {
+						for( size_t r = 0; r < Ns; r++ ) {
+							for( size_t s = r+1; s < Ns; s++ ) {
+								coeffs.push_back( Triplet<Complex>( internRowIndex + Ns*Nt*r + v, internColIndex + Ns*Nt*s + v, I*matElem*dyz(r,s) ) );
+							}
+						}
+					}
+				}
+
+			}
+		}
 	}
 
-	MatrixXcd dx = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor*Ns*Ns,dimSpinor*Ns*Ns), make1D(Nt) );
-	MatrixXcd dy( KroneckerProduct<MatrixXcd, MatrixXd>( make1D(Ns), MatrixXd::Identity(Nt,Nt) ) );
-	dy = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor*Ns,dimSpinor*Ns), dy ).eval();
-	MatrixXcd dz( KroneckerProduct<MatrixXcd, MatrixXd>( make1D(Ns), MatrixXd::Identity(Ns*Nt, Ns*Nt) ) );
-	dz = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor,dimSpinor), dz ).eval();
-	dslac = Gammas[0]*dx+Gammas[1]*dy+Gammas[2]*dz;
-	dslac = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(Nf,Nf), dslac ).eval();
-	dslac *= I;
-	fullSlac = dslac;
+	for( auto val : coeffs ) {
+		std::cout << " (" << val.row() << ", " << val.col() << ", "<< val.value() << ")"<< std::endl;
+	}
+	std::cout << coeffs.size() << std::endl;
 
-	detVal = dslac.determinant();
-	fullDet = detVal;
-	inverse = dslac.inverse();
-	fullInverse = inverse;
+//	WoodburyMatrix mat( Nf*dimSpinor*N, coeffs );
+//	mat.Print();
+	Eigen::SparseMatrix<Complex> test( Nf*dimSpinor*N, Nf*dimSpinor*N );
+	test.setFromTriplets( coeffs.begin(), coeffs.end() );
+	std::cout << test << std::endl;
+	exit(0);
+
+	//	std::vector< MatrixXcd > Gammas;
+	//	for( auto gammaMu : gamma) {
+	//		MatrixXcd GammaMu = KroneckerProduct<Matrix2cd, MatrixXcd>( gammaMu, MatrixXcd::Identity(N,N) );
+	//		Gammas.push_back(GammaMu);
+	//	}
+	//
+	//	MatrixXcd dx = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor*Ns*Ns,dimSpinor*Ns*Ns), make1D(Nt) );
+	//	MatrixXcd dy( KroneckerProduct<MatrixXcd, MatrixXd>( make1D(Ns), MatrixXd::Identity(Nt,Nt) ) );
+	//	dy = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor*Ns,dimSpinor*Ns), dy ).eval();
+	//	MatrixXcd dz( KroneckerProduct<MatrixXcd, MatrixXd>( make1D(Ns), MatrixXd::Identity(Ns*Nt, Ns*Nt) ) );
+	//	dz = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor,dimSpinor), dz ).eval();
+	//	dslac = Gammas[0]*dx+Gammas[1]*dy+Gammas[2]*dz;
+	//	dslac = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(Nf,Nf), dslac ).eval();
+	//	dslac *= I;
+	//	fullSlac = dslac;
+	//
+	//	detVal = dslac.determinant();
+	//	fullDet = detVal;
+	//	inverse = dslac.inverse();
+	//	fullInverse = inverse;
 }
 
 SlacOperatorMatrix::~SlacOperatorMatrix() {}
@@ -92,15 +153,15 @@ void SlacOperatorMatrix::update( FieldBoolean kxiab, FieldBoolean changed, updat
 		}
 	}
 
-//	std::cout << "Delete: " << std::endl;
-//	for( size_t col : colsDel) std::cout << col << " ";
-//	std::cout << std::endl;
-//	for( size_t row : rowsDel ) std::cout << row << " ";
-//	std::cout << std::endl << "Add: " << std::endl;
-//	for( size_t col : colsAdd ) std::cout << col << " ";
-//	std::cout << std::endl;
-//	for( size_t row : rowsAdd ) std::cout << row << " ";
-//	std::cout << std::endl;
+	//	std::cout << "Delete: " << std::endl;
+	//	for( size_t col : colsDel) std::cout << col << " ";
+	//	std::cout << std::endl;
+	//	for( size_t row : rowsDel ) std::cout << row << " ";
+	//	std::cout << std::endl << "Add: " << std::endl;
+	//	for( size_t col : colsAdd ) std::cout << col << " ";
+	//	std::cout << std::endl;
+	//	for( size_t row : rowsAdd ) std::cout << row << " ";
+	//	std::cout << std::endl;
 
 	switch( upType ) {
 	case eraseUpdate:
@@ -196,117 +257,117 @@ void SlacOperatorMatrix::combined( std::vector<size_t> addRows, std::vector<size
 	// number of rows/cols to modify
 	size_t updateRank = addCols.size() + delCols.size();
 
-//	if( addRows.size() != 0 && delRows.size() != 0 ) {
-		Eigen::MatrixXcd subMat( updateRank, updateRank );
-		for( size_t colIndex = 0; colIndex < updateRank; colIndex++ ) {
-			for( size_t rowIndex = 0; rowIndex < updateRank; rowIndex++ ) {
-				if( colIndex < addRows.size() && rowIndex < addRows.size() ) {
-					subMat( rowIndex, colIndex ) = -fullSlac( addRows[rowIndex], addCols[colIndex] )-dslac( addRows[rowIndex], addCols[colIndex] );
-				} else if( colIndex >= addRows.size() && rowIndex >= addRows.size() ) {
-					subMat( rowIndex, colIndex ) = dslac( delRows[ rowIndex-addRows.size() ], delCols[ colIndex-addRows.size() ] );
-					if( colIndex == rowIndex ) subMat( rowIndex, colIndex ) += 1.;
-				} else {
-					subMat( rowIndex, colIndex ) = 0.;
-				}
-			}
-		}
-
-		for( size_t index = 0; index < addCols.size(); index++ ) {
-			deletedCols.erase( std::remove( deletedCols.begin(), deletedCols.end(), addCols[index] ), deletedCols.end() );
-			deletedRows.erase( std::remove( deletedRows.begin(), deletedRows.end(), addRows[index] ), deletedRows.end() );
-		}
-
-		Eigen::MatrixXcd slacOld = dslac;
-
-		Eigen::MatrixXcd colUpdate( dslac.cols(), 2*updateRank );
-		Eigen::MatrixXcd rowUpdate( 2*updateRank, dslac.rows() );
-		Eigen::MatrixXcd onesCol = Eigen::MatrixXcd::Zero( updateRank, dslac.rows() );
-		Eigen::MatrixXcd onesRow = Eigen::MatrixXcd::Zero( dslac.cols(), updateRank );
-
-		for( size_t index = 0; index < updateRank; index++ ) {
-
-			Eigen::VectorXcd colVec;
-			Eigen::RowVectorXcd rowVec;
-
-			if( index < addRows.size() ) {
-				// replace added cols/rows by their original value in the full slac operator
-				rowVec = fullSlac.row( addRows[index] );
-				colVec = fullSlac.col( addCols[index] );
-				// do not update, if cols/rows are still deleted, so replace them by their current values.
-//				for( auto deletedCol : deletedCols ) {
-//					rowVec( deletedCol ) = dslac( addRows[index], deletedCol );
-//				}
-//				for( auto deletedRow : deletedRows ) {
-//					colVec( deletedRow ) = dslac( deletedRow, addCols[index]);
-//				}
-				onesRow( addRows[index], index ) = 1.;
-				onesCol( index, addCols[index] ) = 1.;
-
-//				dslac.col( addCols[index] ) = colVec;
-//				dslac.row( addRows[index] ) = rowVec;
-
+	//	if( addRows.size() != 0 && delRows.size() != 0 ) {
+	Eigen::MatrixXcd subMat( updateRank, updateRank );
+	for( size_t colIndex = 0; colIndex < updateRank; colIndex++ ) {
+		for( size_t rowIndex = 0; rowIndex < updateRank; rowIndex++ ) {
+			if( colIndex < addRows.size() && rowIndex < addRows.size() ) {
+				subMat( rowIndex, colIndex ) = -fullSlac( addRows[rowIndex], addCols[colIndex] )-dslac( addRows[rowIndex], addCols[colIndex] );
+			} else if( colIndex >= addRows.size() && rowIndex >= addRows.size() ) {
+				subMat( rowIndex, colIndex ) = dslac( delRows[ rowIndex-addRows.size() ], delCols[ colIndex-addRows.size() ] );
+				if( colIndex == rowIndex ) subMat( rowIndex, colIndex ) += 1.;
 			} else {
-//				colVec = Eigen::VectorXcd::Zero( dslac.rows() );
-//				rowVec = Eigen::RowVectorXcd::Zero( dslac.cols() );
-
-				onesRow( delRows[ index-addRows.size() ], index ) = 1.;
-				onesCol( index, delCols[ index-addRows.size() ] ) = 1.;
-
-//				dslac.col( delCols[ index-addRows.size() ] ) = colVec;
-//				dslac.row( delRows[ index-addRows.size() ] ) = rowVec;
-
-//				dslac( delRows[index-addRows.size()], delCols[index-addRows.size()] ) = 1.;
-
-				rowVec = -dslac.row( delRows[ index-addRows.size() ] );
-				colVec = -dslac.col( delCols[ index-addRows.size() ] );
+				subMat( rowIndex, colIndex ) = 0.;
 			}
+		}
+	}
 
-			std::cout << "Deleted: ";
-			for( size_t delIdx = 0; delIdx < deletedCols.size(); delIdx++ ) {
-				std::cout << "(" << deletedRows[ delIdx ] << "," << deletedCols[ delIdx ] << ") ";
-				rowVec( deletedCols[delIdx] ) = 0.;
-				colVec( deletedRows[delIdx] ) = 0.;
-			}
-			std::cout << std::endl;
+	for( size_t index = 0; index < addCols.size(); index++ ) {
+		deletedCols.erase( std::remove( deletedCols.begin(), deletedCols.end(), addCols[index] ), deletedCols.end() );
+		deletedRows.erase( std::remove( deletedRows.begin(), deletedRows.end(), addRows[index] ), deletedRows.end() );
+	}
 
-			colUpdate.col( index+updateRank ) = colVec;
-			rowUpdate.row( index ) = rowVec;
+	Eigen::MatrixXcd slacOld = dslac;
+
+	Eigen::MatrixXcd colUpdate( dslac.cols(), 2*updateRank );
+	Eigen::MatrixXcd rowUpdate( 2*updateRank, dslac.rows() );
+	Eigen::MatrixXcd onesCol = Eigen::MatrixXcd::Zero( updateRank, dslac.rows() );
+	Eigen::MatrixXcd onesRow = Eigen::MatrixXcd::Zero( dslac.cols(), updateRank );
+
+	for( size_t index = 0; index < updateRank; index++ ) {
+
+		Eigen::VectorXcd colVec;
+		Eigen::RowVectorXcd rowVec;
+
+		if( index < addRows.size() ) {
+			// replace added cols/rows by their original value in the full slac operator
+			rowVec = fullSlac.row( addRows[index] );
+			colVec = fullSlac.col( addCols[index] );
+			// do not update, if cols/rows are still deleted, so replace them by their current values.
+			//				for( auto deletedCol : deletedCols ) {
+			//					rowVec( deletedCol ) = dslac( addRows[index], deletedCol );
+			//				}
+			//				for( auto deletedRow : deletedRows ) {
+			//					colVec( deletedRow ) = dslac( deletedRow, addCols[index]);
+			//				}
+			onesRow( addRows[index], index ) = 1.;
+			onesCol( index, addCols[index] ) = 1.;
+
+			//				dslac.col( addCols[index] ) = colVec;
+			//				dslac.row( addRows[index] ) = rowVec;
+
+		} else {
+			//				colVec = Eigen::VectorXcd::Zero( dslac.rows() );
+			//				rowVec = Eigen::RowVectorXcd::Zero( dslac.cols() );
+
+			onesRow( delRows[ index-addRows.size() ], index ) = 1.;
+			onesCol( index, delCols[ index-addRows.size() ] ) = 1.;
+
+			//				dslac.col( delCols[ index-addRows.size() ] ) = colVec;
+			//				dslac.row( delRows[ index-addRows.size() ] ) = rowVec;
+
+			//				dslac( delRows[index-addRows.size()], delCols[index-addRows.size()] ) = 1.;
+
+			rowVec = -dslac.row( delRows[ index-addRows.size() ] );
+			colVec = -dslac.col( delCols[ index-addRows.size() ] );
 		}
 
-//		colUpdate += 0.5*onesRow*subMat;
-//		std::cout << "first rowUp" << std::endl << rowUpdate << std::endl << std::endl;
-		rowUpdate.topRows( updateRank ) = rowUpdate.topRows( updateRank ) + subMat*onesCol;
-
-//		std::cout << "onesRow" << std::endl << onesRow << std::endl << std::endl;
-//		std::cout << "onesCol" << std::endl << onesCol << std::endl << std::endl;
-
-		for( size_t i = updateRank; i < 2*updateRank; i++ ) {
-			colUpdate.col( i - updateRank ) = onesRow.col( i - updateRank );
-			rowUpdate.row( i ) = onesCol.row( i - updateRank );
+		std::cout << "Deleted: ";
+		for( size_t delIdx = 0; delIdx < deletedCols.size(); delIdx++ ) {
+			std::cout << "(" << deletedRows[ delIdx ] << "," << deletedCols[ delIdx ] << ") ";
+			rowVec( deletedCols[delIdx] ) = 0.;
+			colVec( deletedRows[delIdx] ) = 0.;
 		}
-		std::cout << "subMat" << std::endl << subMat << std::endl << std::endl;
-		std::cout << "rowUp" << std::endl << rowUpdate << std::endl << std::endl;
-		std::cout << "colUp" << std::endl << colUpdate << std::endl << std::endl;
+		std::cout << std::endl;
 
-		std::cout << "outer: " << std::endl << colUpdate * rowUpdate << std::endl << std::endl;
-		WoodburyUpdate( colUpdate, rowUpdate );
-//		WoodburyUpdate( colUpdate, onesCol );
-//		WoodburyUpdate( onesRow, rowUpdate );	// seems like we have to do this update first to avoid det=0, likely because of the subMat update
-//		WoodburyUpdate( onesRow*subMat, onesCol );
+		colUpdate.col( index+updateRank ) = colVec;
+		rowUpdate.row( index ) = rowVec;
+	}
 
-//		dslac += onesRow*rowUpdate + colUpdate*onesCol;
-		dslac += colUpdate * rowUpdate;
-//		std::cout << "slacOld:" << std::endl << slacOld << std::endl << std::endl;
+	//		colUpdate += 0.5*onesRow*subMat;
+	//		std::cout << "first rowUp" << std::endl << rowUpdate << std::endl << std::endl;
+	rowUpdate.topRows( updateRank ) = rowUpdate.topRows( updateRank ) + subMat*onesCol;
 
-		for( size_t index = 0; index < delCols.size(); index++ ) {
-			deletedCols.push_back( delCols[index] );		//TODO: check return value, if we had this element already in the set
-			deletedRows.push_back( delRows[index] );
-		}
-//	} else if( delRows.size() != 0 ) {
-//		deleteEntries( delRows, delCols );
-//	} else if( addRows.size() != 0 ){
-//		addEntries( addRows, addCols );
-//	}
+	//		std::cout << "onesRow" << std::endl << onesRow << std::endl << std::endl;
+	//		std::cout << "onesCol" << std::endl << onesCol << std::endl << std::endl;
+
+	for( size_t i = updateRank; i < 2*updateRank; i++ ) {
+		colUpdate.col( i - updateRank ) = onesRow.col( i - updateRank );
+		rowUpdate.row( i ) = onesCol.row( i - updateRank );
+	}
+	std::cout << "subMat" << std::endl << subMat << std::endl << std::endl;
+	std::cout << "rowUp" << std::endl << rowUpdate << std::endl << std::endl;
+	std::cout << "colUp" << std::endl << colUpdate << std::endl << std::endl;
+
+	std::cout << "outer: " << std::endl << colUpdate * rowUpdate << std::endl << std::endl;
+	WoodburyUpdate( colUpdate, rowUpdate );
+	//		WoodburyUpdate( colUpdate, onesCol );
+	//		WoodburyUpdate( onesRow, rowUpdate );	// seems like we have to do this update first to avoid det=0, likely because of the subMat update
+	//		WoodburyUpdate( onesRow*subMat, onesCol );
+
+	//		dslac += onesRow*rowUpdate + colUpdate*onesCol;
+	dslac += colUpdate * rowUpdate;
+	//		std::cout << "slacOld:" << std::endl << slacOld << std::endl << std::endl;
+
+	for( size_t index = 0; index < delCols.size(); index++ ) {
+		deletedCols.push_back( delCols[index] );		//TODO: check return value, if we had this element already in the set
+		deletedRows.push_back( delRows[index] );
+	}
+	//	} else if( delRows.size() != 0 ) {
+	//		deleteEntries( delRows, delCols );
+	//	} else if( addRows.size() != 0 ){
+	//		addEntries( addRows, addCols );
+	//	}
 }
 
 void SlacOperatorMatrix::deleteEntries( std::vector<size_t> rows, std::vector<size_t> cols ) {
@@ -408,7 +469,7 @@ void SlacOperatorMatrix::WoodburyUpdate( Eigen::MatrixXcd U, Eigen::MatrixXcd V 
 	} else {
 		detVal = 0.;
 	}
-//	std::cout << "Det>" << detVal << std::endl;
+	//	std::cout << "Det>" << detVal << std::endl;
 }
 
 

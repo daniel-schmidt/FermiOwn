@@ -11,10 +11,10 @@
 #include <vector>
 #include <iostream>
 #include <assert.h>
-#include <Eigen/Dense>
 #include <unsupported/Eigen/KroneckerProduct>
 #include "FieldBoolean.h"
 #include "CliffordAlgebra.h"
+#include "WoodburyMatrix.h"
 
 namespace FermiOwn {
 

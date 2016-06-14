@@ -9,6 +9,8 @@
 #define SRC_DATA_CONSTANTS_H_
 
 #include <complex>
+#include <Eigen/Dense>
+#include <Eigen/SparseCore>
 
 namespace FermiOwn {
 

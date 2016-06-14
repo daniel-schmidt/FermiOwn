@@ -30,7 +30,7 @@ target_link_libraries( HMC_test Actions Data UpdateAlgorithms HMC_Support)
 
 # testing the Slac Operator Matrix implementation in 1D for sizes 2 to 5
 add_executable(SlacOperatorMatrix_test "SlacOperatorMatrix_test.cpp")
-target_link_libraries( SlacOperatorMatrix_test Actions)
+target_link_libraries( SlacOperatorMatrix_test Actions Math)
 
 add_test( SlacOperatorMatrix_testRuns SlacOperatorMatrix_test 3 )
 
