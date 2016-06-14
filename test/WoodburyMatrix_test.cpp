@@ -56,4 +56,6 @@ int main( int argc, char** argv ) {
 	std::cout << "Inverse after update: " << std::endl;
 	mat.PrintInverse();
 
+	std::cout << " and should be " << std::endl << "(0.666667,0) 0 0 0\n0 (0,0) (1,0) 0\n0 (1,0) (0,0) 0\n0 0 0 (0.0392157,-0.156863)" << std::endl;
+
 }

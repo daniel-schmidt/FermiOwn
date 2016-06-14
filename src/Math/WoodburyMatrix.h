@@ -17,76 +17,123 @@
 
 namespace FermiOwn {
 
-typedef std::vector< Eigen::Triplet<Complex> > MatCoeffList;
-typedef Eigen::SparseMatrix<Complex, Eigen::ColMajor> SparseMat;
+/**
+ * @brief A sparse square matrix, that can be updated using the Woodbury formula
+ *
+ * This class provides storage for a general matrix, with methods to update this matrix by low-rank update matrices.
+ * This allows to keep the value of the inverse and the determinant updated with low computational cost and without
+ * explicitly re-calculating it for the updated matrix.
+ */
 class WoodburyMatrix {
 public:
+	/**
+	 * @brief Constructs a new matrix with given size and coefficients.
+	 *
+	 * The construction may be time consuming, since we have to calculate the initial inverse and determinant of the
+	 * matrix as initial conditions for later updates.
+	 *
+	 * @param matSize is the size of the matrix: we construct a (matSize x matSize) matrix.
+	 * @param list is a list of coefficients for the sparse matrix. The entries must have the form ( i, j, m_ij )
+	 */
 	WoodburyMatrix( const size_t matSize, const MatCoeffList & list );
+
 	virtual ~WoodburyMatrix();
 
-	inline Complex getDet() const;
+	/**
+	 * @brief Returns the determinant of the matrix.
+	 *
+	 * Performes calculations, if new update matrices were specified, but no update was executed.
+	 *
+	 * @return the determinant of the matrix.
+	 */
+	inline Complex getDet();
 
-	inline void setUpdateMatrices( SparseMat colMatrix, SparseMat rowMatrix );
+	/**
+	 * @brief Prepares update by passing update matrices to the class.
+	 *
+	 * No calculations are performed. The update is given by this + colMat*rowMat
+	 *
+	 * @param colMatrix is a matrix of dimensions ( size x m ), thus specifying m columns to update.
+	 * @param rowMatrix is a matrix of dimensions ( m x size ), thus specifying m rows to update.
+	 */
+	void setUpdateMatrices( const SparseMat& colMatrix, const SparseMat& rowMatrix );
 
+	/**
+	 * @brief Update the matrix, the inverse and the determinant.
+	 */
+	void update();
+
+	/**
+	 * @brief Update only the matrix
+	 * Determinant and inverse are not touched and may not be up to date afterwards.
+	 */
 	void updateMatrix();
+
+	/**
+	 * @brief Update only the determinant
+	 *
+	 * This may be useful to check, if the update leads to an invertible matrix,
+	 * such that we do not need to proceed, if this is not the case
+	 *
+	 * @return The change in the determinant, which is a factor to multiply the old determinant with, to get the current one.
+	 */
 	Complex updateDet();
+
+	/**
+	 * @brief Update the inverse, which always needs the determinant to be updated.
+	 *
+	 * Thus, if the determinant is not updated jet, we call updateDet() to catch up on this.
+	 */
 	void updateInverse();
 
-	inline void Print() const;
-	inline void PrintInverse() const;
-
-
+	/**
+	 * @brief Print the matrix to console.
+	 *
+	 * If necessary, this performs updates to display the correct state.
+	 */
+	inline void Print();
+	/**
+	 * @brief Print the inverse to console.
+	 *
+	 * If necessary, this performs updates to display the correct state.
+	 */
+	inline void PrintInverse();
 
 private:
-	SparseMat mat;
-	const size_t size;
+	SparseMat mat;					///< the actual matrix storage
+	const size_t size;				///< the matrix is of dimension (size x size)
 
-	SparseMat inv;
-	Complex det;
+	SparseMat inv;					///< storage for the inverse matrix
+	Complex det;					///< the determinant of the matrix
 
-	bool validState;
+	bool matNeedsUpdate;			///< switch to check, if we have to update the matrix
+	bool detNeedsUpdate;			///< switch to check, if we have to update the determinant
+	bool invNeedsUpdate;			///< switch to check, if we have to update the inverse
 
-	SparseMat U;
-	SparseMat V;
+	SparseMat U;					///< the left update vector for A + U*V
+	SparseMat V;					///< the right update vector for A + U*V
 
-//	Eigen::FullPivLU< Eigen::MatrixXcd > capacitanceMatrixLU;	///< a full-pivoted LU decomposition of the matrix 1 + V*inv*U used to update determinant and inverse
-	Eigen::SparseLU< SparseMat > capacitanceMatrixLU;	///< a full-pivoted LU decomposition of the matrix 1 + V*inv*U used to update determinant and inverse
+	Eigen::SparseLU< SparseMat > capacitanceMatrixLU;	///< a full-pivoted LU decomposition of the matrix 1 + V*inv*U (the capacitance matrix) used to update determinant and inverse
 	SparseMat VTimesInv;			///< temporary storage for the product V*inv, to prevent double evaluation if updating determinant and inverse
-	SparseMat smallId;				///< identitiy matrix in the small subspace
+	SparseMat smallId;				///< identitiy matrix in the small subspace, needs to be stored for separate evaluation of determinant and inverse
 };
 
 /*============================================================
  * Inline Functions
  *============================================================*/
 
-inline Complex WoodburyMatrix::getDet() const {
+inline Complex WoodburyMatrix::getDet() {
+	if( detNeedsUpdate ) updateDet();
 	return det;
 }
 
-inline void WoodburyMatrix::setUpdateMatrices( SparseMat colMatrix, SparseMat rowMatrix ) {
-	if( colMatrix.rows() != int( size ) ) {
-		std::cerr << "WoodburyMatrix got a colMatrix of wrong size, not matching the matrix dimension " << size << ", instead size " << colMatrix.rows() << std::endl;
-		exit(1);
-	}
-	if( rowMatrix.cols() != int( size ) ) {
-		std::cerr << "WoodburyMatrix got a rowMatrix of wrong size, not matching the matrix dimension " << size << ", instead size " << rowMatrix.cols() << std::endl;
-		exit(1);
-	}
-	if( colMatrix.cols() != rowMatrix.rows() ) {
-		std::cerr << "The two update matrices passed to WoodburyMatrix do not fit in size! They are col: " << colMatrix.cols() << " and row: " << rowMatrix.rows() << std::endl;
-		exit(1);
-	}
-	U = colMatrix;
-	V = rowMatrix;
-
-	validState = false;
-}
-
-inline void WoodburyMatrix::Print() const {
+inline void WoodburyMatrix::Print() {
+	if( matNeedsUpdate ) updateMatrix();
 	std::cout << mat << std::endl;
 }
 
-inline void WoodburyMatrix::PrintInverse() const {
+inline void WoodburyMatrix::PrintInverse() {
+	if( invNeedsUpdate ) updateInverse();
 	std::cout << inv << std::endl;
 }
 
