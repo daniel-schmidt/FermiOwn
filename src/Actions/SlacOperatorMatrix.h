@@ -112,6 +112,9 @@ public:
 	 */
 	void erase( const FieldBoolean& kxiab );
 
+	void resetState();
+	void saveState();
+
 private:
 
 	/**
@@ -152,18 +155,23 @@ private:
 	size_t dimSpinor;				///< number of spin degrees of freedom
 	size_t Nf;						///< number of flavours
 	Eigen::MatrixXcd dslac;			///< the current state of the operator matrix
+	Eigen::MatrixXcd oldSlac;
 	Eigen::MatrixXcd inverse;		///< the current state of the inverse of the operator, should multiply dslac to give identity
+	Eigen::MatrixXcd oldInverse;
 	Eigen::MatrixXcd fullSlac;		///< the initially constructed full matrix, used to restore elements or the full operator
 	Eigen::MatrixXcd fullInverse;	//TODO: not needed?
 
 	Complex detVal;					///< current value of the determinant
 	Complex fullDet;				//TODO: not needed?
+	Complex oldDet;
 
 	CliffordAlgebra cliff;				///< The Clifford algebra used in the operator, necessary to get the gamma-matrices during construction of the operator.
 	//TODO: needed only at construction, perhaps not necessary as field
 
 	std::vector<size_t> deletedRows;	///< Vector keeping all indices of rows, that are deleted from the matrix
+	std::vector<size_t> oldDelRows;
 	std::vector<size_t> deletedCols;	///< Vector keeping all indices of columns, that are deleted from the matrix
+	std::vector<size_t> oldDelCols;
 };
 
 } /* namespace FermiOwn */

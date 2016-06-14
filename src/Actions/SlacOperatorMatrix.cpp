@@ -92,15 +92,15 @@ void SlacOperatorMatrix::update( FieldBoolean kxiab, FieldBoolean changed, updat
 		}
 	}
 
-	std::cout << "Delete: " << std::endl;
-	for( size_t col : colsDel) std::cout << col << " ";
-	std::cout << std::endl;
-	for( size_t row : rowsDel ) std::cout << row << " ";
-	std::cout << std::endl << "Add: " << std::endl;
-	for( size_t col : colsAdd ) std::cout << col << " ";
-	std::cout << std::endl;
-	for( size_t row : rowsAdd ) std::cout << row << " ";
-	std::cout << std::endl;
+//	std::cout << "Delete: " << std::endl;
+//	for( size_t col : colsDel) std::cout << col << " ";
+//	std::cout << std::endl;
+//	for( size_t row : rowsDel ) std::cout << row << " ";
+//	std::cout << std::endl << "Add: " << std::endl;
+//	for( size_t col : colsAdd ) std::cout << col << " ";
+//	std::cout << std::endl;
+//	for( size_t row : rowsAdd ) std::cout << row << " ";
+//	std::cout << std::endl;
 
 	switch( upType ) {
 	case eraseUpdate:
@@ -144,7 +144,21 @@ void SlacOperatorMatrix::erase( const FieldBoolean& kxiab ) {
 	}
 }
 
+void SlacOperatorMatrix::saveState() {
+	oldDet = detVal;
+	oldInverse = inverse;
+	oldSlac = dslac;
+	oldDelCols = deletedCols;
+	oldDelRows = deletedRows;
+}
 
+void SlacOperatorMatrix::resetState() {
+	detVal = oldDet;
+	inverse = oldInverse;
+	dslac = oldSlac;
+	deletedCols = oldDelCols;
+	deletedRows = oldDelRows;
+}
 
 
 /* =======================================================================================
@@ -202,17 +216,13 @@ void SlacOperatorMatrix::combined( std::vector<size_t> addRows, std::vector<size
 			deletedRows.erase( std::remove( deletedRows.begin(), deletedRows.end(), addRows[index] ), deletedRows.end() );
 		}
 
-		for( size_t index = 0; index < delCols.size(); index++ ) {
-			deletedCols.push_back( delCols[index] );		//TODO: check return value, if we had this element already in the set
-			deletedRows.push_back( delRows[index] );
-		}
-
 		Eigen::MatrixXcd slacOld = dslac;
 
 		Eigen::MatrixXcd colUpdate( dslac.cols(), 2*updateRank );
 		Eigen::MatrixXcd rowUpdate( 2*updateRank, dslac.rows() );
 		Eigen::MatrixXcd onesCol = Eigen::MatrixXcd::Zero( updateRank, dslac.rows() );
 		Eigen::MatrixXcd onesRow = Eigen::MatrixXcd::Zero( dslac.cols(), updateRank );
+
 		for( size_t index = 0; index < updateRank; index++ ) {
 
 			Eigen::VectorXcd colVec;
@@ -251,12 +261,20 @@ void SlacOperatorMatrix::combined( std::vector<size_t> addRows, std::vector<size
 				colVec = -dslac.col( delCols[ index-addRows.size() ] );
 			}
 
+			std::cout << "Deleted: ";
+			for( size_t delIdx = 0; delIdx < deletedCols.size(); delIdx++ ) {
+				std::cout << "(" << deletedRows[ delIdx ] << "," << deletedCols[ delIdx ] << ") ";
+				rowVec( deletedCols[delIdx] ) = 0.;
+				colVec( deletedRows[delIdx] ) = 0.;
+			}
+			std::cout << std::endl;
+
 			colUpdate.col( index+updateRank ) = colVec;
 			rowUpdate.row( index ) = rowVec;
 		}
 
 //		colUpdate += 0.5*onesRow*subMat;
-		std::cout << "first rowUp" << std::endl << rowUpdate << std::endl << std::endl;
+//		std::cout << "first rowUp" << std::endl << rowUpdate << std::endl << std::endl;
 		rowUpdate.topRows( updateRank ) = rowUpdate.topRows( updateRank ) + subMat*onesCol;
 
 //		std::cout << "onesRow" << std::endl << onesRow << std::endl << std::endl;
@@ -280,6 +298,10 @@ void SlacOperatorMatrix::combined( std::vector<size_t> addRows, std::vector<size
 		dslac += colUpdate * rowUpdate;
 //		std::cout << "slacOld:" << std::endl << slacOld << std::endl << std::endl;
 
+		for( size_t index = 0; index < delCols.size(); index++ ) {
+			deletedCols.push_back( delCols[index] );		//TODO: check return value, if we had this element already in the set
+			deletedRows.push_back( delRows[index] );
+		}
 //	} else if( delRows.size() != 0 ) {
 //		deleteEntries( delRows, delCols );
 //	} else if( addRows.size() != 0 ){

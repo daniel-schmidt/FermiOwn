@@ -107,18 +107,24 @@ int main( int argc, char** argv ) {
 	for( int i = 0; i < 3; i++ ) {
 		std::cout << std::endl << "Testing algorithm " <<  i << std::endl;
 		dslacNf2.setFull();
+		fbool = FieldBoolean( 4, 2, 2, NULL, zeroInit );
 		for( int row = 0; row < allowedConfs.rows(); row++ ) {
 			FieldBoolean oldField = fbool;
-			SlacOperatorMatrix oldSlac = dslacNf2;
+//			SlacOperatorMatrix oldSlac = dslacNf2;
+			dslacNf2.saveState();
+			std::cout << "Det before: " << dslacNf2.det() << std::endl;
+			fbool.Print();
 			fbool.setRow( allowedConfs.row( row ), 0 );
 			fbool.setRow( allowedConfs.row( row ), 1 );
 			dslacNf2.update( fbool, fbool.different( oldField ), static_cast<SlacOperatorMatrix::updateType>( i ) );
-			//			fbool.Print();
-			std::cout << dslacNf2.det() << std::endl;
+			std::cout << "Det after: " << dslacNf2.det() << std::endl;
+			fbool.Print();
 			if( abs(dslacNf2.det()) < 1e-10 ) {
 				fbool = oldField;
-				dslacNf2 = oldSlac;
+				dslacNf2.resetState();
+//				dslacNf2 = oldSlac;
 			}
+			std::cout << std::endl;
 		}
 	}
 
@@ -174,6 +180,11 @@ int main( int argc, char** argv ) {
 		fbool.invert( 0, 1, 1, 1 );
 		fbool.invert( 1, 0, 0, 0 );
 		fbool.invert( 1, 0, 1, 1 );
+		diff = fbool.different( fboolInitial );
+		dslacNf2.update( fbool, diff, upType );
+		std::cout << "Re-adding, det again: " << dslacNf2.det() << std::endl;
+
+		fboolInitial = fbool;
 		fbool.invert( 0, 0, 0, 1 );
 		fbool.invert( 0, 0, 1, 0 );
 		fbool.invert( 1, 1, 0, 1 );
