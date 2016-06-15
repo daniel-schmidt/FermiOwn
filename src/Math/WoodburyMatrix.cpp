@@ -9,13 +9,36 @@
 
 namespace FermiOwn {
 
-WoodburyMatrix::WoodburyMatrix( const size_t matSize, const MatCoeffList & coeffList, const bool selfAdjointInit ) :
-		mat( matSize, matSize ),
-		size( matSize ),
-		matNeedsUpdate( true ),
-		detNeedsUpdate( true ),
-		invNeedsUpdate( true )
+WoodburyMatrix::WoodburyMatrix() :
+	size( 0 ),
+	matNeedsUpdate( true ),
+	detNeedsUpdate( true ),
+	invNeedsUpdate( true )
+{};
+
+WoodburyMatrix::WoodburyMatrix( const size_t matSize ) :
+	mat( matSize, matSize ),
+	size( matSize ),
+	matNeedsUpdate( true ),
+	detNeedsUpdate( true ),
+	invNeedsUpdate( true )
 {
+}
+
+WoodburyMatrix::WoodburyMatrix( const size_t matSize, const MatCoeffList & coeffList, const bool selfAdjointInit ) :
+	mat( matSize, matSize ),
+	size( matSize ),
+	matNeedsUpdate( true ),
+	detNeedsUpdate( true ),
+	invNeedsUpdate( true )
+{
+	setFromCoeffList( coeffList, selfAdjointInit );
+}
+
+WoodburyMatrix::~WoodburyMatrix() {
+}
+
+void WoodburyMatrix::setFromCoeffList( const MatCoeffList & coeffList, const bool selfAdjointInit ) {
 	mat.setFromTriplets( coeffList.begin(), coeffList.end() );
 
 	if( selfAdjointInit ) {
@@ -44,9 +67,7 @@ WoodburyMatrix::WoodburyMatrix( const size_t matSize, const MatCoeffList & coeff
 		exit(1);
 	}
 	invNeedsUpdate = false;
-}
 
-WoodburyMatrix::~WoodburyMatrix() {
 }
 
 void WoodburyMatrix::setUpdateMatrices( const SparseMat & colMatrix, const SparseMat & rowMatrix ) {

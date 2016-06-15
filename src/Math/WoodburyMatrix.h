@@ -26,16 +26,43 @@ namespace FermiOwn {
  */
 class WoodburyMatrix {
 public:
+
+	/**
+	 * @brief Default constructor, constructing empty 0 x 0 matrix.
+	 */
+	WoodburyMatrix();
+
+	/**
+	 * @brief Constructs an uninitialized matrix of size (matSize x matSize).
+	 * @param matSize is the size of the matrix: we construct a (matSize x matSize) matrix.
+	 */
+	WoodburyMatrix( const size_t matSize );
+
 	/**
 	 * @brief Constructs a new matrix with given size and coefficients.
 	 *
-	 * The construction may be time consuming, since we have to calculate the initial inverse and determinant of the
-	 * matrix as initial conditions for later updates.
+	 * This calls setFromCoeffList() which gives more instructions.
 	 *
 	 * @param matSize is the size of the matrix: we construct a (matSize x matSize) matrix.
-	 * @param list is a list of coefficients for the sparse matrix. The entries must have the form ( i, j, m_ij )
+	 * @param list is a list of coefficients for the sparse matrix. The entries must have the form ( i, j, m_ij ).
+	 * @param selfAdjointInit should be true, if the matrix is selfadjoint and the coefficients are given for the upper triangular part only.
 	 */
 	WoodburyMatrix( const size_t matSize, const MatCoeffList & list, const bool selfAdjointInit = false );
+
+	/**
+	 * @brief Initialize matrix with a list of coefficients.
+	 *
+	 * Initializes the internal sparse matrix from the coefficient list. If the matrix to be constructed is selfadjoint,
+	 * only half of the non-zero coefficients are needed for initialization. They are expected to be in the upper
+	 * triangular part of the matrix. The remaining coefficients are obtained by conjugate-transpose and copy to the
+	 * final matrix storage.
+	 *
+	 * This also calculates the inverse and the determinant of the matrix, which may be time consuming.
+	 *
+	 * @param list is a list of coefficients for the sparse matrix. The entries must have the form ( i, j, m_ij ).
+	 * @param selfAdjointInit should be true, if the matrix is selfadjoint and the coefficients are given for the upper triangular part only.
+	 */
+	void setFromCoeffList( const MatCoeffList & list, const bool selfAdjointInit = false );
 
 	virtual ~WoodburyMatrix();
 
@@ -53,7 +80,7 @@ public:
 	 *
 	 * If needed, an update of the matrix with the current update matrices is performed.
 	 *
-	 * @return The matrix in an Eigen sparse matrix format.
+	 * @return the matrix in an Eigen sparse matrix format.
 	 */
 	inline SparseMat getMatrix();
 
@@ -62,7 +89,7 @@ public:
 	 *
 	 * If needed, an update of the inverse with the current update matrices is performed.
 	 *
-	 * @return The inverse of the matrix in an Eigen sparse matrix format.
+	 * @return the inverse of the matrix in an Eigen sparse matrix format.
 	 */
 	inline SparseMat getInverse();
 
@@ -119,7 +146,7 @@ public:
 
 private:
 	SparseMat mat;					///< the actual matrix storage
-	const size_t size;				///< the matrix is of dimension (size x size)
+	size_t size;				///< the matrix is of dimension (size x size)
 
 	SparseMat inv;					///< storage for the inverse matrix
 	Complex det;					///< the determinant of the matrix
