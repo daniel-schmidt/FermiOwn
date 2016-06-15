@@ -35,7 +35,7 @@ public:
 	 * @param matSize is the size of the matrix: we construct a (matSize x matSize) matrix.
 	 * @param list is a list of coefficients for the sparse matrix. The entries must have the form ( i, j, m_ij )
 	 */
-	WoodburyMatrix( const size_t matSize, const MatCoeffList & list );
+	WoodburyMatrix( const size_t matSize, const MatCoeffList & list, const bool selfAdjointInit = false );
 
 	virtual ~WoodburyMatrix();
 
@@ -47,6 +47,24 @@ public:
 	 * @return the determinant of the matrix.
 	 */
 	inline Complex getDet();
+
+	/**
+	 * @brief Returns the matrix itself.
+	 *
+	 * If needed, an update of the matrix with the current update matrices is performed.
+	 *
+	 * @return The matrix in an Eigen sparse matrix format.
+	 */
+	inline SparseMat getMatrix();
+
+	/**
+	 * @brief Returns the inverse of the matrix.
+	 *
+	 * If needed, an update of the inverse with the current update matrices is performed.
+	 *
+	 * @return The inverse of the matrix in an Eigen sparse matrix format.
+	 */
+	inline SparseMat getInverse();
 
 	/**
 	 * @brief Prepares update by passing update matrices to the class.
@@ -125,6 +143,16 @@ private:
 inline Complex WoodburyMatrix::getDet() {
 	if( detNeedsUpdate ) updateDet();
 	return det;
+}
+
+inline SparseMat WoodburyMatrix::getMatrix() {
+	if( matNeedsUpdate ) updateMatrix();
+	return mat;
+}
+
+inline SparseMat WoodburyMatrix::getInverse() {
+	if( invNeedsUpdate ) updateInverse();
+	return inv;
 }
 
 inline void WoodburyMatrix::Print() {

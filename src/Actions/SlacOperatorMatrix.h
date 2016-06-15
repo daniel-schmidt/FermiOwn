@@ -10,7 +10,6 @@
 
 #include <vector>
 #include <iostream>
-#include <assert.h>
 #include <unsupported/Eigen/KroneckerProduct>
 #include "FieldBoolean.h"
 #include "CliffordAlgebra.h"

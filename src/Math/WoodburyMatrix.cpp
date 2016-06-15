@@ -9,7 +9,7 @@
 
 namespace FermiOwn {
 
-WoodburyMatrix::WoodburyMatrix( const size_t matSize, const MatCoeffList & coeffList ) :
+WoodburyMatrix::WoodburyMatrix( const size_t matSize, const MatCoeffList & coeffList, const bool selfAdjointInit ) :
 		mat( matSize, matSize ),
 		size( matSize ),
 		matNeedsUpdate( true ),
@@ -17,6 +17,12 @@ WoodburyMatrix::WoodburyMatrix( const size_t matSize, const MatCoeffList & coeff
 		invNeedsUpdate( true )
 {
 	mat.setFromTriplets( coeffList.begin(), coeffList.end() );
+
+	if( selfAdjointInit ) {
+		SparseMat tmp = mat.selfadjointView<Eigen::Upper>();
+		mat = tmp;
+	}
+
 	matNeedsUpdate = false;
 
 	Eigen::SparseLU< SparseMat > solver;	//TODO: check, if we can use an SPD solver here for SLAC

@@ -10,14 +10,14 @@
 namespace FermiOwn {
 
 SlacOperatorMatrix::SlacOperatorMatrix( size_t size ) :
-																								N(size),
-																								dslac(make1D(size))
+																														N(size),
+																														dslac(make1D(size))
 {}
 
 SlacOperatorMatrix::SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t numFlavours ) :
-																								N(Nt*Ns*Ns),
-																								dimSpinor(2),
-																								Nf(numFlavours)
+																														N(Nt*Ns*Ns),
+																														dimSpinor(2),
+																														Nf(numFlavours)
 {
 	using namespace Eigen;
 	if( dim != 3 ) {
@@ -25,7 +25,7 @@ SlacOperatorMatrix::SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t
 		exit(1);
 	}
 	std::vector< Matrix2cd > gamma = cliff.getGammas();
-	MatrixXcd dx = make1D(Nt);
+	MatrixXcd dx1D= make1D(Nt);
 	MatrixXcd dyz = make1D(Ns);
 	MatCoeffList coeffs;
 	for( size_t flavour = 0; flavour < Nf; flavour++ ) {
@@ -36,11 +36,20 @@ SlacOperatorMatrix::SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t
 
 				// Matrix elements in x-direction
 				Complex matElem = gamma[0]( spin1, spin2 );
+				size_t rowIndex;
+				size_t colIndex;
 				if( std::fabs( matElem ) > ZERO_TOL ) {
 					for( size_t r = 0; r < Ns*Ns; r++ ) {
 						for( size_t v = 0; v < Nt; v++ ) {
 							for( size_t u = v+1; u < Nt; u++ ) {
-								coeffs.push_back( Triplet<Complex>( internRowIndex + Nt*r + v, internColIndex + Nt*r + u, I*matElem*dx(v,u) ) );
+								rowIndex = internRowIndex + Nt*r + v;
+								colIndex = internColIndex + Nt*r + u;
+								// ensure, we write on the upper triangular part only
+								if( rowIndex > colIndex ) {
+									coeffs.push_back( Triplet<Complex>( colIndex, rowIndex, std::conj( I*matElem*dx1D(v,u) ) ) );
+								} else {
+									coeffs.push_back( Triplet<Complex>( rowIndex, colIndex, I*matElem*dx1D(v,u) ) );
+								}
 							}
 						}
 					}
@@ -52,7 +61,14 @@ SlacOperatorMatrix::SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t
 						for( size_t v = 0; v < Nt; v++ ) {
 							for( size_t r = 0; r < Ns; r++ ) {
 								for( size_t s = r+1; s < Ns; s++ ) {
-									coeffs.push_back( Triplet<Complex>( internRowIndex + Ns*Nt*q + Nt*r + v, internColIndex + Ns*Nt*q + Nt*s + v, I*matElem*dyz(r,s) ) );
+									rowIndex = internRowIndex + Ns*Nt*q + Nt*r + v;
+									colIndex = internColIndex + Ns*Nt*q + Nt*s + v;
+									// ensure, we write on the upper triangular part only
+									if( rowIndex > colIndex ) {
+										coeffs.push_back( Triplet<Complex>( colIndex, rowIndex, std::conj( I*matElem*dyz(r,s) ) ) );
+									} else {
+										coeffs.push_back( Triplet<Complex>( rowIndex, colIndex, I*matElem*dyz(r,s) ) );
+									}
 								}
 							}
 						}
@@ -64,7 +80,14 @@ SlacOperatorMatrix::SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t
 					for( size_t v = 0; v < Ns*Nt; v++ ) {
 						for( size_t r = 0; r < Ns; r++ ) {
 							for( size_t s = r+1; s < Ns; s++ ) {
-								coeffs.push_back( Triplet<Complex>( internRowIndex + Ns*Nt*r + v, internColIndex + Ns*Nt*s + v, I*matElem*dyz(r,s) ) );
+								rowIndex = internRowIndex + Ns*Nt*r + v;
+								colIndex = internColIndex + Ns*Nt*s + v;
+								// ensure, we write on the upper triangular part only
+								if( rowIndex > colIndex ) {
+									coeffs.push_back( Triplet<Complex>( colIndex, rowIndex, std::conj( I*matElem*dyz(r,s) ) ) );
+								} else {
+									coeffs.push_back( Triplet<Complex>( rowIndex, colIndex, I*matElem*dyz(r,s) ) );
+								}
 							}
 						}
 					}
@@ -74,38 +97,32 @@ SlacOperatorMatrix::SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t
 		}
 	}
 
-	for( auto val : coeffs ) {
-		std::cout << " (" << val.row() << ", " << val.col() << ", "<< val.value() << ")"<< std::endl;
+	WoodburyMatrix mat( Nf*dimSpinor*N, coeffs, true );
+
+	// old stuff
+	std::vector< MatrixXcd > Gammas;
+	for( auto gammaMu : gamma) {
+		MatrixXcd GammaMu = KroneckerProduct<Matrix2cd, MatrixXcd>( gammaMu, MatrixXcd::Identity(N,N) );
+		Gammas.push_back(GammaMu);
 	}
-	std::cout << coeffs.size() << std::endl;
 
-//	WoodburyMatrix mat( Nf*dimSpinor*N, coeffs );
-//	mat.Print();
-	Eigen::SparseMatrix<Complex> test( Nf*dimSpinor*N, Nf*dimSpinor*N );
-	test.setFromTriplets( coeffs.begin(), coeffs.end() );
-	std::cout << test << std::endl;
+	MatrixXcd dx = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor*Ns*Ns,dimSpinor*Ns*Ns), make1D(Nt) );
+	MatrixXcd dy( KroneckerProduct<MatrixXcd, MatrixXd>( make1D(Ns), MatrixXd::Identity(Nt,Nt) ) );
+	dy = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor*Ns,dimSpinor*Ns), dy ).eval();
+	MatrixXcd dz( KroneckerProduct<MatrixXcd, MatrixXd>( make1D(Ns), MatrixXd::Identity(Ns*Nt, Ns*Nt) ) );
+	dz = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor,dimSpinor), dz ).eval();
+	dslac = Gammas[0]*dx+Gammas[1]*dy+Gammas[2]*dz;
+	dslac = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(Nf,Nf), dslac ).eval();
+	dslac *= I;
+	fullSlac = dslac;
+
+	detVal = dslac.determinant();
+	fullDet = detVal;
+	inverse = dslac.inverse();
+	fullInverse = inverse;
+	inverse = mat.getMatrix() * inverse;
+	std::cout << inverse.isApprox( Eigen::MatrixXcd::Identity( N*Nf*dimSpinor, N*Nf*dimSpinor ) ) <<std::endl;
 	exit(0);
-
-	//	std::vector< MatrixXcd > Gammas;
-	//	for( auto gammaMu : gamma) {
-	//		MatrixXcd GammaMu = KroneckerProduct<Matrix2cd, MatrixXcd>( gammaMu, MatrixXcd::Identity(N,N) );
-	//		Gammas.push_back(GammaMu);
-	//	}
-	//
-	//	MatrixXcd dx = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor*Ns*Ns,dimSpinor*Ns*Ns), make1D(Nt) );
-	//	MatrixXcd dy( KroneckerProduct<MatrixXcd, MatrixXd>( make1D(Ns), MatrixXd::Identity(Nt,Nt) ) );
-	//	dy = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor*Ns,dimSpinor*Ns), dy ).eval();
-	//	MatrixXcd dz( KroneckerProduct<MatrixXcd, MatrixXd>( make1D(Ns), MatrixXd::Identity(Ns*Nt, Ns*Nt) ) );
-	//	dz = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor,dimSpinor), dz ).eval();
-	//	dslac = Gammas[0]*dx+Gammas[1]*dy+Gammas[2]*dz;
-	//	dslac = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(Nf,Nf), dslac ).eval();
-	//	dslac *= I;
-	//	fullSlac = dslac;
-	//
-	//	detVal = dslac.determinant();
-	//	fullDet = detVal;
-	//	inverse = dslac.inverse();
-	//	fullInverse = inverse;
 }
 
 SlacOperatorMatrix::~SlacOperatorMatrix() {}
