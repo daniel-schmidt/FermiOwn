@@ -35,6 +35,8 @@ public:
 		combinedUpdate
 	};
 
+	SlacOperatorMatrix(){};
+
 	/**
 	 * @brief Constructor for a 1D SLAC operator without flavour or spin structure
 	 *
@@ -42,39 +44,26 @@ public:
 	 */
 	SlacOperatorMatrix( size_t size );
 
-	/**
-	 * @brief Constructor for a general SLAC operator matrix with flavour and spin in any dimension
-	 *
-	 * Matrix size is Nt*Ns^(dim-1) * numFlavours * 2, where the factor of 2 is for the
-	 * irreducible number of spin degrees of freedom.
-	 *
-	 * @param Nt is the temporal extend of the lattice, should be even for antiperiodic boundary conditions
-	 * @param Ns is the spatial extend of the lattice, should be odd for periodic boundary conditions
-	 * @param dim is the number of spacetime dimensions
-	 * @param numFlavours is the number of flavours
-	 */
-	SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t numFlavours );
-
 	virtual ~SlacOperatorMatrix();
 
 	/**
-	 * @brief Allowes direct read access to the SLAC operator matrix
-	 * @return The matrix
+	 * @brief Allows direct read access to the SLAC operator matrix
+	 * @return the matrix
 	 */
-	const Eigen::MatrixXcd getMatrix() const;
+	const SparseMat getMatrix();
 
 	/**
-	 * @brief Allowes read access to the inverse of the current operator
+	 * @brief Allows read access to the inverse of the current operator
 	 * @return the inverse
 	 */
-	const Eigen::MatrixXcd getInverse() const;
+	const SparseMat getInverse();
 
 	/**
 	 * @brief Returns the determinant of the current matrix.
 	 *
 	 * @return The determinant.
 	 */
-	const Complex det() const;
+	const Complex det();
 
 	/**
 	 * @brief returns linear matrix index for a given physical variables
@@ -113,9 +102,6 @@ public:
 
 	void resetState();
 	void saveState();
-
-private:
-
 	/**
 	 * @brief Returns a matrix for the one dimensional derivative via SLAC operator
 	 *
@@ -124,15 +110,7 @@ private:
 	 */
 	Eigen::MatrixXcd make1D( size_t size );
 
-	/**
-	 * @brief general implementation of the Woodbury formula for a low-rank update of determinant and inverse
-	 *
-	 * Calculates determinant and inverse of dslac + U.V
-	 *
-	 * @param U
-	 * @param V
-	 */
-	void WoodburyUpdate( Eigen::MatrixXcd U, Eigen::MatrixXcd V );
+private:
 
 	/**
 	 * @brief Replace a single row and column by 0, with a 1 in the crossing entry
@@ -150,9 +128,10 @@ private:
 	void addEntries( std::vector<size_t> rows, std::vector<size_t> cols );
 	void update( size_t row1, size_t col1, size_t row2, size_t col2 );
 
+	void generateUpdateMatrices();
+
 	size_t N;						///< total number of physical points
-	size_t dimSpinor;				///< number of spin degrees of freedom
-	size_t Nf;						///< number of flavours
+
 	Eigen::MatrixXcd dslac;			///< the current state of the operator matrix
 	Eigen::MatrixXcd oldSlac;
 	Eigen::MatrixXcd inverse;		///< the current state of the inverse of the operator, should multiply dslac to give identity
@@ -166,6 +145,8 @@ private:
 
 	CliffordAlgebra cliff;				///< The Clifford algebra used in the operator, necessary to get the gamma-matrices during construction of the operator.
 	//TODO: needed only at construction, perhaps not necessary as field
+
+
 
 	std::vector<size_t> deletedRows;	///< Vector keeping all indices of rows, that are deleted from the matrix
 	std::vector<size_t> oldDelRows;

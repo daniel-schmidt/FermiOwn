@@ -80,18 +80,18 @@ public:
 	 *
 	 * If needed, an update of the matrix with the current update matrices is performed.
 	 *
-	 * @return the matrix in an Eigen sparse matrix format.
+	 * @return const reference to the matrix in an Eigen sparse matrix format.
 	 */
-	inline SparseMat getMatrix();
+	inline const SparseMat& getMatrix();
 
 	/**
 	 * @brief Returns the inverse of the matrix.
 	 *
 	 * If needed, an update of the inverse with the current update matrices is performed.
 	 *
-	 * @return the inverse of the matrix in an Eigen sparse matrix format.
+	 * @return const reference to the inverse of the matrix in an Eigen sparse matrix format.
 	 */
-	inline SparseMat getInverse();
+	inline const SparseMat& getInverse();
 
 	/**
 	 * @brief Prepares update by passing update matrices to the class.
@@ -172,12 +172,12 @@ inline Complex WoodburyMatrix::getDet() {
 	return det;
 }
 
-inline SparseMat WoodburyMatrix::getMatrix() {
+inline const SparseMat& WoodburyMatrix::getMatrix() {
 	if( matNeedsUpdate ) updateMatrix();
 	return mat;
 }
 
-inline SparseMat WoodburyMatrix::getInverse() {
+inline const SparseMat& WoodburyMatrix::getInverse() {
 	if( invNeedsUpdate ) updateInverse();
 	return inv;
 }

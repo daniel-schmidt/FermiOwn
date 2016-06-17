@@ -57,3 +57,6 @@ target_link_libraries( WeightFunction_test Actions )
 
 add_executable( WoodburyMatrix_test "WoodburyMatrix_test.cpp" )
 target_link_libraries( WoodburyMatrix_test Math )
+
+add_executable( DSlashUpdater_test "DSlashUpdater_test.cpp" )
+target_link_libraries( DSlashUpdater_test Actions Math )

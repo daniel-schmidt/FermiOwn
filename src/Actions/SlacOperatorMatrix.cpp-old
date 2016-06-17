@@ -10,14 +10,18 @@
 namespace FermiOwn {
 
 SlacOperatorMatrix::SlacOperatorMatrix( size_t size ) :
-																														N(size),
-																														dslac(make1D(size))
+	N(size),
+	dslac(make1D(size))
 {}
 
 SlacOperatorMatrix::SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t numFlavours ) :
-																														N(Nt*Ns*Ns),
-																														dimSpinor(2),
-																														Nf(numFlavours)
+	N(Nt*Ns*Ns),
+	dimSpinor(2),
+	Nf(numFlavours),
+	oldMat( N*dimSpinor*Nf ),
+	currMat( N*dimSpinor*Nf ),
+	currentRows( N*dimSpinor*Nf ),
+	currentCols( N*dimSpinor*Nf )
 {
 	using namespace Eigen;
 	if( dim != 3 ) {
@@ -97,47 +101,54 @@ SlacOperatorMatrix::SlacOperatorMatrix( size_t Nt, size_t Ns, size_t dim, size_t
 		}
 	}
 
-	WoodburyMatrix mat( Nf*dimSpinor*N, coeffs, true );
+	currMat.setFromCoeffList( coeffs, true );
+
+	size_t i = 0;
+	std::iota( currentRows.begin(), currentRows.end(), i );
+	std::iota( currentCols.begin(), currentCols.end(), i );
+
+	for( auto num : currentRows ) std::cout << num << " ";
+	for( auto num : currentCols ) std::cout << num << " ";
 
 	// old stuff
-	std::vector< MatrixXcd > Gammas;
-	for( auto gammaMu : gamma) {
-		MatrixXcd GammaMu = KroneckerProduct<Matrix2cd, MatrixXcd>( gammaMu, MatrixXcd::Identity(N,N) );
-		Gammas.push_back(GammaMu);
-	}
-
-	MatrixXcd dx = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor*Ns*Ns,dimSpinor*Ns*Ns), make1D(Nt) );
-	MatrixXcd dy( KroneckerProduct<MatrixXcd, MatrixXd>( make1D(Ns), MatrixXd::Identity(Nt,Nt) ) );
-	dy = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor*Ns,dimSpinor*Ns), dy ).eval();
-	MatrixXcd dz( KroneckerProduct<MatrixXcd, MatrixXd>( make1D(Ns), MatrixXd::Identity(Ns*Nt, Ns*Nt) ) );
-	dz = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor,dimSpinor), dz ).eval();
-	dslac = Gammas[0]*dx+Gammas[1]*dy+Gammas[2]*dz;
-	dslac = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(Nf,Nf), dslac ).eval();
-	dslac *= I;
-	fullSlac = dslac;
-
-	detVal = dslac.determinant();
-	fullDet = detVal;
-	inverse = dslac.inverse();
-	fullInverse = inverse;
-	inverse = mat.getMatrix() * inverse;
-	std::cout << inverse.isApprox( Eigen::MatrixXcd::Identity( N*Nf*dimSpinor, N*Nf*dimSpinor ) ) <<std::endl;
-	exit(0);
+//	std::vector< MatrixXcd > Gammas;
+//	for( auto gammaMu : gamma) {
+//		MatrixXcd GammaMu = KroneckerProduct<Matrix2cd, MatrixXcd>( gammaMu, MatrixXcd::Identity(N,N) );
+//		Gammas.push_back(GammaMu);
+//	}
+//
+//	MatrixXcd dx = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor*Ns*Ns,dimSpinor*Ns*Ns), make1D(Nt) );
+//	MatrixXcd dy( KroneckerProduct<MatrixXcd, MatrixXd>( make1D(Ns), MatrixXd::Identity(Nt,Nt) ) );
+//	dy = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor*Ns,dimSpinor*Ns), dy ).eval();
+//	MatrixXcd dz( KroneckerProduct<MatrixXcd, MatrixXd>( make1D(Ns), MatrixXd::Identity(Ns*Nt, Ns*Nt) ) );
+//	dz = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(dimSpinor,dimSpinor), dz ).eval();
+//	dslac = Gammas[0]*dx+Gammas[1]*dy+Gammas[2]*dz;
+//	dslac = KroneckerProduct<MatrixXd, MatrixXcd>( MatrixXd::Identity(Nf,Nf), dslac ).eval();
+//	dslac *= I;
+//	fullSlac = dslac;
+//
+//	detVal = dslac.determinant();
+//	fullDet = detVal;
+//	inverse = dslac.inverse();
+//	fullInverse = inverse;
+//	inverse = currMat.getMatrix() * inverse;
+//	std::cout << inverse.isApprox( Eigen::MatrixXcd::Identity( N*Nf*dimSpinor, N*Nf*dimSpinor ) ) <<std::endl;
+//	exit(0);
 }
 
 SlacOperatorMatrix::~SlacOperatorMatrix() {}
 
 
-const Eigen::MatrixXcd SlacOperatorMatrix::getMatrix() const {
-	return dslac;
+const SparseMat SlacOperatorMatrix::getMatrix() {
+	return currMat.getMatrix();
 }
 
-const Eigen::MatrixXcd SlacOperatorMatrix::getInverse() const {
-	return inverse;
+const SparseMat SlacOperatorMatrix::getInverse() {
+	return currMat.getInverse();
 }
 
-const Complex SlacOperatorMatrix::det() const {
-	return detVal;
+const Complex SlacOperatorMatrix::det() {
+	return currMat.getDet();
 }
 
 size_t SlacOperatorMatrix::matIndex( size_t x, size_t spin, size_t flavour ) {

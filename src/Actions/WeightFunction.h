@@ -9,7 +9,7 @@
 #define SRC_ACTIONS_WEIGHTFUNCTION_H_
 
 #include "FieldBoolean.h"
-#include "SlacOperatorMatrix.h"
+//#include "SlacOperatorMatrix.h"
 
 namespace FermiOwn {
 
@@ -37,7 +37,7 @@ private:
 	double getHypergeometricFactor( int n1, int n2 );
 
 	FieldBoolean & kxiab;							///< The field to work with.
-	SlacOperatorMatrix slac;						///< The operator to work with.
+//	SlacOperatorMatrix slac;						///< The operator to work with.
 	size_t V;										///< The lattice volume obtained from the field.
 	double kappa;									///< The inverse coupling.
 };

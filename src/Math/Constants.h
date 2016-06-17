@@ -24,7 +24,8 @@ namespace FermiOwn {
 	typedef Eigen::Matrix< bool, Eigen::Dynamic, Eigen::Dynamic > MatrixXb;
 
 	// things related to sparse matrices
-	typedef std::vector< Eigen::Triplet<Complex> > MatCoeffList;
+	typedef Eigen::Triplet<Complex> CoeffTriplet;
+	typedef std::vector< CoeffTriplet > MatCoeffList;
 	typedef Eigen::SparseMatrix<Complex, Eigen::ColMajor> SparseMat;
 
 	// explicit constants
