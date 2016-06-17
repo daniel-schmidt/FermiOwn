@@ -107,6 +107,8 @@ DSlashUpdater::DSlashUpdater( size_t Nt, size_t Ns, size_t dim, size_t numFlavou
 	currMat.setFromCoeffList( coeffs, true );
 	fullOperator = currMat.getMatrix();
 
+	std::cout << "full operator: " << std::endl << fullOperator << std::endl;
+
 	size_t i = 0;
 	std::iota( currentRows.begin(), currentRows.end(), i );
 	std::iota( currentCols.begin(), currentCols.end(), i );
@@ -132,19 +134,20 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 	std::vector<size_t> targetRows = currentRows;
 	std::vector<size_t> targetCols = currentCols;
 
+
 	for( size_t flavour1 = 0; flavour1 < Nf; flavour1++ ) {
 		for( size_t flavour2 = 0; flavour2 < Nf; flavour2++ ) {
 			for( size_t spin = 0; spin < dimSpinor; spin++ ) {
 				for( size_t x = 0; x < N; x++ ) {
 					if( change.getValue( x, spin, flavour1, flavour2 ) ) {
 						if( kxiab.getValue( x, spin, flavour1, flavour2 ) ) {
-							delRows.push_back( matIndex(x, spin, flavour2) );
-							delCols.push_back( matIndex(x, spin, flavour1) );
+							delRows.push_back( matIndex(x, spin, flavour1) );
+							delCols.push_back( matIndex(x, spin, flavour2) );
 							targetRows.erase( std::remove( targetRows.begin(), targetRows.end(), delRows.back() ) );
 							targetCols.erase( std::remove( targetCols.begin(), targetCols.end(), delCols.back() ) );
 						} else {
-							addRows.push_back( matIndex(x, spin, flavour2) );
-							addCols.push_back( matIndex(x, spin, flavour1) );
+							addRows.push_back( matIndex(x, spin, flavour1) );
+							addCols.push_back( matIndex(x, spin, flavour2) );
 							targetRows.push_back( addRows.back() );
 							targetCols.push_back( addCols.back() );
 						}
@@ -153,6 +156,27 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 			}
 		}
 	}
+
+	std::cout << "addRows: ";
+	for( auto ar : addRows ) std::cout << ar << " ";
+	std::cout << std::endl;
+	std::cout << "addCols: ";
+	for( auto ar : addCols ) std::cout << ar << " ";
+	std::cout << std::endl;
+
+	std::cout << "delRows: ";
+	for( auto ar : delRows ) std::cout << ar << " ";
+	std::cout << std::endl;
+	std::cout << "delCols: ";
+	for( auto ar : delCols ) std::cout << ar << " ";
+	std::cout << std::endl;
+
+	std::cout << "targetRows: ";
+	for( auto ar : targetRows ) std::cout << ar << " ";
+	std::cout << std::endl;
+	std::cout << "targetCols: ";
+	for( auto ar : targetCols ) std::cout << ar << " ";
+	std::cout << std::endl;
 
 	//TODO: implement something to find changes that add and delete the same row/col
 	// std::set_intersection seems to need sorted vectors, but we have to keep the order...
@@ -176,7 +200,7 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 			if( i < delRank ) {
 				for( size_t j = 0; j < currentCols.size(); j++ ) {
 					// we perform deletions: elements are the negative of the current values.
-					Complex insertElem = curr.coeff( delCols[i], currentCols[j] );
+					Complex insertElem = curr.coeff( delRows[i], currentCols[j] );
 
 					// coeff should return an exact complex 0 if the element does not exist, so the following checks should be working.
 					if( insertElem != Complex( 0., 0. ) ) rowCoeffs.push_back( CoeffTriplet( i, currentCols[j], -insertElem ) );
@@ -228,6 +252,9 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 	colUpdate.setFromTriplets( colCoeffs.begin(), colCoeffs.end() );
 
 	std::cout << rowUpdate << std::endl << std::endl << colUpdate << std::endl;
+	SparseMat updated = curr + colUpdate * rowUpdate;
+	updated.prune( Complex( 0., 0.) );	//TODO: removes zero-entries in sparse matrix, but does extra copy > test if necessary
+	std::cout << updated << std::endl;
 }
 
 Eigen::MatrixXcd DSlashUpdater::makeSlac1D( size_t size ) const {

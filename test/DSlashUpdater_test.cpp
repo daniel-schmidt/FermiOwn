@@ -18,8 +18,8 @@ int main( int argc, char** argv ) {
 	conf80 << 0, 0, 1, 0, 0, 1, 0, 0;
 	RowVectorXb conf96( 8 );
 	conf96 << 0, 1, 0, 0, 0, 0, 1, 0;
-	finit.setRow( conf80, 0 );
-	finit.setRow( conf80, 1 );
+//	finit.setRow( conf80, 0 );
+//	finit.setRow( conf80, 1 );
 
 	ffinal.setRow( conf96, 0 );
 	ffinal.setRow( conf96, 1 );
