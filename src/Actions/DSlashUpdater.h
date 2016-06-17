@@ -37,10 +37,18 @@ public:
 
 	virtual ~DSlashUpdater();
 
+	inline const SparseMat & getMatrix();
+	inline const SparseMat & getInverse();
+	inline Complex getDet();
+
 	void calculateUpdateMatrices( const FieldBoolean& kxiab, const FieldBoolean& change );
-	Complex updateDet();
-	void keep();
-	void reset();
+
+	inline Complex updateDet();
+
+	inline void keep();
+
+	inline void reset();
+
 
 	/**
 	 * @brief returns linear matrix index for a given physical variables
@@ -69,11 +77,36 @@ private:
 	std::vector<size_t> currentRows;
 	std::vector<size_t> currentCols;
 
-	bool updated;
+	bool changed;
 };
+
+inline const SparseMat & DSlashUpdater::getMatrix() {
+	return currMat.getMatrix();
+}
+
+inline const SparseMat & DSlashUpdater::getInverse() {
+	return currMat.getInverse();
+}
+
+inline Complex DSlashUpdater::getDet() {
+	return currMat.getDet();
+}
+
+inline Complex DSlashUpdater::updateDet() {
+	return currMat.updateDet();
+}
 
 inline size_t DSlashUpdater::matIndex( size_t x, size_t spin, size_t flavour ) const {
 	return N*( dimSpinor*flavour + spin ) + x;
+}
+
+inline void DSlashUpdater::keep() {
+	currMat.updateMatrix();
+	currMat.updateInverse();
+}
+
+inline void DSlashUpdater::reset() {
+	currMat = oldMat;
 }
 
 } /* namespace FermiOwn */

@@ -10,21 +10,46 @@
 
 int main( int argc, char** argv ) {
 	using namespace FermiOwn;
-	FieldBoolean finit( 4, 2, 2, NULL, zeroInit );
-	FieldBoolean ffinal( 4, 2, 2, NULL, zeroInit );
+	FieldBoolean bool1( 4, 2, 2, NULL, zeroInit );
 	DSlashUpdater dslash( 4, 1, 3, 2 );
 
-	RowVectorXb conf80( 8 );
-	conf80 << 0, 0, 1, 0, 0, 1, 0, 0;
 	RowVectorXb conf96( 8 );
 	conf96 << 0, 1, 0, 0, 0, 0, 1, 0;
-//	finit.setRow( conf80, 0 );
-//	finit.setRow( conf80, 1 );
 
-	ffinal.setRow( conf96, 0 );
-	ffinal.setRow( conf96, 1 );
+	bool1.setRow( conf96, 0 );
+	bool1.setRow( conf96, 1 );
 
-	FieldBoolean diff = ffinal.different( finit );
+	FieldBoolean bool0( 4, 2, 2, NULL, zeroInit );
+	FieldBoolean diff = bool1.different( bool0 );
 
-	dslash.calculateUpdateMatrices( ffinal, diff );
+	dslash.calculateUpdateMatrices( bool1, diff );
+	std::cout << "Det changed by newdet=" << dslash.updateDet() << "*olddet and the factor should be 0.129782. Det is now: " << dslash.getDet() << std::endl;
+
+	dslash.keep();
+	std::cout << "Matrix after update: " << std::endl << dslash.getMatrix() << std::endl << std::endl;
+
+	SparseMat product = (dslash.getMatrix() * dslash.getInverse());
+	SparseMat id( product.rows(), product.cols() );
+	id.setIdentity();
+	std::cout << "Matrix times its inverse is approximately identity: " << product.isApprox( id ) << std::endl;
+
+	FieldBoolean bool2( 4, 2, 2, NULL, zeroInit );
+	RowVectorXb conf80( 8 );
+	conf80 << 0, 0, 1, 0, 0, 1, 0, 0;
+	bool2.setRow( conf80, 0 );
+	bool2.setRow( conf80, 1 );
+
+	diff = bool2.different( bool1 );
+
+	dslash.calculateUpdateMatrices( bool2, diff );
+	std::cout << "Det changed by newdet=" << dslash.updateDet() << "*olddet and the factor should be 1. Det is now: " << dslash.getDet() << std::endl;
+
+	dslash.keep();
+	std::cout << "Matrix after update: " << std::endl << dslash.getMatrix() << std::endl << std::endl;
+
+	product = (dslash.getMatrix() * dslash.getInverse());
+	id = SparseMat( product.rows(), product.cols() );
+	id.setIdentity();
+	std::cout << "Matrix times its inverse is approximately identity: " << product.isApprox( id ) << std::endl;
+
 }

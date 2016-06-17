@@ -100,6 +100,7 @@ void WoodburyMatrix::update() {
 void WoodburyMatrix::updateMatrix() {
 	if( matNeedsUpdate ) {
 		mat += U * V;	//TODO: setting entries directly is most likely more efficient
+//		mat.prune( Complex( 0., 0.) ); could be used to delete entries from matrix that got zero but are still listed as elements, but does a copy of the matrix...
 		matNeedsUpdate = false;
 	}
 }
@@ -128,6 +129,7 @@ void WoodburyMatrix::updateInverse() {
 		SparseMat capInv = capacitanceMatrixLU.solve( smallId );
 		if( capacitanceMatrixLU.info() == Eigen::Success ) {
 			inv -= inv * U * capInv * VTimesInv;
+//		inv.prune( Complex( 0., 0.) ); could be used to delete entries from matrix that got zero but are still listed as elements, but does a copy of the matrix...
 		} else {
 			std::cerr << "Warning: WoodburyMatrix was not able to invert capacitance matrix needed to update inverse matrix!" << std::endl;
 		}

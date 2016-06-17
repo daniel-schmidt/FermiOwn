@@ -116,7 +116,7 @@ DSlashUpdater::DSlashUpdater( size_t Nt, size_t Ns, size_t dim, size_t numFlavou
 	for( auto num : currentRows ) std::cout << num << " ";
 	for( auto num : currentCols ) std::cout << num << " ";
 
-	updated = true;
+	changed = false;
 }
 
 
@@ -252,9 +252,9 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 	colUpdate.setFromTriplets( colCoeffs.begin(), colCoeffs.end() );
 
 	std::cout << rowUpdate << std::endl << std::endl << colUpdate << std::endl;
-	SparseMat updated = curr + colUpdate * rowUpdate;
-	updated.prune( Complex( 0., 0.) );	//TODO: removes zero-entries in sparse matrix, but does extra copy > test if necessary
-	std::cout << updated << std::endl;
+
+	currMat.setUpdateMatrices( colUpdate, rowUpdate );
+	changed = true;
 }
 
 Eigen::MatrixXcd DSlashUpdater::makeSlac1D( size_t size ) const {
