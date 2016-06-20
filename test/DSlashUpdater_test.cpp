@@ -6,12 +6,14 @@
  */
 
 #include "FieldBoolean.h"
+#include "ConfigGenerator.h"
 #include "DSlashUpdater.h"
 
 int main( int argc, char** argv ) {
 	using namespace FermiOwn;
 	FieldBoolean bool1( 4, 2, 2, NULL, zeroInit );
 	DSlashUpdater dslash( 4, 1, 3, 2 );
+	DSlashUpdater initialDSlash( 4, 1, 3, 2 );
 
 	RowVectorXb conf96( 8 );
 	conf96 << 0, 1, 0, 0, 0, 0, 1, 0;
@@ -57,4 +59,136 @@ int main( int argc, char** argv ) {
 	id.setIdentity();
 	std::cout << "Matrix times its inverse is approximately identity: " << product.isApprox( id ) << std::endl;
 	std::cout << "Non-Zeros: " << dslash.getInverse().nonZeros() << std::endl;
+
+
+	std::cout << std::endl << std::endl << "Further tests with generated configs" << std::endl << "========================================="<< std::endl;
+
+	ConfigGenerator confGen( 2, 2 );
+	confGen.generateAllowedConfs();
+	MatrixXb allowedConfs = confGen.getAllConfs();
+
+	FieldBoolean fbool( 4, 2, 2, NULL, zeroInit );
+
+	dslash = initialDSlash;
+	DSlashUpdater alwaysReset( 4, 1, 3, 2 );
+	FieldBoolean initialField = fbool;
+
+	for( int row = 0; row < allowedConfs.rows(); row++ ) {
+		std::cout << "Testing configuration " << std::endl;
+		FieldBoolean oldField = fbool;
+		fbool.setRow( allowedConfs.row( row ), 0 );
+		fbool.setRow( allowedConfs.row( row ), 1 );
+		fbool.Print();
+
+		std::cout << "Diff to last accepted: " << std::endl;
+		fbool.different( oldField ).Print();
+
+		dslash.calculateUpdateMatrices( fbool, fbool.different( oldField) );
+		alwaysReset.calculateUpdateMatrices( fbool, fbool.different( initialField ) );
+
+		std::cout << dslash.getDet() << " " << alwaysReset.getDet() << std::endl;
+		if( std::fabs( dslash.getDet() ) > ZERO_TOL ) {
+			dslash.keep();
+			std::cout << "keep" << std::endl << std::endl;
+		} else {
+			dslash.reset();
+			std::cout << "reset" << std::endl << std::endl;
+			fbool = oldField;
+		}
+		alwaysReset.reset();
+	}
+
+	//	for( int i = 0; i < 3; i++ ) {
+	//		std::cout << std::endl << "Testing algorithm " <<  i << std::endl;
+	//		dslacNf2.setFull();
+	//		fbool = FieldBoolean( 4, 2, 2, NULL, zeroInit );
+	//		for( int row = 0; row < allowedConfs.rows(); row++ ) {
+	//			FieldBoolean oldField = fbool;
+	//			//			SlacOperatorMatrix oldSlac = dslacNf2;
+	//			dslacNf2.saveState();
+	//			std::cout << "Det before: " << dslacNf2.det() << std::endl;
+	//			fbool.Print();
+	//			fbool.setRow( allowedConfs.row( row ), 0 );
+	//			fbool.setRow( allowedConfs.row( row ), 1 );
+	//			dslacNf2.update( fbool, fbool.different( oldField ), static_cast<SlacOperatorMatrix::updateType>( i ) );
+	//			std::cout << "Det after: " << dslacNf2.det() << std::endl;
+	//			fbool.Print();
+	//			if( abs(dslacNf2.det()) < 1e-10 ) {
+	//				fbool = oldField;
+	//				dslacNf2.resetState();
+	//				//				dslacNf2 = oldSlac;
+	//			}
+	//			std::cout << std::endl;
+	//		}
+	//	}
+
+	std::cout << std::endl << std::endl << "Testing fixed update sequence" << std::endl << "========================================="<< std::endl;;
+
+	fbool = FieldBoolean( 4, 2, 2, NULL, zeroInit );
+	FieldBoolean fboolInitial = fbool;
+	fbool.setValue( 1, 0, 0, 0, 1 );
+	fbool.setValue( 1, 1, 1, 0, 1 );
+	fbool.setValue( 1, 0, 0, 1, 0 );
+	fbool.setValue( 1, 1, 1, 1, 0 );
+
+	dslash = initialDSlash;
+	std::cout << "Det before: " << dslash.getDet() << std::endl;
+	diff = fbool.different( fboolInitial );
+	fbool.Print();
+	//		diff.Print();
+	dslash.calculateUpdateMatrices( fbool, diff );
+	std::cout << "Det after first delete: " << dslash.getDet() << std::endl;
+	dslash.keep();
+
+	fboolInitial = fbool;
+	fbool.invert( 0, 1, 0, 0 );
+	fbool.invert( 0, 1, 1, 1 );
+	fbool.invert( 1, 0, 0, 0 );
+	fbool.invert( 1, 0, 1, 1 );
+	fbool.invert( 0, 0, 0, 1 );
+	fbool.invert( 0, 0, 1, 0 );
+	fbool.invert( 1, 1, 0, 1 );
+	fbool.invert( 1, 1, 1, 0 );
+	fbool.Print();
+	diff = fbool.different( fboolInitial );
+
+	dslash.calculateUpdateMatrices( fbool, diff );
+	dslash.updateDet();
+	std::cout << "switched diag->off, det: " << dslash.getDet() << std::endl;
+	dslash.keep();
+
+	fboolInitial = fbool;
+	fbool.invert( 0, 0, 0, 1 );
+	fbool.invert( 0, 0, 1, 0 );
+	fbool.invert( 1, 1, 0, 1 );
+	fbool.invert( 1, 1, 1, 0 );
+	fbool.Print();
+
+	diff = fbool.different( fboolInitial );
+	dslash.calculateUpdateMatrices( fbool, diff );
+	dslash.updateDet();
+	std::cout << "deleted more, det: " << dslash.getDet() << std::endl;
+	dslash.keep();
+
+	fboolInitial = fbool;
+	fbool.invert( 0, 1, 0, 0 );
+	fbool.invert( 0, 1, 1, 1 );
+	fbool.invert( 1, 0, 0, 0 );
+	fbool.invert( 1, 0, 1, 1 );
+	fbool.Print();
+	diff = fbool.different( fboolInitial );
+	dslash.calculateUpdateMatrices( fbool, diff );
+	std::cout << "Re-adding, det again: " << dslash.getDet() << std::endl;
+	dslash.keep();
+
+	fboolInitial = fbool;
+	fbool.invert( 0, 0, 0, 1 );
+	fbool.invert( 0, 0, 1, 0 );
+	fbool.invert( 1, 1, 0, 1 );
+	fbool.invert( 1, 1, 1, 0 );
+	fbool.Print();
+	diff = fbool.different( fboolInitial );
+	dslash.calculateUpdateMatrices( fbool, diff );
+	std::cout << "Full det again: " << dslash.getDet() << std::endl;
+	dslash.keep();
 }

@@ -83,6 +83,10 @@ void WoodburyMatrix::setUpdateMatrices( const SparseMat & colMatrix, const Spars
 		std::cerr << "The two update matrices passed to WoodburyMatrix do not fit in size! They are col: " << colMatrix.cols() << " and row: " << rowMatrix.rows() << std::endl;
 		exit(1);
 	}
+	if( colMatrix.nonZeros() == 0 || rowMatrix.nonZeros() == 0 ) {
+		std::cerr << "Error: WoodburyMatrix got update matrix with no non-zero element!" << std::endl;
+		exit(1);
+	}
 	U = colMatrix;
 	V = rowMatrix;
 
@@ -108,7 +112,6 @@ void WoodburyMatrix::updateMatrix() {
 Complex WoodburyMatrix::updateDet() {
 	Complex detChange = 1.;
 	if( detNeedsUpdate ) {
-		std::cout << " Woodbury does update " << std::endl;
 		VTimesInv = V*inv;
 		smallId.resize( V.rows(), U.cols() );
 		smallId.setIdentity();

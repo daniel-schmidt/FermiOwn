@@ -15,14 +15,15 @@ DSlashUpdater::DSlashUpdater() {
 }
 
 DSlashUpdater::DSlashUpdater( size_t Nt, size_t Ns, size_t dim, size_t numFlavours ) :
-							N(Nt*Ns*Ns),
-							dimSpinor(2),
-							Nf(numFlavours),
-							matSize( N*dimSpinor*Nf ),
-							oldMat( matSize ),
-							currMat( matSize ),
-							currentRows( matSize ),
-							currentCols( matSize )
+											N(Nt*Ns*Ns),
+											dimSpinor(2),
+											Nf(numFlavours),
+											matSize( N*dimSpinor*Nf ),
+											oldMat( matSize ),
+											currMat( matSize ),
+											currentRows( matSize ),
+											currentCols( matSize ),
+											changed( false )
 {
 	using namespace Eigen;
 	if( dim != 3 ) {
@@ -106,17 +107,10 @@ DSlashUpdater::DSlashUpdater( size_t Nt, size_t Ns, size_t dim, size_t numFlavou
 
 	currMat.setFromCoeffList( coeffs, true );
 	fullOperator = currMat.getMatrix();
-
-	std::cout << "full operator: " << std::endl << fullOperator << std::endl;
-
+	oldMat = currMat;
 	size_t i = 0;
 	std::iota( currentRows.begin(), currentRows.end(), i );
 	std::iota( currentCols.begin(), currentCols.end(), i );
-
-	for( auto num : currentRows ) std::cout << num << " ";
-	for( auto num : currentCols ) std::cout << num << " ";
-
-	changed = false;
 }
 
 
@@ -125,8 +119,9 @@ DSlashUpdater::~DSlashUpdater() {
 }
 
 void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const FieldBoolean& change ) {
-
+	if( changed == true ) std::cerr << "Warning: DSlashUpdater overwrites previously not executed changes. Better use keep/reset before!" << std::endl;
 	// check what changed, and if it requires adding or deleting row/col pairs
+
 	std::vector<size_t> addRows;
 	std::vector<size_t> delRows;
 	std::vector<size_t> addCols;
@@ -143,18 +138,68 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 						if( kxiab.getValue( x, spin, flavour1, flavour2 ) ) {
 							delRows.push_back( matIndex(x, spin, flavour1) );
 							delCols.push_back( matIndex(x, spin, flavour2) );
-							targetRows.erase( std::remove( targetRows.begin(), targetRows.end(), delRows.back() ) );
-							targetCols.erase( std::remove( targetCols.begin(), targetCols.end(), delCols.back() ) );
 						} else {
 							addRows.push_back( matIndex(x, spin, flavour1) );
 							addCols.push_back( matIndex(x, spin, flavour2) );
-							targetRows.push_back( addRows.back() );
-							targetCols.push_back( addCols.back() );
 						}
 					}
 				}
 			}
 		}
+	}
+
+
+	//TODO: implement something to find changes that add and delete the same row/col
+	// std::set_intersection seems to need sorted vectors, but we have to keep the order...
+
+	std::vector<size_t> addRowsSorted = addRows;
+	std::vector<size_t> delRowsSorted = delRows;
+	std::vector<size_t> addColsSorted = addCols;
+	std::vector<size_t> delColsSorted = delCols;
+
+	std::sort( addRowsSorted.begin(), addRowsSorted.end() );
+	std::sort( delRowsSorted.begin(), delRowsSorted.end() );
+	std::sort( addColsSorted.begin(), addColsSorted.end() );
+	std::sort( delColsSorted.begin(), delColsSorted.end() );
+
+	std::vector<size_t> intersection;
+
+	std::set_intersection( addRowsSorted.begin(), addRowsSorted.end(), delRowsSorted.begin(), delRowsSorted.end(), std::back_inserter( intersection ) );
+
+	if( intersection.size() != 0 ) {
+		std::cout << "Values in rows for add and delete: ";
+		for( auto val : intersection ) {
+			std::cout << val << " ";
+//			delRows.erase( std::remove( delRows.begin(), delRows.end(), val ) );
+//			addRows.erase( std::remove( addRows.begin(), addRows.end(), val ) );
+		}
+		std::cout << std::endl;
+	}
+
+	intersection.clear();
+	std::set_intersection( addColsSorted.begin(), addColsSorted.end(), delColsSorted.begin(), delColsSorted.end(), std::back_inserter( intersection ) );
+
+	if( intersection.size() != 0 ) {
+		std::cout << "Values in cols for add and delete: ";
+		for( auto val : intersection ) {
+			std::cout << val << " ";
+//			delCols.erase( std::remove( delCols.begin(), delCols.end(), val ) );
+//			addCols.erase( std::remove( addCols.begin(), addCols.end(), val ) );
+		}
+		std::cout << std::endl;
+	}
+
+	for( auto col : addCols ) {
+		targetCols.push_back( col );
+	}
+	for( auto row : addRows ) {
+		targetRows.push_back( row );
+	}
+	for( auto col : delCols ) {
+		targetCols.erase( std::remove( targetCols.begin(), targetCols.end(), col ) );
+	}
+	for( auto row : delRows ) {
+		targetRows.erase( std::remove( targetRows.begin(), targetRows.end(), row) );
 	}
 
 	std::cout << "addRows: ";
@@ -185,83 +230,88 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 	for( auto ar : targetCols ) std::cout << ar << " ";
 	std::cout << std::endl;
 
-	//TODO: implement something to find changes that add and delete the same row/col
-	// std::set_intersection seems to need sorted vectors, but we have to keep the order...
+	// Starting actual update
 
 	size_t delRank = delRows.size();
 	//TODO: use a more efficient update, if addRank == 0, to be implemented in WoodburyMatrix
 	size_t addRank = addRows.size();
 	size_t updateRank = delRank + addRank;
 
-	MatCoeffList rowCoeffs;
-	MatCoeffList colCoeffs;
+	if( updateRank > 0 ) {
+		MatCoeffList rowCoeffs;
+		MatCoeffList colCoeffs;
 
-	SparseMat rowUpdate( 2*updateRank, matSize );
-	SparseMat colUpdate( matSize, 2*updateRank );
+		SparseMat rowUpdate( 2*updateRank, matSize );
+		SparseMat colUpdate( matSize, 2*updateRank );
 
-	const SparseMat & curr = currMat.getMatrix();
+		const SparseMat & curr = currMat.getMatrix();
 
-	for( size_t i = 0; i < 2*updateRank; i++ ) {
-		if( i < updateRank ) {
-			// we construct the matrix elements from current and full operator, iterating over cols to be replaced
-			if( i < delRank ) {
-				for( size_t j = 0; j < currentCols.size(); j++ ) {
-					// we perform deletions: elements are the negative of the current values.
-					Complex insertElem = curr.coeff( delRows[i], currentCols[j] );
+		for( size_t i = 0; i < 2*updateRank; i++ ) {
+			if( i < updateRank ) {
+				// we construct the matrix elements from current and full operator, iterating over cols to be replaced
+				if( i < delRank ) {
+					for( size_t j = 0; j < currentCols.size(); j++ ) {
+						// we perform deletions: elements are the negative of the current values.
+						Complex insertElem = curr.coeff( delRows[i], currentCols[j] );
 
-					// coeff should return an exact complex 0 if the element does not exist, so the following checks should be working.
-					if( insertElem != Complex( 0., 0. ) ) rowCoeffs.push_back( CoeffTriplet( i, currentCols[j], -insertElem ) );
-				}
-
-				// we fill the first part of col update with 1s as counterpart for row matrix
-				colCoeffs.push_back( CoeffTriplet( delRows[i], i, Complex( 1., 0. ) ) );
-			} else {
-				for( size_t j = 0; j < targetCols.size(); j++ ) {
-					// we restore rows, so we insert the full value and remove the current
-					Complex insertElem = fullOperator.coeff( addRows[i-delRank], targetCols[j] ) - curr.coeff( addRows[i-delRank], targetCols[j] );
-					if( insertElem != Complex( 0., 0. ) ) rowCoeffs.push_back( CoeffTriplet( i, targetCols[j], insertElem ) );
-				}
-
-				colCoeffs.push_back( CoeffTriplet( addRows[i-delRank], i, Complex( 1., 0. ) ) );
-			}
-		} else {
-			// we fill the second part of the row matrix with 1s as counterpart for the row updates.
-			//TODO: can be simplified by pushing add/del in same list and only keeping delRank to distinguish add/del, possibly saves next if
-			if( i < updateRank + delRank ) {
-				rowCoeffs.push_back( CoeffTriplet( i, delCols[i-updateRank], Complex(1.,0.) ) );
-
-				// the second part of the col matrix gets entries from current and full operator
-				for( size_t j = 0; j < currentRows.size(); j++ ) {
-					// check, if we already put the update into the row matrix
-					if( std::find( delRows.begin(), delRows.end(), currentRows[j] ) != delRows.end() ) {
-						// crossing entries need to get a 1
-						if( delRows[i-updateRank] == currentRows[j] ) colCoeffs.push_back( CoeffTriplet( currentRows[j], i, Complex( 1., 0.) ) );
-					} else {
-						Complex insertElem = curr.coeff( currentRows[j], delCols[i-updateRank] );
-						if( insertElem != Complex( 0., 0. ) ) colCoeffs.push_back( CoeffTriplet( currentRows[j], i, -insertElem ) );
+						// coeff should return an exact complex 0 if the element does not exist, so the following checks should be working.
+						if( insertElem != Complex( 0., 0. ) ) rowCoeffs.push_back( CoeffTriplet( i, currentCols[j], -insertElem ) );
 					}
+
+					// we fill the first part of col update with 1s as counterpart for row matrix
+					colCoeffs.push_back( CoeffTriplet( delRows[i], i, Complex( 1., 0. ) ) );
+				} else {
+					for( size_t j = 0; j < targetCols.size(); j++ ) {
+						// we restore rows, so we insert the full value and remove the current
+						Complex insertElem = fullOperator.coeff( addRows[i-delRank], targetCols[j] ) - curr.coeff( addRows[i-delRank], targetCols[j] );
+						if( insertElem != Complex( 0., 0. ) ) {
+							//						std::cout << "Element (" << i << " " << targetCols[j] << ") is " << insertElem << std::endl;
+							rowCoeffs.push_back( CoeffTriplet( i, targetCols[j], insertElem ) );
+						}
+					}
+
+					colCoeffs.push_back( CoeffTriplet( addRows[i-delRank], i, Complex( 1., 0. ) ) );
 				}
 			} else {
-				rowCoeffs.push_back( CoeffTriplet( i, addCols[i-updateRank-delRank], Complex(1.,0.) ) );
+				// we fill the second part of the row matrix with 1s as counterpart for the row updates.
+				//TODO: can be simplified by pushing add/del in same list and only keeping delRank to distinguish add/del, possibly saves next if
+				if( i < updateRank + delRank ) {
+					rowCoeffs.push_back( CoeffTriplet( i, delCols[i-updateRank], Complex(1.,0.) ) );
 
-				for( size_t j = 0; j < targetRows.size(); j++ ) {
-					// only insert entries, if we didn't do it in the row update
-					if( std::find( addRows.begin(), addRows.end(), targetRows[j]) == addRows.end() ) {
-						Complex insertElem = fullOperator.coeff( targetRows[j], addCols[i-updateRank-delRank] ) - curr.coeff( targetRows[j], addCols[i-updateRank-delRank] );
-						if( insertElem != Complex( 0., 0. ) ) colCoeffs.push_back( CoeffTriplet( targetRows[j], i, insertElem ) );
+					// the second part of the col matrix gets entries from current and full operator
+					for( size_t j = 0; j < currentRows.size(); j++ ) {
+						// check, if we already put the update into the row matrix
+						if( std::find( delRows.begin(), delRows.end(), currentRows[j] ) != delRows.end() ) {
+							// crossing entries need to get a 1
+							if( delRows[i-updateRank] == currentRows[j] ) colCoeffs.push_back( CoeffTriplet( currentRows[j], i, Complex( 1., 0.) ) );
+						} else {
+							Complex insertElem = curr.coeff( currentRows[j], delCols[i-updateRank] );
+							if( insertElem != Complex( 0., 0. ) ) colCoeffs.push_back( CoeffTriplet( currentRows[j], i, -insertElem ) );
+						}
+					}
+				} else {
+					rowCoeffs.push_back( CoeffTriplet( i, addCols[i-updateRank-delRank], Complex(1.,0.) ) );
+
+					for( size_t j = 0; j < targetRows.size(); j++ ) {
+						// only insert entries, if we didn't do it in the row update
+						if( std::find( addRows.begin(), addRows.end(), targetRows[j]) == addRows.end() ) {
+							Complex insertElem = fullOperator.coeff( targetRows[j], addCols[i-updateRank-delRank] ) - curr.coeff( targetRows[j], addCols[i-updateRank-delRank] );
+							if( insertElem != Complex( 0., 0. ) ) colCoeffs.push_back( CoeffTriplet( targetRows[j], i, insertElem ) );
+						}
 					}
 				}
 			}
 		}
-	}
 
-	rowUpdate.setFromTriplets( rowCoeffs.begin(), rowCoeffs.end() );
-	colUpdate.setFromTriplets( colCoeffs.begin(), colCoeffs.end() );
+		rowUpdate.setFromTriplets( rowCoeffs.begin(), rowCoeffs.end() );
+		colUpdate.setFromTriplets( colCoeffs.begin(), colCoeffs.end() );
 
-	std::cout << rowUpdate << std::endl << std::endl << colUpdate << std::endl;
+		//	std::cout << "rowUpdate" << std::endl << rowUpdate << std::endl << std::endl << "colUpdate:"<< std::endl << colUpdate << std::endl;
 
-	currMat.setUpdateMatrices( colUpdate, rowUpdate );
-	changed = true;
+		oldMat = currMat;
+		currMat.setUpdateMatrices( colUpdate, rowUpdate );
+		changed = true;
+	} // updateRank > 0
 }
 
 Eigen::MatrixXcd DSlashUpdater::makeSlac1D( size_t size ) const {

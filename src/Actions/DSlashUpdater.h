@@ -64,10 +64,18 @@ public:
 	Eigen::MatrixXcd makeSlac1D( size_t size) const;
 
 private:
+
 	size_t N;						///< total number of physical points
 	size_t dimSpinor;				///< number of spin degrees of freedom
 	size_t Nf;						///< number of flavours
 	size_t matSize;					///< the full operator is a (matSize x matSize)-matrix, usually matSize = N*dimSpinor*Nf
+
+//	enum updateState {
+//		initial,					///< operator is in the initial state, no update was prepared so far.
+//		needsUpdate,				///< update matrices were set, but no updates executed
+//		detUpdated,					///< only the determinant was updated with the currently set update matrices
+////		fullUpdated					///< the full operator was updated, but the change was not accepted so far.
+//	} status;						///< keep track of the internal state to prevent missuse
 
 	WoodburyMatrix oldMat;
 	WoodburyMatrix currMat;
@@ -95,6 +103,7 @@ inline Complex DSlashUpdater::getDet() {
 }
 
 inline Complex DSlashUpdater::updateDet() {
+	if( changed == false ) std::cerr << "Warning: DSlacUpdater tries update of Determinant, but there are no changes. Perhaps you need to calculateUpdateMatrices first." << std::endl;
 	return currMat.updateDet();
 }
 
@@ -103,14 +112,22 @@ inline size_t DSlashUpdater::matIndex( size_t x, size_t spin, size_t flavour ) c
 }
 
 inline void DSlashUpdater::keep() {
+	if( std::fabs( getDet() ) < ZERO_TOL ) {
+		std::cerr << "Error: you are tying to keep a DSlashUpdater state with determinant " << getDet() << std::endl;
+		std::cerr << "This is not a valid state!" << std::endl;
+		exit(1);
+	}
+
 	currMat.updateMatrix();
 	currMat.updateInverse();
 	currentRows = targetRows;	//TODO: can we save a copy here by exchanging pointers or something?
 	currentCols = targetCols;
+	changed = false;
 }
 
 inline void DSlashUpdater::reset() {
 	currMat = oldMat;
+	changed = false;
 }
 
 } /* namespace FermiOwn */
