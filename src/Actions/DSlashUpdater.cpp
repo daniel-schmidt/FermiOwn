@@ -15,14 +15,14 @@ DSlashUpdater::DSlashUpdater() {
 }
 
 DSlashUpdater::DSlashUpdater( size_t Nt, size_t Ns, size_t dim, size_t numFlavours ) :
-					N(Nt*Ns*Ns),
-					dimSpinor(2),
-					Nf(numFlavours),
-					matSize( N*dimSpinor*Nf ),
-					oldMat( matSize ),
-					currMat( matSize ),
-					currentRows( matSize ),
-					currentCols( matSize )
+							N(Nt*Ns*Ns),
+							dimSpinor(2),
+							Nf(numFlavours),
+							matSize( N*dimSpinor*Nf ),
+							oldMat( matSize ),
+							currMat( matSize ),
+							currentRows( matSize ),
+							currentCols( matSize )
 {
 	using namespace Eigen;
 	if( dim != 3 ) {
@@ -131,8 +131,8 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 	std::vector<size_t> delRows;
 	std::vector<size_t> addCols;
 	std::vector<size_t> delCols;
-	std::vector<size_t> targetRows = currentRows;
-	std::vector<size_t> targetCols = currentCols;
+	targetRows = currentRows;
+	targetCols = currentCols;
 
 
 	for( size_t flavour1 = 0; flavour1 < Nf; flavour1++ ) {
@@ -169,6 +169,13 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 	std::cout << std::endl;
 	std::cout << "delCols: ";
 	for( auto ar : delCols ) std::cout << ar << " ";
+	std::cout << std::endl;
+
+	std::cout << "currentRows: ";
+	for( auto ar : currentRows ) std::cout << ar << " ";
+	std::cout << std::endl;
+	std::cout << "currentCols: ";
+	for( auto ar : currentCols ) std::cout << ar << " ";
 	std::cout << std::endl;
 
 	std::cout << "targetRows: ";
@@ -241,7 +248,7 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 					// only insert entries, if we didn't do it in the row update
 					if( std::find( addRows.begin(), addRows.end(), targetRows[j]) == addRows.end() ) {
 						Complex insertElem = fullOperator.coeff( targetRows[j], addCols[i-updateRank-delRank] ) - curr.coeff( targetRows[j], addCols[i-updateRank-delRank] );
-						if( insertElem != Complex( 0., 0. ) ) colCoeffs.push_back( CoeffTriplet( targetRows[j], i ) );
+						if( insertElem != Complex( 0., 0. ) ) colCoeffs.push_back( CoeffTriplet( targetRows[j], i, insertElem ) );
 					}
 				}
 			}

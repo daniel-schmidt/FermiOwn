@@ -108,6 +108,7 @@ void WoodburyMatrix::updateMatrix() {
 Complex WoodburyMatrix::updateDet() {
 	Complex detChange = 1.;
 	if( detNeedsUpdate ) {
+		std::cout << " Woodbury does update " << std::endl;
 		VTimesInv = V*inv;
 		smallId.resize( V.rows(), U.cols() );
 		smallId.setIdentity();

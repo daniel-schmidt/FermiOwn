@@ -76,6 +76,8 @@ private:
 
 	std::vector<size_t> currentRows;
 	std::vector<size_t> currentCols;
+	std::vector<size_t> targetRows;
+	std::vector<size_t> targetCols;
 
 	bool changed;
 };
@@ -103,6 +105,8 @@ inline size_t DSlashUpdater::matIndex( size_t x, size_t spin, size_t flavour ) c
 inline void DSlashUpdater::keep() {
 	currMat.updateMatrix();
 	currMat.updateInverse();
+	currentRows = targetRows;	//TODO: can we save a copy here by exchanging pointers or something?
+	currentCols = targetCols;
 }
 
 inline void DSlashUpdater::reset() {

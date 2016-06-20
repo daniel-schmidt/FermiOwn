@@ -23,7 +23,10 @@ int main( int argc, char** argv ) {
 	FieldBoolean diff = bool1.different( bool0 );
 
 	dslash.calculateUpdateMatrices( bool1, diff );
-	std::cout << "Det changed by newdet=" << dslash.updateDet() << "*olddet and the factor should be 0.129782. Det is now: " << dslash.getDet() << std::endl;
+
+	Complex detChange = dslash.updateDet();
+	Complex currDet = dslash.getDet();
+	std::cout << "Det changed by newdet=" << detChange << "*olddet and the factor should be 0.129782. Det is now: " << currDet << std::endl;
 
 	dslash.keep();
 	std::cout << "Matrix after update: " << std::endl << dslash.getMatrix() << std::endl << std::endl;
@@ -42,7 +45,9 @@ int main( int argc, char** argv ) {
 	diff = bool2.different( bool1 );
 
 	dslash.calculateUpdateMatrices( bool2, diff );
-	std::cout << "Det changed by newdet=" << dslash.updateDet() << "*olddet and the factor should be 1. Det is now: " << dslash.getDet() << std::endl;
+	detChange = dslash.updateDet();
+	currDet = dslash.getDet();
+	std::cout << "Det changed by newdet=" << detChange << "*olddet and the factor should be 1. Det is now: " << currDet << std::endl;
 
 	dslash.keep();
 	std::cout << "Matrix after update: " << std::endl << dslash.getMatrix() << std::endl << std::endl;
@@ -51,5 +56,5 @@ int main( int argc, char** argv ) {
 	id = SparseMat( product.rows(), product.cols() );
 	id.setIdentity();
 	std::cout << "Matrix times its inverse is approximately identity: " << product.isApprox( id ) << std::endl;
-
+	std::cout << "Non-Zeros: " << dslash.getInverse().nonZeros() << std::endl;
 }
