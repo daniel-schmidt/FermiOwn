@@ -19,7 +19,7 @@ int main( int argc, char** argv ) {
 	size_t numFlavours = 2;
 
 	FieldBoolean kxiab( latVol, numSpins, numFlavours, NULL, zeroInit );
-	ConfigGenerator confGen( latVol, numSpins, numFlavours );
+	ConfigGenerator confGen( numSpins, numFlavours );
 	WeightFunction weight( kxiab );
 
 	confGen.generateAllowedConfs();
