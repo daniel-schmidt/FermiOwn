@@ -38,24 +38,22 @@ Complex WeightFunction::calculateWeight() {
 }
 
 Complex WeightFunction::updateWeight() {
-//	size_t k = kxiab.sumAll();
-//	size_t ntilde = kxiab.countOffdiagonal2();
-//	double factor = 1.;
-//	for( size_t x = 0; x< V; x++ ) {
-//		auto nx = kxiab.countSummedSpin( x );
-//		factor *= getHypergeometricFactor( nx(1), nx(2) );
-//	}
-//	factor *= std::pow( 2., ntilde );
-//	Complex dw = std::pow( Complex(-kappa), double(k)/2. );
-//
-//	FieldBoolean changed = kxiab.different(oldField);
-//
-////	slac.erase( kxiab );
-//	slac.update( kxiab, changed, SlacOperatorMatrix::separateUpdate );
-//	Complex det = slac.det();
-////	slac.setFull();
-//
-//	return factor*dw*det;
+	// TODO: replace this part by some kind of difference calculation
+	size_t k = kxiab.sumAll();
+	size_t ntilde = kxiab.countOffdiagonal2();
+	double factor = 1.;
+	for( size_t x = 0; x< V; x++ ) {
+		auto nx = kxiab.countSummedSpin( x );
+		factor *= getHypergeometricFactor( nx(1), nx(2) );
+	}
+	factor *= std::pow( 2., ntilde );
+	Complex dw = std::pow( Complex(-kappa), double(k)/2. );
+
+	dslash.calculateUpdateMatrices( kxiab, kxiab.different( initialField ) );
+	Complex det = dslash.getDet();
+	dslash.reset();
+
+	return factor*dw*det;
 }
 
 /*=====================================================================

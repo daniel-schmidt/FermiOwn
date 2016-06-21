@@ -12,7 +12,6 @@
 #include <Eigen/Dense>
 #include "Lattice.h"
 #include "FieldBoolean.h"
-#include "SlacOperatorMatrix.h"
 #include "FermiBoolMetropolis.h"
 
 int main( int argc, char** argv ) {
@@ -37,8 +36,6 @@ int main( int argc, char** argv ) {
 	int numSpin = 2;
 	// initialize classes
 	Lattice lat( Nt, Ns, dim );
-	SlacOperatorMatrix slac( Nt, Ns, dim, Nf );
-	//	std::cout << slac.getMatrix() << std::endl << std::endl;
 
 	// initialize random number generator and distributions
 	std::ranlux48 gen;
@@ -57,7 +54,7 @@ int main( int argc, char** argv ) {
 //				}
 //			}
 //		}
-		FermiBoolMetropolis updater( kxiab, slac, lat, lambda, Nf, &gen );
+		FermiBoolMetropolis updater( kxiab, lat, lambda, Nf, &gen );
 
 		//		updater.sumAllConfs();
 

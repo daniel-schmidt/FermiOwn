@@ -202,33 +202,33 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 		targetRows.erase( std::remove( targetRows.begin(), targetRows.end(), row) );
 	}
 
-	std::cout << "addRows: ";
-	for( auto ar : addRows ) std::cout << ar << " ";
-	std::cout << std::endl;
-	std::cout << "addCols: ";
-	for( auto ar : addCols ) std::cout << ar << " ";
-	std::cout << std::endl;
-
-	std::cout << "delRows: ";
-	for( auto ar : delRows ) std::cout << ar << " ";
-	std::cout << std::endl;
-	std::cout << "delCols: ";
-	for( auto ar : delCols ) std::cout << ar << " ";
-	std::cout << std::endl;
-
-	std::cout << "currentRows: ";
-	for( auto ar : currentRows ) std::cout << ar << " ";
-	std::cout << std::endl;
-	std::cout << "currentCols: ";
-	for( auto ar : currentCols ) std::cout << ar << " ";
-	std::cout << std::endl;
-
-	std::cout << "targetRows: ";
-	for( auto ar : targetRows ) std::cout << ar << " ";
-	std::cout << std::endl;
-	std::cout << "targetCols: ";
-	for( auto ar : targetCols ) std::cout << ar << " ";
-	std::cout << std::endl;
+//	std::cout << "addRows: ";
+//	for( auto ar : addRows ) std::cout << ar << " ";
+//	std::cout << std::endl;
+//	std::cout << "addCols: ";
+//	for( auto ar : addCols ) std::cout << ar << " ";
+//	std::cout << std::endl;
+//
+//	std::cout << "delRows: ";
+//	for( auto ar : delRows ) std::cout << ar << " ";
+//	std::cout << std::endl;
+//	std::cout << "delCols: ";
+//	for( auto ar : delCols ) std::cout << ar << " ";
+//	std::cout << std::endl;
+//
+//	std::cout << "currentRows: ";
+//	for( auto ar : currentRows ) std::cout << ar << " ";
+//	std::cout << std::endl;
+//	std::cout << "currentCols: ";
+//	for( auto ar : currentCols ) std::cout << ar << " ";
+//	std::cout << std::endl;
+//
+//	std::cout << "targetRows: ";
+//	for( auto ar : targetRows ) std::cout << ar << " ";
+//	std::cout << std::endl;
+//	std::cout << "targetCols: ";
+//	for( auto ar : targetCols ) std::cout << ar << " ";
+//	std::cout << std::endl;
 
 	// Starting actual update
 
