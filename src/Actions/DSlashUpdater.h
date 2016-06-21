@@ -103,7 +103,7 @@ inline Complex DSlashUpdater::getDet() {
 }
 
 inline Complex DSlashUpdater::updateDet() {
-	if( changed == false ) std::cerr << "Warning: DSlacUpdater tries update of Determinant, but there are no changes. Perhaps you need to calculateUpdateMatrices first." << std::endl;
+//	if( changed == false ) std::cerr << "Warning: DSlacUpdater tries update of Determinant, but there are no changes. Perhaps you need to calculateUpdateMatrices first." << std::endl;
 	return currMat.updateDet();
 }
 
@@ -113,7 +113,7 @@ inline size_t DSlashUpdater::matIndex( size_t x, size_t spin, size_t flavour ) c
 
 inline void DSlashUpdater::keep() {
 	if( std::fabs( getDet() ) < ZERO_TOL ) {
-		std::cerr << "Error: you are tying to keep a DSlashUpdater state with determinant " << getDet() << std::endl;
+		std::cerr << "Error: you are trying to keep a DSlashUpdater state with determinant " << getDet() << std::endl;
 		std::cerr << "This is not a valid state!" << std::endl;
 		exit(1);
 	}

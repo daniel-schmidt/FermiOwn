@@ -44,17 +44,23 @@ bool FermiBoolMetropolis::updateField() {
 
 	oldField = kxiab;
 
-	Complex weight = 1./weightFun.calculateWeight();
+//	Complex weight = 1./weightFun.calculateWeight();
 
+	weightFun.saveState();
 	// draw random points, which get a new configuration
+
+	std::set<size_t> changedPoints;
+
 	for( int cnt=0; cnt < 4; cnt++ ) {
 		int x = intV_dist(*rndGen);
 		RowVectorXb newConf = confGen.getRandomConf();
 		kxiab.setRow( newConf, x );
+		changedPoints.insert( size_t( x ) );
 	}
 
-	weight *= weightFun.calculateWeight();
+	Complex weight = weightFun.updateWeight( changedPoints );
 
+//	std::cout << weight << std::endl;
 	bool accepted = accept( weight );
 
 	return accepted;
@@ -67,8 +73,10 @@ bool FermiBoolMetropolis::accept( Complex weight ) {
 		accepted = true;
 		acceptanceCounter++;
 		detOld = det;
+		weightFun.keep();
 	} else {
 		kxiab = oldField;
+		weightFun.reset();
 	}
 //	std::cout << "accepted: " << accepted << std::endl;
 	return accepted;
