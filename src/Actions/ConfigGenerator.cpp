@@ -9,9 +9,10 @@
 
 namespace FermiOwn {
 
-ConfigGenerator::ConfigGenerator( const size_t numSpins, const size_t numFlavours ) :
+ConfigGenerator::ConfigGenerator( const size_t numSpins, const size_t numFlavours, std::ranlux48* randomGenerator ) :
 	Nf( numFlavours ),
-	dimSpinor( numSpins )
+	dimSpinor( numSpins ),
+	rndGen( randomGenerator )
 {
 	if( dimSpinor != 2 ) std::cout << "Warning: ConfigGenerator called with spinor size != 2, this may not be implemented correctly!" << std::endl;
 }
@@ -60,6 +61,7 @@ void  ConfigGenerator::generateAllowedConfs() {
 		}
 	}
 	allowedConfs.conservativeResize( numAllowedConfs, Eigen::NoChange );
+	int_dist = std::uniform_int_distribution<int>( 0, numAllowedConfs-1 );
 }
 
 } /* namespace FermiOwn */
