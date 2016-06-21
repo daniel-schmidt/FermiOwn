@@ -11,7 +11,8 @@ namespace FermiOwn {
 
 WeightFunction::WeightFunction( FieldBoolean& boolField, size_t timeSize, size_t spatialSize, size_t dim, size_t numFlavours, double coupling ) :
 		kxiab( boolField ),
-//		slac( timeSize, spatialSize, dim, numFlavours ),
+		initialField( kxiab ),
+		dslash( timeSize, spatialSize, dim, numFlavours ),
 		V( timeSize*pow(spatialSize, dim) ),
 		kappa( 1./coupling )
 {}
@@ -29,10 +30,10 @@ Complex WeightFunction::calculateWeight() {
 	factor *= std::pow( 2., ntilde );
 	Complex dw = std::pow( Complex(-kappa), double(k)/2. );
 
-//	slac.erase( kxiab );
+	dslash.calculateUpdateMatrices( kxiab, kxiab.different( initialField ) );
+	Complex det = dslash.getDet();
+	dslash.reset();
 
-//	Complex det = slac.det();
-	Complex det = 0.; //TODO: change this
 	return factor*dw*det;
 }
 

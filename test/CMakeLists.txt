@@ -53,7 +53,7 @@ add_executable( ConfigGenerator_test "ConfigGenerator_test.cpp" )
 target_link_libraries( ConfigGenerator_test Actions )
 
 add_executable( WeightFunction_test "WeightFunction_test.cpp" )
-target_link_libraries( WeightFunction_test Actions )
+target_link_libraries( WeightFunction_test Actions Math )
 
 add_executable( WoodburyMatrix_test "WoodburyMatrix_test.cpp" )
 target_link_libraries( WoodburyMatrix_test Math )
