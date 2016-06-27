@@ -324,8 +324,11 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 			for( size_t j = 0; j < currentRows.size(); j++ ) {
 				// check, if we already put the update into the row matrix
 				if( std::find( trueDelRows.begin(), trueDelRows.end(), currentRows[j] ) != trueDelRows.end() ) {
-					// crossing entries need to get a 1
-					if( trueDelRows[i] == currentRows[j] ) colCoeffs.push_back( CoeffTriplet( currentRows[j], t, Complex( 1., 0.) ) ); //TODO: check, if this works correctly
+					// find crossing entries from original list, needs to get a 1
+					size_t pairIdx = std::find( delCols.begin(), delCols.end(), trueDelCols[i] ) - delCols.begin();
+					if( delRows[pairIdx] == currentRows[j] )
+
+						colCoeffs.push_back( CoeffTriplet( currentRows[j], t, Complex( 1., 0.) ) );
 				} else {
 					Complex insertElem = curr.coeff( currentRows[j], trueDelCols[i] );
 					if( insertElem != Complex( 0., 0. ) ) colCoeffs.push_back( CoeffTriplet( currentRows[j], t, -insertElem ) );
@@ -419,7 +422,7 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 		rowUpdate.setFromTriplets( rowCoeffs.begin(), rowCoeffs.end() );
 		colUpdate.setFromTriplets( colCoeffs.begin(), colCoeffs.end() );
 
-		//	std::cout << "rowUpdate" << std::endl << rowUpdate << std::endl << std::endl << "colUpdate:"<< std::endl << colUpdate << std::endl;
+			std::cout << "rowUpdate" << std::endl << rowUpdate << std::endl << std::endl << "colUpdate:"<< std::endl << colUpdate << std::endl;
 
 		oldMat = currMat;
 		currMat.setUpdateMatrices( colUpdate, rowUpdate );
