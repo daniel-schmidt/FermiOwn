@@ -175,9 +175,9 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 	std::set< idxPair > rmOnes;
 
 	if( intersection.size() != 0 ) {
-		std::cout << "Values in rows for add and delete: ";
+//		std::cout << "Values in rows for add and delete: ";
 		for( auto val : intersection ) {
-			std::cout << val << " ";
+//			std::cout << val << " ";
 			trueDelRows.erase( std::remove( trueDelRows.begin(), trueDelRows.end(), val ) );
 			trueAddRows.erase( std::remove( trueAddRows.begin(), trueAddRows.end(), val ) );
 			size_t index = std::find( delRows.begin(), delRows.end(), val ) - delRows.begin();
@@ -186,16 +186,16 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 			index = std::find( addRows.begin(), addRows.end(), val ) - addRows.begin();
 			rmOnes.insert( idxPair( addRows[index], addCols[index] ) );
 		}
-		std::cout << std::endl;
+//		std::cout << std::endl;
 	}
 
 	intersection.clear();
 	std::set_intersection( addColsSorted.begin(), addColsSorted.end(), delColsSorted.begin(), delColsSorted.end(), std::back_inserter( intersection ) );
 
 	if( intersection.size() != 0 ) {
-		std::cout << "Values in cols for add and delete: ";
+//		std::cout << "Values in cols for add and delete: ";
 		for( auto val : intersection ) {
-			std::cout << val << " ";
+//			std::cout << val << " ";
 			trueDelCols.erase( std::remove( trueDelCols.begin(), trueDelCols.end(), val ) );
 			trueAddCols.erase( std::remove( trueAddCols.begin(), trueAddCols.end(), val ) );
 
@@ -206,7 +206,7 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 			rmOnes.insert( idxPair( addRows[index], addCols[index] ) );
 
 		}
-		std::cout << std::endl;
+//		std::cout << std::endl;
 	}
 
 	for( auto col : addCols ) {
@@ -222,54 +222,54 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 		targetRows.erase( std::remove( targetRows.begin(), targetRows.end(), row) );
 	}
 
-	std::cout << "addRows: ";
-	for( auto ar : addRows ) std::cout << ar << " ";
-	std::cout << std::endl;
-	std::cout << "addCols: ";
-	for( auto ar : addCols ) std::cout << ar << " ";
-	std::cout << std::endl;
-
-	std::cout << "delRows: ";
-	for( auto ar : delRows ) std::cout << ar << " ";
-	std::cout << std::endl;
-	std::cout << "delCols: ";
-	for( auto ar : delCols ) std::cout << ar << " ";
-	std::cout << std::endl;
-
-	std::cout << "trueAddRows: ";
-	for( auto ar : trueAddRows ) std::cout << ar << " ";
-	std::cout << std::endl;
-	std::cout << "trueAddCols: ";
-	for( auto ar : trueAddCols ) std::cout << ar << " ";
-	std::cout << std::endl;
-
-	std::cout << "trueDelRows: ";
-	for( auto ar : trueDelRows ) std::cout << ar << " ";
-	std::cout << std::endl;
-	std::cout << "trueDelCols: ";
-	for( auto ar : trueDelCols ) std::cout << ar << " ";
-	std::cout << std::endl;
-
-	std::cout << "addOnes: ";
-	for( auto ar : addOnes ) std::cout << "(" << ar.first << "," << ar.second << ") ";
-	std::cout << std::endl;
-	std::cout << "rmOnes: ";
-	for( auto ar : rmOnes ) std::cout << "(" << ar.first << "," << ar.second << ") ";
-	std::cout << std::endl;
-
-	std::cout << "currentRows: ";
-	for( auto ar : currentRows ) std::cout << ar << " ";
-	std::cout << std::endl;
-	std::cout << "currentCols: ";
-	for( auto ar : currentCols ) std::cout << ar << " ";
-	std::cout << std::endl;
-
-	std::cout << "targetRows: ";
-	for( auto ar : targetRows ) std::cout << ar << " ";
-	std::cout << std::endl;
-	std::cout << "targetCols: ";
-	for( auto ar : targetCols ) std::cout << ar << " ";
-	std::cout << std::endl;
+//	std::cout << "addRows: ";
+//	for( auto ar : addRows ) std::cout << ar << " ";
+//	std::cout << std::endl;
+//	std::cout << "addCols: ";
+//	for( auto ar : addCols ) std::cout << ar << " ";
+//	std::cout << std::endl;
+//
+//	std::cout << "delRows: ";
+//	for( auto ar : delRows ) std::cout << ar << " ";
+//	std::cout << std::endl;
+//	std::cout << "delCols: ";
+//	for( auto ar : delCols ) std::cout << ar << " ";
+//	std::cout << std::endl;
+//
+//	std::cout << "trueAddRows: ";
+//	for( auto ar : trueAddRows ) std::cout << ar << " ";
+//	std::cout << std::endl;
+//	std::cout << "trueAddCols: ";
+//	for( auto ar : trueAddCols ) std::cout << ar << " ";
+//	std::cout << std::endl;
+//
+//	std::cout << "trueDelRows: ";
+//	for( auto ar : trueDelRows ) std::cout << ar << " ";
+//	std::cout << std::endl;
+//	std::cout << "trueDelCols: ";
+//	for( auto ar : trueDelCols ) std::cout << ar << " ";
+//	std::cout << std::endl;
+//
+//	std::cout << "addOnes: ";
+//	for( auto ar : addOnes ) std::cout << "(" << ar.first << "," << ar.second << ") ";
+//	std::cout << std::endl;
+//	std::cout << "rmOnes: ";
+//	for( auto ar : rmOnes ) std::cout << "(" << ar.first << "," << ar.second << ") ";
+//	std::cout << std::endl;
+//
+//	std::cout << "currentRows: ";
+//	for( auto ar : currentRows ) std::cout << ar << " ";
+//	std::cout << std::endl;
+//	std::cout << "currentCols: ";
+//	for( auto ar : currentCols ) std::cout << ar << " ";
+//	std::cout << std::endl;
+//
+//	std::cout << "targetRows: ";
+//	for( auto ar : targetRows ) std::cout << ar << " ";
+//	std::cout << std::endl;
+//	std::cout << "targetCols: ";
+//	for( auto ar : targetCols ) std::cout << ar << " ";
+//	std::cout << std::endl;
 
 	// Starting actual update
 
@@ -422,7 +422,7 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 		rowUpdate.setFromTriplets( rowCoeffs.begin(), rowCoeffs.end() );
 		colUpdate.setFromTriplets( colCoeffs.begin(), colCoeffs.end() );
 
-			std::cout << "rowUpdate" << std::endl << rowUpdate << std::endl << std::endl << "colUpdate:"<< std::endl << colUpdate << std::endl;
+//			std::cout << "rowUpdate" << std::endl << rowUpdate << std::endl << std::endl << "colUpdate:"<< std::endl << colUpdate << std::endl;
 
 		oldMat = currMat;
 		currMat.setUpdateMatrices( colUpdate, rowUpdate );
