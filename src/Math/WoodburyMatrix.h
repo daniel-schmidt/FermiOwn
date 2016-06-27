@@ -103,6 +103,8 @@ public:
 	 */
 	void setUpdateMatrices( const SparseMat& colMatrix, const SparseMat& rowMatrix );
 
+	inline void setDeleteOnlyLists( const std::vector<size_t>& rowsToDelete, const std::vector<size_t>& colsToDelete );
+
 	/**
 	 * @brief Update the matrix, the inverse and the determinant.
 	 */
@@ -146,7 +148,7 @@ public:
 
 private:
 	SparseMat mat;					///< the actual matrix storage
-	size_t size;				///< the matrix is of dimension (size x size)
+	size_t size;					///< the matrix is of dimension (size x size)
 
 	SparseMat inv;					///< storage for the inverse matrix
 	Complex det;					///< the determinant of the matrix
@@ -161,6 +163,10 @@ private:
 	Eigen::SparseLU< SparseMat > capacitanceMatrixLU;	///< a full-pivoted LU decomposition of the matrix 1 + V*inv*U (the capacitance matrix) used to update determinant and inverse
 	SparseMat VTimesInv;			///< temporary storage for the product V*inv, to prevent double evaluation if updating determinant and inverse
 	SparseMat smallId;				///< identitiy matrix in the small subspace, needs to be stored for separate evaluation of determinant and inverse
+
+	bool deleteOnly;				///< switch on to use faster updates, if only rows/cols are set to zero.
+	std::vector<size_t> rows;
+	std::vector<size_t> cols;
 };
 
 /*============================================================
@@ -180,6 +186,12 @@ inline const SparseMat& WoodburyMatrix::getMatrix() {
 inline const SparseMat& WoodburyMatrix::getInverse() {
 	if( invNeedsUpdate ) updateInverse();
 	return inv;
+}
+
+inline void WoodburyMatrix::setDeleteOnlyLists( const std::vector<size_t>& rowsToDelete, const std::vector<size_t>& colsToDelete ) {
+	rows = rowsToDelete;
+	cols = colsToDelete;
+	deleteOnly = true;
 }
 
 inline void WoodburyMatrix::Print() {

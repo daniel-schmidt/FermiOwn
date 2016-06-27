@@ -275,7 +275,7 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 
 	//	size_t delRank = delRows.size();
 	//TODO: use a more efficient update, if addRank == 0, to be implemented in WoodburyMatrix
-	//	size_t addRank = addRows.size();
+	size_t addRank = addRows.size() + addCols.size();
 	//	size_t updateRank = delRank + addRank;
 
 	size_t updateRank = trueDelRows.size() + trueAddRows.size() + trueDelCols.size() + trueAddCols.size() + rmOnes.size() + addOnes.size();
@@ -426,6 +426,11 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 
 		oldMat = currMat;
 		currMat.setUpdateMatrices( colUpdate, rowUpdate );
+
+		if( addRank > 0 ) {
+			currMat.setDeleteOnlyLists( delRows, delCols );
+		}
+
 		changed = true;
 	} // updateRank > 0
 }

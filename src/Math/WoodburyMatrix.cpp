@@ -13,7 +13,8 @@ WoodburyMatrix::WoodburyMatrix() :
 	size( 0 ),
 	matNeedsUpdate( true ),
 	detNeedsUpdate( true ),
-	invNeedsUpdate( true )
+	invNeedsUpdate( true ),
+	deleteOnly( false )
 {};
 
 WoodburyMatrix::WoodburyMatrix( const size_t matSize ) :
@@ -21,7 +22,8 @@ WoodburyMatrix::WoodburyMatrix( const size_t matSize ) :
 	size( matSize ),
 	matNeedsUpdate( true ),
 	detNeedsUpdate( true ),
-	invNeedsUpdate( true )
+	invNeedsUpdate( true ),
+	deleteOnly( false )
 {
 }
 
@@ -30,7 +32,8 @@ WoodburyMatrix::WoodburyMatrix( const size_t matSize, const MatCoeffList & coeff
 	size( matSize ),
 	matNeedsUpdate( true ),
 	detNeedsUpdate( true ),
-	invNeedsUpdate( true )
+	invNeedsUpdate( true ),
+	deleteOnly( false )
 {
 	setFromCoeffList( coeffList, selfAdjointInit );
 }
@@ -112,14 +115,39 @@ void WoodburyMatrix::updateMatrix() {
 Complex WoodburyMatrix::updateDet() {
 	Complex detChange = 1.;
 	if( detNeedsUpdate ) {
-		VTimesInv = V*inv;
-		smallId.resize( V.rows(), U.cols() );
-		smallId.setIdentity();
-		capacitanceMatrixLU.compute( VTimesInv * U + smallId );
-		if( capacitanceMatrixLU.info() == Eigen::Success ) {
-			detChange = capacitanceMatrixLU.determinant();
+		if( deleteOnly ) {
+			if( rows.size() != cols.size() ) {
+				std::cerr << "Trying to delete not the same number of rows/cols. This should be impossible!" << std::endl;
+				exit(1);
+			}
+
+			Eigen::MatrixXcd submat( rows.size(), cols.size() );
+//			Eigen::MatrixXcd colmat( rows.size(), mat.cols() );
+//			Eigen::MatrixXcd rowmat( mat.rows(), cols.size() );
+
+			for( size_t colIndex = 0; colIndex < cols.size(); colIndex++ ) {
+//				rowmat.col( colIndex ) = inv.col( cols[colIndex] );
+				for( size_t rowIndex = 0; rowIndex < rows.size(); rowIndex++ ) {
+					// fill colmat at first iteraton through the outer loop
+//					if( colIndex == 0 ) {
+//						colmat.row( rowIndex ) = inv.row( rows[rowIndex] );
+//					}
+					submat( rowIndex, colIndex ) = inv.coeff( cols[rowIndex], rows[colIndex] );
+				}
+			}
+
+			detChange = submat.determinant();
+//			setUpdateMatrices( colmat.sparseView(), rowmat.sparseView() );
 		} else {
-			detChange = 0.;
+			VTimesInv = V*inv;
+			smallId.resize( V.rows(), U.cols() );
+			smallId.setIdentity();
+			capacitanceMatrixLU.compute( VTimesInv * U + smallId );
+			if( capacitanceMatrixLU.info() == Eigen::Success ) {
+				detChange = capacitanceMatrixLU.determinant();
+			} else {
+				detChange = 0.;
+			}
 		}
 		det *= detChange;
 		detNeedsUpdate = false;
