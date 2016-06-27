@@ -56,8 +56,6 @@ int main( int argc, char** argv ) {
 //		}
 		FermiBoolMetropolis updater( kxiab, lat, lambda/2., Nf, &gen ); //TODO: we are simulating with lambda/2 due to convention in Base...
 
-		//		updater.sumAllConfs();
-
 		double av_k = 0.;
 
 		for( int measure = 0; measure < numMeasures+numThermal; measure++) {

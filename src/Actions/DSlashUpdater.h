@@ -8,6 +8,7 @@
 #ifndef SRC_ACTIONS_DSLASHUPDATER_H_
 #define SRC_ACTIONS_DSLASHUPDATER_H_
 
+#include <set>
 #include "CliffordAlgebra.h"
 #include "FieldBoolean.h"
 #include "WoodburyMatrix.h"
