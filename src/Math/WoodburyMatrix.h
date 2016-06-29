@@ -103,7 +103,7 @@ public:
 	 */
 	void setUpdateMatrices( const SparseMat& colMatrix, const SparseMat& rowMatrix );
 
-	inline void setDeleteOnlyLists( const std::vector<size_t>& rowsToDelete, const std::vector<size_t>& colsToDelete );
+	void setUpdateMatricesDeleteOnly( const SparseMat& colMatrix, const SparseMat& rowMatrix, const std::vector<size_t>& colsToDelete, const std::vector<size_t>& rowsToDelete );
 
 	/**
 	 * @brief Update the matrix, the inverse and the determinant.
@@ -167,6 +167,7 @@ private:
 	bool deleteOnly;				///< switch on to use faster updates, if only rows/cols are set to zero.
 	std::vector<size_t> rows;
 	std::vector<size_t> cols;
+	Eigen::MatrixXcd submat;
 };
 
 /*============================================================
@@ -186,12 +187,6 @@ inline const SparseMat& WoodburyMatrix::getMatrix() {
 inline const SparseMat& WoodburyMatrix::getInverse() {
 	if( invNeedsUpdate ) updateInverse();
 	return inv;
-}
-
-inline void WoodburyMatrix::setDeleteOnlyLists( const std::vector<size_t>& rowsToDelete, const std::vector<size_t>& colsToDelete ) {
-	rows = rowsToDelete;
-	cols = colsToDelete;
-	deleteOnly = true;
 }
 
 inline void WoodburyMatrix::Print() {

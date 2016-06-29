@@ -96,6 +96,14 @@ void WoodburyMatrix::setUpdateMatrices( const SparseMat & colMatrix, const Spars
 	detNeedsUpdate = true;
 	invNeedsUpdate = true;
 	matNeedsUpdate = true;
+	deleteOnly = false;
+}
+
+void WoodburyMatrix::setUpdateMatricesDeleteOnly( const SparseMat& colMatrix, const SparseMat& rowMatrix, const std::vector<size_t>& colsToDelete, const std::vector<size_t>& rowsToDelete ) {
+	setUpdateMatrices( colMatrix, rowMatrix );
+	rows = rowsToDelete;
+	cols = colsToDelete;
+	deleteOnly = true;
 }
 
 void WoodburyMatrix::update() {
@@ -121,7 +129,7 @@ Complex WoodburyMatrix::updateDet() {
 				exit(1);
 			}
 
-			Eigen::MatrixXcd submat( rows.size(), cols.size() );
+			submat.resize( rows.size(), cols.size() );
 //			Eigen::MatrixXcd colmat( rows.size(), mat.cols() );
 //			Eigen::MatrixXcd rowmat( mat.rows(), cols.size() );
 
@@ -157,13 +165,32 @@ Complex WoodburyMatrix::updateDet() {
 
 void WoodburyMatrix::updateInverse() {
 	if( invNeedsUpdate ) {
-		if( detNeedsUpdate ) updateDet();			// we need the updated LU of the capacitance matrix, which is calculated in the updateDet().
-		SparseMat capInv = capacitanceMatrixLU.solve( smallId );
-		if( capacitanceMatrixLU.info() == Eigen::Success ) {
-			inv -= inv * U * capInv * VTimesInv;
-//		inv.prune( Complex( 0., 0.) ); could be used to delete entries from matrix that got zero but are still listed as elements, but does a copy of the matrix...
+		if( detNeedsUpdate ) updateDet();			// we need the updated LU of the capacitance matrix or submat, which is calculated in the updateDet().
+
+		if( deleteOnly) {
+
+			Eigen::MatrixXcd colmat( rows.size(), mat.cols() );
+			Eigen::MatrixXcd rowmat( mat.rows(), cols.size() );
+
+			for( size_t colIndex = 0; colIndex < cols.size(); colIndex++ ) {
+				colmat.row( colIndex ) = inv.row( cols[colIndex] );
+			}
+			for( size_t rowIndex = 0; rowIndex < rows.size(); rowIndex++ ) {
+				rowmat.col( rowIndex ) = inv.col( rows[rowIndex] );
+			}
+			Eigen::MatrixXcd tmp = rowmat * (submat.inverse() ) * colmat;
+			inv -= tmp.sparseView();
+			for( size_t index = 0; index < cols.size(); index++ ) {
+					inv.coeffRef( rows[index], cols[index] ) += 1.;
+			}
 		} else {
-			std::cerr << "Warning: WoodburyMatrix was not able to invert capacitance matrix needed to update inverse matrix!" << std::endl;
+			SparseMat capInv = capacitanceMatrixLU.solve( smallId );
+			if( capacitanceMatrixLU.info() == Eigen::Success ) {
+				inv -= inv * U * capInv * VTimesInv;
+	//		inv.prune( Complex( 0., 0.) ); could be used to delete entries from matrix that got zero but are still listed as elements, but does a copy of the matrix...
+			} else {
+				std::cerr << "Warning: WoodburyMatrix was not able to invert capacitance matrix needed to update inverse matrix!" << std::endl;
+			}
 		}
 		invNeedsUpdate = false;
 	}
