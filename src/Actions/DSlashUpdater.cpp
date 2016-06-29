@@ -425,10 +425,11 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 //			std::cout << "rowUpdate" << std::endl << rowUpdate << std::endl << std::endl << "colUpdate:"<< std::endl << colUpdate << std::endl;
 
 		oldMat = currMat;
-		currMat.setUpdateMatrices( colUpdate, rowUpdate );
 
 		if( addRank > 0 ) {
-			currMat.setDeleteOnlyLists( delRows, delCols );
+			currMat.setUpdateMatrices( colUpdate, rowUpdate );
+		} else {
+			currMat.setUpdateMatricesDeleteOnly( colUpdate, rowUpdate, delCols, delRows );
 		}
 
 		changed = true;

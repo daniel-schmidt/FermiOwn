@@ -32,6 +32,7 @@ int main( int argc, char** argv ) {
 
 	dslash.keep();
 	std::cout << "Matrix after update: " << std::endl << dslash.getMatrix() << std::endl << std::endl;
+	std::cout << "Inverse after update: " << std::endl << dslash.getInverse() << std::endl << std::endl;
 
 	SparseMat product = (dslash.getMatrix() * dslash.getInverse());
 	SparseMat id( product.rows(), product.cols() );
@@ -58,8 +59,7 @@ int main( int argc, char** argv ) {
 	id = SparseMat( product.rows(), product.cols() );
 	id.setIdentity();
 	std::cout << "Matrix times its inverse is approximately identity: " << product.isApprox( id ) << std::endl;
-	std::cout << "Non-Zeros: " << dslash.getInverse().nonZeros() << std::endl;
-
+	std::cout << "Non-Zeros of inverse: " << dslash.getInverse().nonZeros() << " of " << dslash.getInverse().size() << " entries."<< std::endl;
 
 	std::cout << std::endl << std::endl << "Further tests with generated configs" << std::endl << "========================================="<< std::endl;
 
@@ -89,13 +89,17 @@ int main( int argc, char** argv ) {
 		std::cout << dslash.getDet() << " " << alwaysReset.getDet() << std::endl;
 		if( std::fabs( dslash.getDet() ) > ZERO_TOL ) {
 			dslash.keep();
-			std::cout << "keep" << std::endl << std::endl;
+			std::cout << "keep" << std::endl;
 		} else {
 			dslash.reset();
-			std::cout << "reset" << std::endl << std::endl;
+			std::cout << "reset" << std::endl;
 			fbool = oldField;
 		}
 		alwaysReset.reset();
+		product = (dslash.getMatrix() * dslash.getInverse());
+		id = SparseMat( product.rows(), product.cols() );
+		id.setIdentity();
+		std::cout << "Matrix times its inverse is approximately identity: " << product.isApprox( id ) << std::endl << std::endl;
 	}
 
 	//	for( int i = 0; i < 3; i++ ) {

@@ -115,7 +115,7 @@ void WoodburyMatrix::update() {
 void WoodburyMatrix::updateMatrix() {
 	if( matNeedsUpdate ) {
 		mat += U * V;	//TODO: setting entries directly is most likely more efficient
-//		mat.prune( Complex( 0., 0.) ); could be used to delete entries from matrix that got zero but are still listed as elements, but does a copy of the matrix...
+		mat.prune( Complex( 0., 0.) ); //could be used to delete entries from matrix that got zero but are still listed as elements, but does a copy of the matrix...
 		matNeedsUpdate = false;
 	}
 }
@@ -130,22 +130,15 @@ Complex WoodburyMatrix::updateDet() {
 			}
 
 			submat.resize( rows.size(), cols.size() );
-//			Eigen::MatrixXcd colmat( rows.size(), mat.cols() );
-//			Eigen::MatrixXcd rowmat( mat.rows(), cols.size() );
 
 			for( size_t colIndex = 0; colIndex < cols.size(); colIndex++ ) {
-//				rowmat.col( colIndex ) = inv.col( cols[colIndex] );
 				for( size_t rowIndex = 0; rowIndex < rows.size(); rowIndex++ ) {
-					// fill colmat at first iteraton through the outer loop
-//					if( colIndex == 0 ) {
-//						colmat.row( rowIndex ) = inv.row( rows[rowIndex] );
-//					}
 					submat( rowIndex, colIndex ) = inv.coeff( cols[rowIndex], rows[colIndex] );
 				}
 			}
 
 			detChange = submat.determinant();
-//			setUpdateMatrices( colmat.sparseView(), rowmat.sparseView() );
+
 		} else {
 			VTimesInv = V*inv;
 			smallId.resize( V.rows(), U.cols() );
@@ -180,18 +173,19 @@ void WoodburyMatrix::updateInverse() {
 			}
 			Eigen::MatrixXcd tmp = rowmat * (submat.inverse() ) * colmat;
 			inv -= tmp.sparseView();
+
 			for( size_t index = 0; index < cols.size(); index++ ) {
-					inv.coeffRef( rows[index], cols[index] ) += 1.;
+				inv.coeffRef( cols[index], rows[index] ) += 1.;
 			}
 		} else {
 			SparseMat capInv = capacitanceMatrixLU.solve( smallId );
 			if( capacitanceMatrixLU.info() == Eigen::Success ) {
 				inv -= inv * U * capInv * VTimesInv;
-	//		inv.prune( Complex( 0., 0.) ); could be used to delete entries from matrix that got zero but are still listed as elements, but does a copy of the matrix...
 			} else {
 				std::cerr << "Warning: WoodburyMatrix was not able to invert capacitance matrix needed to update inverse matrix!" << std::endl;
 			}
 		}
+		inv.prune( Complex( 0., 0.) ); //could be used to delete entries from matrix that got zero but are still listed as elements, but does a copy of the matrix...
 		invNeedsUpdate = false;
 	}
 }
