@@ -31,18 +31,19 @@ int main( int argc, char** argv ) {
 	int numThermal = atoi( argv[3] );
 	int numMeasures = atoi( argv[4] );
 	int upPerMeasure = atoi( argv[5] );
-	double lambda = atof( argv[6] );
+	double lambdaInitial = atof( argv[6] );
+	double dLambda = 0.1;
 	int Nf = atof( argv[7] );
 	int numSpin = 2;
 	// initialize classes
 	Lattice lat( Nt, Ns, dim );
 
 	// initialize random number generator and distributions
-	std::ranlux48 gen;
 
-
+#pragma omp parallel for
 	for( int step = 0; step < 10; step++ ) {
-		lambda += 0.1;
+		double lambda = lambdaInitial + (step+1)*dLambda;
+		std::ranlux48 gen;
 		std::ofstream kfile( "avk" + std::to_string(lambda) + ".dat" );
 
 		// initialize single-flavour part to true, the rest to false
