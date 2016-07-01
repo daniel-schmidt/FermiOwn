@@ -49,6 +49,9 @@ public:
 	 */
 	WoodburyMatrix( const size_t matSize, const MatCoeffList & list, const bool selfAdjointInit = false );
 
+
+//	WoodburyMatrix( const WoodburyMatrix& other );
+
 	/**
 	 * @brief Initialize matrix with a list of coefficients.
 	 *
@@ -65,6 +68,10 @@ public:
 	void setFromCoeffList( const MatCoeffList & list, const bool selfAdjointInit = false );
 
 	virtual ~WoodburyMatrix();
+
+//	inline WoodburyMatrix& operator=( WoodburyMatrix other );
+
+//	friend void swap( WoodburyMatrix& first, WoodburyMatrix& second );
 
 	/**
 	 * @brief Returns the determinant of the matrix.
@@ -101,9 +108,9 @@ public:
 	 * @param colMatrix is a matrix of dimensions ( size x m ), thus specifying m columns to update.
 	 * @param rowMatrix is a matrix of dimensions ( m x size ), thus specifying m rows to update.
 	 */
-	void setUpdateMatrices( const SparseMat& colMatrix, const SparseMat& rowMatrix );
+	void setUpdateMatrices( const SparseMat* colMatrix, const SparseMat* rowMatrix );
 
-	void setUpdateMatricesDeleteOnly( const SparseMat& colMatrix, const SparseMat& rowMatrix, const std::vector<size_t>& colsToDelete, const std::vector<size_t>& rowsToDelete );
+	void setUpdateMatricesDeleteOnly( const SparseMat* colMatrix, const SparseMat* rowMatrix, const std::vector<size_t>& colsToDelete, const std::vector<size_t>& rowsToDelete );
 
 	/**
 	 * @brief Update the matrix, the inverse and the determinant.
@@ -157,8 +164,8 @@ private:
 	bool detNeedsUpdate;			///< switch to check, if we have to update the determinant
 	bool invNeedsUpdate;			///< switch to check, if we have to update the inverse
 
-	SparseMat U;					///< the left update vector for A + U*V
-	SparseMat V;					///< the right update vector for A + U*V
+	const SparseMat* U;					///< the left update vector for A + U*V
+	const SparseMat* V;					///< the right update vector for A + U*V
 
 	Eigen::SparseLU< SparseMat > capacitanceMatrixLU;	///< a full-pivoted LU decomposition of the matrix 1 + V*inv*U (the capacitance matrix) used to update determinant and inverse
 	SparseMat VTimesInv;			///< temporary storage for the product V*inv, to prevent double evaluation if updating determinant and inverse
@@ -173,6 +180,11 @@ private:
 /*============================================================
  * Inline Functions
  *============================================================*/
+
+//inline WoodburyMatrix& WoodburyMatrix::operator=( WoodburyMatrix other ) {
+//	swap( *this, other );
+//	return *this;
+//}
 
 inline Complex WoodburyMatrix::getDet() {
 	if( detNeedsUpdate ) updateDet();

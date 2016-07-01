@@ -43,7 +43,7 @@ int main( int argc, char** argv ) {
 
 	std::cout << "Performing update with " << std::endl << colUpdate << std::endl << "and" << std::endl << rowUpdate << std::endl;
 
-	mat.setUpdateMatrices( colUpdate, rowUpdate );
+	mat.setUpdateMatrices( &colUpdate, &rowUpdate );
 	mat.updateDet();
 
 	std::cout << "Det after update: " << mat.getDet() << " and should be (-2.25, -9)" << std::endl;
@@ -99,7 +99,7 @@ int main( int argc, char** argv ) {
 	std::vector< size_t > rowsToDel = { 0, 2 };
 	std::vector< size_t > colsToDel = { 2, 0 };
 
-	delOnlyMat.setUpdateMatricesDeleteOnly( colUpdate, rowUpdate, rowsToDel, colsToDel );
+	delOnlyMat.setUpdateMatricesDeleteOnly( &colUpdate, &rowUpdate, rowsToDel, colsToDel );
 	delOnlyMat.updateDet();
 
 	std::cout << "Det after update: " << delOnlyMat.getDet() << " and should be -40" << std::endl;

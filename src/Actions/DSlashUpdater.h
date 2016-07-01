@@ -88,7 +88,11 @@ private:
 	std::vector<size_t> targetRows;
 	std::vector<size_t> targetCols;
 
+	SparseMat rowUpdate;
+	SparseMat colUpdate;
+
 	bool changed;
+	bool oldMatNeedsUpdate;
 };
 
 inline const SparseMat & DSlashUpdater::getMatrix() {
@@ -124,11 +128,13 @@ inline void DSlashUpdater::keep() {
 	currentRows = targetRows;	//TODO: can we save a copy here by exchanging pointers or something?
 	currentCols = targetCols;
 	changed = false;
+	oldMatNeedsUpdate = true;
 }
 
 inline void DSlashUpdater::reset() {
 	currMat = oldMat;
 	changed = false;
+	oldMatNeedsUpdate = false;
 }
 
 } /* namespace FermiOwn */

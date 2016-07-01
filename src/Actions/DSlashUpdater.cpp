@@ -23,7 +23,8 @@ DSlashUpdater::DSlashUpdater( size_t Nt, size_t Ns, size_t dim, size_t numFlavou
 																	currMat( matSize ),
 																	currentRows( matSize ),
 																	currentCols( matSize ),
-																	changed( false )
+																	changed( false ),
+																	oldMatNeedsUpdate( true )
 {
 	using namespace Eigen;
 	if( dim != 3 ) {
@@ -108,6 +109,7 @@ DSlashUpdater::DSlashUpdater( size_t Nt, size_t Ns, size_t dim, size_t numFlavou
 	currMat.setFromCoeffList( coeffs, true );
 	fullOperator = currMat.getMatrix();
 	oldMat = currMat;
+	oldMatNeedsUpdate = false;
 	size_t i = 0;
 	std::iota( currentRows.begin(), currentRows.end(), i );
 	std::iota( currentCols.begin(), currentCols.end(), i );
@@ -284,8 +286,8 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 		MatCoeffList rowCoeffs;
 		MatCoeffList colCoeffs;
 
-		SparseMat rowUpdate( updateRank, matSize );
-		SparseMat colUpdate( matSize, updateRank );
+		rowUpdate.resize( updateRank, matSize );
+		colUpdate.resize( matSize, updateRank );
 
 		const SparseMat & curr = currMat.getMatrix();
 
@@ -424,12 +426,15 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 
 //			std::cout << "rowUpdate" << std::endl << rowUpdate << std::endl << std::endl << "colUpdate:"<< std::endl << colUpdate << std::endl;
 
-		oldMat = currMat;
+		if( oldMatNeedsUpdate ) {
+			oldMat = currMat;
+			oldMatNeedsUpdate = false;
+		}
 
 		if( addRank > 0 ) {
-			currMat.setUpdateMatrices( colUpdate, rowUpdate );
+			currMat.setUpdateMatrices( &colUpdate, &rowUpdate );
 		} else {
-			currMat.setUpdateMatricesDeleteOnly( colUpdate, rowUpdate, delCols, delRows );
+			currMat.setUpdateMatricesDeleteOnly( &colUpdate, &rowUpdate, delCols, delRows );
 		}
 
 		changed = true;

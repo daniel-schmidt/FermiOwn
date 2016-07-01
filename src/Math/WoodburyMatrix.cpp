@@ -38,8 +38,34 @@ WoodburyMatrix::WoodburyMatrix( const size_t matSize, const MatCoeffList & coeff
 	setFromCoeffList( coeffList, selfAdjointInit );
 }
 
+//WoodburyMatrix::WoodburyMatrix( const WoodburyMatrix& other ) :
+//		mat( other.mat ),
+//		size( other.size),
+//		inv( other.inv ),
+//		det( other.det ),
+//		matNeedsUpdate( false ),
+//		detNeedsUpdate( false ),
+//		invNeedsUpdate( false ),
+//		deleteOnly( false )
+//{}
+
+
 WoodburyMatrix::~WoodburyMatrix() {
 }
+
+//void swap( WoodburyMatrix& first, WoodburyMatrix& second ) {
+//	using std::swap;
+//	swap( first.mat, second.mat );
+//	swap( first.size, second.size );
+//	swap( first.inv, second.inv );
+//	swap( first.det, second.det );
+//	first.matNeedsUpdate = false;
+//	first.detNeedsUpdate = false;
+//	first.invNeedsUpdate = false;
+//	second.matNeedsUpdate = false;
+//	second.detNeedsUpdate = false;
+//	second.invNeedsUpdate = false;
+//}
 
 void WoodburyMatrix::setFromCoeffList( const MatCoeffList & coeffList, const bool selfAdjointInit ) {
 	mat.setFromTriplets( coeffList.begin(), coeffList.end() );
@@ -73,20 +99,20 @@ void WoodburyMatrix::setFromCoeffList( const MatCoeffList & coeffList, const boo
 
 }
 
-void WoodburyMatrix::setUpdateMatrices( const SparseMat & colMatrix, const SparseMat & rowMatrix ) {
-	if( colMatrix.rows() != int( size ) ) {
-		std::cerr << "WoodburyMatrix got a colMatrix of wrong size, not matching the matrix dimension " << size << ", instead size " << colMatrix.rows() << std::endl;
+void WoodburyMatrix::setUpdateMatrices( const SparseMat* colMatrix, const SparseMat* rowMatrix ) {
+	if( colMatrix->rows() != int( size ) ) {
+		std::cerr << "WoodburyMatrix got a colMatrix of wrong size, not matching the matrix dimension " << size << ", instead size " << colMatrix->rows() << std::endl;
 		exit(1);
 	}
-	if( rowMatrix.cols() != int( size ) ) {
-		std::cerr << "WoodburyMatrix got a rowMatrix of wrong size, not matching the matrix dimension " << size << ", instead size " << rowMatrix.cols() << std::endl;
+	if( rowMatrix->cols() != int( size ) ) {
+		std::cerr << "WoodburyMatrix got a rowMatrix of wrong size, not matching the matrix dimension " << size << ", instead size " << rowMatrix->cols() << std::endl;
 		exit(1);
 	}
-	if( colMatrix.cols() != rowMatrix.rows() ) {
-		std::cerr << "The two update matrices passed to WoodburyMatrix do not fit in size! They are col: " << colMatrix.cols() << " and row: " << rowMatrix.rows() << std::endl;
+	if( colMatrix->cols() != rowMatrix->rows() ) {
+		std::cerr << "The two update matrices passed to WoodburyMatrix do not fit in size! They are col: " << colMatrix->cols() << " and row: " << rowMatrix->rows() << std::endl;
 		exit(1);
 	}
-	if( colMatrix.nonZeros() == 0 || rowMatrix.nonZeros() == 0 ) {
+	if( colMatrix->nonZeros() == 0 || rowMatrix->nonZeros() == 0 ) {
 		std::cerr << "Error: WoodburyMatrix got update matrix with no non-zero element!" << std::endl;
 		exit(1);
 	}
@@ -99,7 +125,7 @@ void WoodburyMatrix::setUpdateMatrices( const SparseMat & colMatrix, const Spars
 	deleteOnly = false;
 }
 
-void WoodburyMatrix::setUpdateMatricesDeleteOnly( const SparseMat& colMatrix, const SparseMat& rowMatrix, const std::vector<size_t>& colsToDelete, const std::vector<size_t>& rowsToDelete ) {
+void WoodburyMatrix::setUpdateMatricesDeleteOnly( const SparseMat* colMatrix, const SparseMat* rowMatrix, const std::vector<size_t>& colsToDelete, const std::vector<size_t>& rowsToDelete ) {
 	setUpdateMatrices( colMatrix, rowMatrix );
 	rows = rowsToDelete;
 	cols = colsToDelete;
@@ -114,7 +140,7 @@ void WoodburyMatrix::update() {
 
 void WoodburyMatrix::updateMatrix() {
 	if( matNeedsUpdate ) {
-		mat += U * V;	//TODO: setting entries directly is most likely more efficient
+		mat += (*U) * (*V);	//TODO: setting entries directly is most likely more efficient
 		mat.prune( Complex( 0., 0.) ); //could be used to delete entries from matrix that got zero but are still listed as elements, but does a copy of the matrix...
 		matNeedsUpdate = false;
 	}
@@ -140,10 +166,10 @@ Complex WoodburyMatrix::updateDet() {
 			detChange = submat.determinant();
 
 		} else {
-			VTimesInv = V*inv;
-			smallId.resize( V.rows(), U.cols() );
+			VTimesInv = (*V)*inv;
+			smallId.resize( V->rows(), U->cols() );
 			smallId.setIdentity();
-			capacitanceMatrixLU.compute( VTimesInv * U + smallId );
+			capacitanceMatrixLU.compute( VTimesInv * (*U) + smallId );
 			if( capacitanceMatrixLU.info() == Eigen::Success ) {
 				detChange = capacitanceMatrixLU.determinant();
 			} else {
@@ -180,7 +206,7 @@ void WoodburyMatrix::updateInverse() {
 		} else {
 			SparseMat capInv = capacitanceMatrixLU.solve( smallId );
 			if( capacitanceMatrixLU.info() == Eigen::Success ) {
-				inv -= inv * U * capInv * VTimesInv;
+				inv -= inv * (*U) * capInv * VTimesInv;
 			} else {
 				std::cerr << "Warning: WoodburyMatrix was not able to invert capacitance matrix needed to update inverse matrix!" << std::endl;
 			}
