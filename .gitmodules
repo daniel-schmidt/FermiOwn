@@ -1,0 +1,3 @@
+[submodule "FermiOwnCommon"]
+	path = FermiOwnCommon
+	url = git@git.tpi.uni-jena.de:dschmidt/FermiOwnCommon.git

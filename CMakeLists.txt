@@ -16,7 +16,11 @@ include_directories("src/Data")
 include_directories("src/Actions")
 include_directories("src/UpdateAlgorithms")
 include_directories("src/UpdateAlgorithms/HMC_Support")
+include_directories("FermiOwnCommon/src/Math")
+include_directories("FermiOwnCommon/src/Data")
 
+
+add_subdirectory("FermiOwnCommon")
 add_subdirectory("src")
 add_subdirectory("test")
 add_subdirectory("apps")
