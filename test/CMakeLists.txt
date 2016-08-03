@@ -29,25 +29,25 @@ add_executable(HMC_test "HMC_test.cpp")
 target_link_libraries( HMC_test Actions Data UpdateAlgorithms HMC_Support)
 
 # testing the Slac Operator Matrix implementation in 1D for sizes 2 to 5
-add_executable(SlacOperatorMatrix_test "SlacOperatorMatrix_test.cpp")
-target_link_libraries( SlacOperatorMatrix_test Actions)
+# add_executable(SlacOperatorMatrix_test "SlacOperatorMatrix_test.cpp")
+# target_link_libraries( SlacOperatorMatrix_test Actions)
 
-add_test( SlacOperatorMatrix_testRuns SlacOperatorMatrix_test 3 )
+#add_test( SlacOperatorMatrix_testRuns SlacOperatorMatrix_test 3 )
 
-macro (do_slac_test arg result)
-  add_test (SlacOperatorMatrix_test${arg} SlacOperatorMatrix_test ${arg})
-  set_tests_properties ( SlacOperatorMatrix_test${arg}
-    PROPERTIES PASS_REGULAR_EXPRESSION ${result})
-endmacro (do_slac_test)
+#macro (do_slac_test arg result)
+#  add_test (SlacOperatorMatrix_test${arg} SlacOperatorMatrix_test ${arg})
+#  set_tests_properties ( SlacOperatorMatrix_test${arg}
+#    PROPERTIES PASS_REGULAR_EXPRESSION ${result})
+#endmacro (do_slac_test)
 
-do_slac_test( 2, "Size 2 works!" )
-do_slac_test( 3, "Size 3 works!" )
-do_slac_test( 4, "Size 4 works!" )
-do_slac_test( 5, "Size 5 works!" )
+#do_slac_test( 2, "Size 2 works!" )
+#do_slac_test( 3, "Size 3 works!" )
+#do_slac_test( 4, "Size 4 works!" )
+#do_slac_test( 5, "Size 5 works!" )
 
 # TODO: refine regex to find whole det, not just decimal places...
-add_test( SlacOperatorMatrix_testDet SlacOperatorMatrix_test 4 )
-set_tests_properties( SlacOperatorMatrix_testDet PROPERTIES PASS_REGULAR_EXPRESSION "69524" )
+#add_test( SlacOperatorMatrix_testDet SlacOperatorMatrix_test 4 )
+#set_tests_properties( SlacOperatorMatrix_testDet PROPERTIES PASS_REGULAR_EXPRESSION "69524" )
 
 add_executable( WoodburyMatrix_test "WoodburyMatrix_test.cpp" )
 target_link_libraries( WoodburyMatrix_test Math )

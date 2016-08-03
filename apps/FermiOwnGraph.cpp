@@ -55,7 +55,9 @@ int main( int argc, char** argv ) {
 //				}
 //			}
 //		}
+
 		FermiBoolMetropolis updater( kxiab, lat, lambda/2., Nf, &gen ); //TODO: we are simulating with lambda/2 due to convention in Base...
+//		updater.initializeField();
 
 		double av_k = 0.;
 
@@ -72,7 +74,8 @@ int main( int argc, char** argv ) {
 		}
 		av_k/=double(numMeasures);
 		double accrate = updater.acceptanceCounter/double((numMeasures+numThermal)*upPerMeasure);
-		std::cerr << lambda << "\t" << av_k << "\t" << accrate << std::endl;
+		Complex expPhase = updater.expPhase/double((numMeasures+numThermal)*upPerMeasure);
+		std::cerr << lambda << "\t" << av_k << "\t" << accrate << "\t" << std::real(expPhase) << "\t" << std::imag(expPhase) << std::endl;
 		kfile.close();
 	}
 }

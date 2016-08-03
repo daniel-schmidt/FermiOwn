@@ -26,7 +26,7 @@ public:
 	FermiBoolMetropolis( FieldBoolean& boolField, const Lattice& lattice, double lambda, size_t numFlavours, std::ranlux48* randomGenerator );
 	virtual ~FermiBoolMetropolis();
 
-
+	void initializeField();
 
 	bool updateField();
 //	bool updateField( size_t x, size_t spin, size_t a, size_t b );
@@ -45,8 +45,6 @@ public:
 	ConfigGenerator confGen;
 	WeightFunction weightFun;
 
-
-
 	std::uniform_real_distribution<double> uni_real_dist;
 	std::uniform_int_distribution<int> intV_dist;
 	std::uniform_int_distribution<int> int2mu_dist;
@@ -54,19 +52,13 @@ public:
 	std::uniform_int_distribution<int> intSpin_dist;
 	std::uniform_int_distribution<int> intConfIndex;
 
-
 	FieldBoolean oldField;
 
-	Eigen::ArrayXi nxOld;
-	Eigen::ArrayXi nxNew;
-	Eigen::ArrayXi nyOld;
-	Eigen::ArrayXi nyNew;
-
 	size_t acceptanceCounter;
-	Complex det;
-	Complex detOld;
-	Complex weightOld;
 	std::ofstream fWeight;
+
+	double phase;
+	Complex expPhase;
 };
 
 } /* namespace FermiOwn */

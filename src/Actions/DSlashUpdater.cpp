@@ -364,63 +364,6 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 			t++;
 		}
 
-		//		for( size_t i = 0; i < 2*updateRank; i++ ) {
-		//			if( i < updateRank ) {
-		//				// we construct the matrix elements from current and full operator, iterating over cols to be replaced
-		//				if( i < delRank ) {
-		//					for( size_t j = 0; j < currentCols.size(); j++ ) {
-		//						// we perform deletions: elements are the negative of the current values.
-		//						Complex insertElem = curr.coeff( delRows[i], currentCols[j] );
-		//
-		//						// coeff should return an exact complex 0 if the element does not exist, so the following checks should be working.
-		//						if( insertElem != Complex( 0., 0. ) ) rowCoeffs.push_back( CoeffTriplet( i, currentCols[j], -insertElem ) );
-		//					}
-		//
-		//					// we fill the first part of col update with 1s as counterpart for row matrix
-		//					colCoeffs.push_back( CoeffTriplet( delRows[i], i, Complex( 1., 0. ) ) );
-		//				} else {
-		//					for( size_t j = 0; j < targetCols.size(); j++ ) {
-		//						// we restore rows, so we insert the full value and remove the current
-		//						Complex insertElem = fullOperator.coeff( addRows[i-delRank], targetCols[j] ) - curr.coeff( addRows[i-delRank], targetCols[j] );
-		//						if( insertElem != Complex( 0., 0. ) ) {
-		//							//						std::cout << "Element (" << i << " " << targetCols[j] << ") is " << insertElem << std::endl;
-		//							rowCoeffs.push_back( CoeffTriplet( i, targetCols[j], insertElem ) );
-		//						}
-		//					}
-		//
-		//					colCoeffs.push_back( CoeffTriplet( addRows[i-delRank], i, Complex( 1., 0. ) ) );
-		//				}
-		//			} else {
-		//				// we fill the second part of the row matrix with 1s as counterpart for the row updates.
-		//				//TODO: can be simplified by pushing add/del in same list and only keeping delRank to distinguish add/del, possibly saves next if
-		//				if( i < updateRank + delRank ) {
-		//					rowCoeffs.push_back( CoeffTriplet( i, delCols[i-updateRank], Complex(1.,0.) ) );
-		//
-		//					// the second part of the col matrix gets entries from current and full operator
-		//					for( size_t j = 0; j < currentRows.size(); j++ ) {
-		//						// check, if we already put the update into the row matrix
-		//						if( std::find( delRows.begin(), delRows.end(), currentRows[j] ) != delRows.end() ) {
-		//							// crossing entries need to get a 1
-		//							if( delRows[i-updateRank] == currentRows[j] ) colCoeffs.push_back( CoeffTriplet( currentRows[j], i, Complex( 1., 0.) ) );
-		//						} else {
-		//							Complex insertElem = curr.coeff( currentRows[j], delCols[i-updateRank] );
-		//							if( insertElem != Complex( 0., 0. ) ) colCoeffs.push_back( CoeffTriplet( currentRows[j], i, -insertElem ) );
-		//						}
-		//					}
-		//				} else {
-		//					rowCoeffs.push_back( CoeffTriplet( i, addCols[i-updateRank-delRank], Complex(1.,0.) ) );
-		//
-		//					for( size_t j = 0; j < targetRows.size(); j++ ) {
-		//						// only insert entries, if we didn't do it in the row update
-		//						if( std::find( addRows.begin(), addRows.end(), targetRows[j]) == addRows.end() ) {
-		//							Complex insertElem = fullOperator.coeff( targetRows[j], addCols[i-updateRank-delRank] ) - curr.coeff( targetRows[j], addCols[i-updateRank-delRank] );
-		//							if( insertElem != Complex( 0., 0. ) ) colCoeffs.push_back( CoeffTriplet( targetRows[j], i, insertElem ) );
-		//						}
-		//					}
-		//				}
-		//			}
-		//		}
-
 		rowUpdate.setFromTriplets( rowCoeffs.begin(), rowCoeffs.end() );
 		colUpdate.setFromTriplets( colCoeffs.begin(), colCoeffs.end() );
 

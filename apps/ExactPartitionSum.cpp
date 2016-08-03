@@ -15,12 +15,13 @@ int main( int argc, char** argv ) {
 
 	using namespace FermiOwn;
 
-	size_t Nt = 4;
-	size_t Ns = 1;
+	// TODO: even 2x3x3 for Nf=2 is too large to fit in the memory...
+	size_t Nt = 2;
+	size_t Ns = 3;
 	size_t dim = 3;
 	size_t latVol = Nt*Ns*Ns;
 	size_t numSpins = 2;
-	size_t Nf = 2;
+	size_t Nf = 1;
 
 	std::ofstream fout( "exactPartitionSum.dat");
 
@@ -36,7 +37,7 @@ int main( int argc, char** argv ) {
 
 		size_t confsPerX = allowedConfs.rows();
 		//TODO: this should check somehow, if all configs fit in memory...
-		size_t numConfigs = std::pow( confsPerX, latVol );
+		long double numConfigs = std::pow( confsPerX, latVol );
 		//	std::cout << "numConfigs: " << numConfigs << std::endl;
 
 		Complex sum = 0.;
@@ -69,6 +70,7 @@ int main( int argc, char** argv ) {
 			//		kxiab.Print();
 
 			sum += weight.calculateWeight();
+			weight.reset();
 		}
 		fout << lambda << "\t" << sum << std::endl;
 	}
