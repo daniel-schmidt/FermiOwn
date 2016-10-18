@@ -13,8 +13,10 @@ include_directories("src/Math")
 include_directories("src/Data")
 include_directories("src/Actions")
 include_directories("src/UpdateAlgorithms")
-include_directories("FermiOwnCommon/src/Math")
+include_directories("FermiOwnCommon/src/Actions")
+include_directories("FermiOwnCommon/src/Algorithms")
 include_directories("FermiOwnCommon/src/Data")
+include_directories("FermiOwnCommon/src/Math")
 
 
 add_subdirectory("FermiOwnCommon")

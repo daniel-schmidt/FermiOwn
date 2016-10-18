@@ -10,23 +10,22 @@
 namespace FermiOwn {
 
 FermiBoolMetropolis::FermiBoolMetropolis( FieldBoolean& boolField, const Lattice & lattice, double lambda, size_t numFlavours, std::ranlux48* randomGenerator ) :
-									kappa( 2./lambda ),
-									Nf( numFlavours ),
-									kxiab( boolField ),
-									lat(lattice),
-									rndGen( randomGenerator ),
-									confGen( 2, numFlavours, randomGenerator ),
-									weightFun( boolField, lat.getTimeSize(), lat.getSpaceSize(), lat.getDim(), numFlavours, lambda ),
-									uni_real_dist(),
-									intV_dist( 0, lat.getVol()-1 ),
-									int2mu_dist( 0, 2*lat.getDim()-1 ),
-									intNf_dist( 0, numFlavours-1 ),
-									intSpin_dist( 0, 1 ),
-									oldField(kxiab),
-									acceptanceCounter(0),
-									fWeight( "weight" + std::to_string(lambda) + ".dat" ),
-									phase(0.),
-									expPhase(0.,0.)
+		MetropolisStep( randomGenerator ),
+		kappa( 2./lambda ),
+		Nf( numFlavours ),
+		kxiab( boolField ),
+		oldField(kxiab),
+		lat(lattice),
+//		uni_real_dist(),
+		intV_dist( 0, lat.getVol()-1 ),
+//		int2mu_dist( 0, 2*lat.getDim()-1 ),
+//		intNf_dist( 0, numFlavours-1 ),
+//		intSpin_dist( 0, 1 ),
+		weightFun( boolField, lat.getTimeSize(), lat.getSpaceSize(), lat.getDim(), numFlavours, lambda ),
+		confGen( 2, numFlavours, randomGenerator )
+//		fWeight( "weight" + std::to_string(lambda) + ".dat" ),
+//		phase(0.),
+//		expPhase(0.,0.)
 {
 	confGen.generateAllowedConfs();
 	//	generateAllowedConfs( numFlavours );
@@ -49,56 +48,56 @@ void FermiBoolMetropolis::initializeField() {
 	}
 }
 
-bool FermiBoolMetropolis::updateField() {
-
-	oldField = kxiab;
-
-	weightFun.saveState();
-
-	// draw random points, which get a new configuration
-	std::set<size_t> changedPoints;
-	for( int cnt=0; cnt < 2; cnt++ ) {
-		int x = intV_dist(*rndGen);
-		RowVectorXb newConf = confGen.getRandomConf();
-		kxiab.setRow( newConf, x );
-		changedPoints.insert( size_t( x ) );
-	}
-
-	// changing two neighbouring points
-//	int x = intV_dist(*rndGen);
-//	kxiab.setRow( confGen.getRandomConf(), x );
-//	changedPoints.insert( size_t( x ) );
+//bool FermiBoolMetropolis::updateField() {
 //
-//	int mu = int2mu_dist( *rndGen );
-//	x = lat.getNeighbours( x )[mu];
-//	kxiab.setRow( confGen.getRandomConf(), x );
-//	changedPoints.insert( size_t( x ) );
+//	oldField = kxiab;
+//
+//	weightFun.saveState();
+//
+//	// draw random points, which get a new configuration
+//	std::set<size_t> changedPoints;
+//	for( int cnt=0; cnt < 2; cnt++ ) {
+//		int x = intV_dist(*rndGen);
+//		RowVectorXb newConf = confGen.getRandomConf();
+//		kxiab.setRow( newConf, x );
+//		changedPoints.insert( size_t( x ) );
+//	}
+//
+//	// changing two neighbouring points
+////	int x = intV_dist(*rndGen);
+////	kxiab.setRow( confGen.getRandomConf(), x );
+////	changedPoints.insert( size_t( x ) );
+////
+////	int mu = int2mu_dist( *rndGen );
+////	x = lat.getNeighbours( x )[mu];
+////	kxiab.setRow( confGen.getRandomConf(), x );
+////	changedPoints.insert( size_t( x ) );
+//
+//	Complex weight = weightFun.updateWeight( changedPoints );
+//
+//	bool accepted = accept( weight );
+//
+//	return accepted;
+//}
 
-	Complex weight = weightFun.updateWeight( changedPoints );
-
-	bool accepted = accept( weight );
-
-	return accepted;
-}
-
-bool FermiBoolMetropolis::accept( Complex weight ) {
-	double r = uni_real_dist(*rndGen);
-	bool accepted = false;
-	if( std::fabs(weight) > r ) {
-		phase += std::arg( weight );
-		phase = fmod( phase, 2*PI );
-		accepted = true;
-		acceptanceCounter++;
-		weightFun.keep();
-	} else {
-		kxiab = oldField;
-		weightFun.reset();
-	}
-	expPhase += std::exp( I*phase );
-	fWeight << std::real( weight ) << "\t" << std::imag( weight ) << "\t" << phase << "\t" << std::real(std::exp( I*phase )) << "\t" << std::imag(std::exp( I*phase ));
-	fWeight << "\t" << accepted << std::endl;
-	return accepted;
-}
+//bool FermiBoolMetropolis::accept( Complex weight ) {
+//	double r = uni_real_dist(*rndGen);
+//	bool accepted = false;
+//	if( std::fabs(weight) > r ) {
+//		phase += std::arg( weight );
+//		phase = fmod( phase, 2*PI );
+//		accepted = true;
+//		acceptanceCounter++;
+//		weightFun.keep();
+//	} else {
+//		kxiab = oldField;
+//		weightFun.reset();
+//	}
+//	expPhase += std::exp( I*phase );
+//	fWeight << std::real( weight ) << "\t" << std::imag( weight ) << "\t" << phase << "\t" << std::real(std::exp( I*phase )) << "\t" << std::imag(std::exp( I*phase ));
+//	fWeight << "\t" << accepted << std::endl;
+//	return accepted;
+//}
 
 
 //void FermiBoolMetropolis::updateNaive( size_t x ) {
@@ -174,5 +173,34 @@ bool FermiBoolMetropolis::accept( Complex weight ) {
 //	return factor*dw*(det/detOld);
 //}
 
+void FermiBoolMetropolis::propose() {
+	oldField = kxiab;
+
+	weightFun.saveState();
+
+	// draw random points, which get a new configuration
+	changedPoints.clear();
+	for( int cnt=0; cnt < 2; cnt++ ) {
+		int x = intV_dist(*rnd);
+		RowVectorXb newConf = confGen.getRandomConf();
+		kxiab.setRow( newConf, x );
+		changedPoints.insert( size_t( x ) );
+	}
+}
+
+double FermiBoolMetropolis::change() {
+	Complex weight = weightFun.updateWeight( changedPoints );
+
+	return std::abs( weight );
+}
+
+void FermiBoolMetropolis::accept() {
+	weightFun.keep();
+}
+
+void FermiBoolMetropolis::reject() {
+	kxiab = oldField;
+	weightFun.reset();
+}
 
 } /* namespace FermiOwn */

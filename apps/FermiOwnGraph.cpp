@@ -63,7 +63,7 @@ int main( int argc, char** argv ) {
 
 		for( int measure = 0; measure < numMeasures+numThermal; measure++) {
 			for( int i = 0; i < upPerMeasure; i++ ) {
-				updater.updateField();
+				updater.step();
 			}
 			if( measure >= numThermal )
 			{
@@ -73,8 +73,8 @@ int main( int argc, char** argv ) {
 			}
 		}
 		av_k/=double(numMeasures);
-		double accrate = updater.acceptanceCounter/double((numMeasures+numThermal)*upPerMeasure);
-		Complex expPhase = updater.expPhase/double((numMeasures+numThermal)*upPerMeasure);
+		double accrate = updater.getAcceptance();
+		Complex expPhase = 0;
 		std::cerr << lambda << "\t" << av_k << "\t" << accrate << "\t" << std::real(expPhase) << "\t" << std::imag(expPhase) << std::endl;
 		kfile.close();
 	}

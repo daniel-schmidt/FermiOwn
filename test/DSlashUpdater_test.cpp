@@ -6,8 +6,8 @@
  */
 
 #include "FieldBoolean.h"
-#include "ConfigGenerator.h"
 #include "DSlashUpdater.h"
+#include "../src/Actions/ConfigPerPointGenerator.h"
 
 int main( int argc, char** argv ) {
 	using namespace FermiOwn;
@@ -63,7 +63,7 @@ int main( int argc, char** argv ) {
 
 	std::cout << std::endl << std::endl << "Further tests with generated configs" << std::endl << "========================================="<< std::endl;
 
-	ConfigGenerator confGen( 2, 2 );
+	ConfigPerPointGenerator confGen( 2, 2 );
 	confGen.generateAllowedConfs();
 	MatrixXb allowedConfs = confGen.getAllConfs();
 

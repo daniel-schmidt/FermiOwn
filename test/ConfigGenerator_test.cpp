@@ -7,7 +7,8 @@
 
 #include <iostream>
 #include <Eigen/Dense>
-#include "ConfigGenerator.h"
+
+#include "../src/Actions/ConfigPerPointGenerator.h"
 
 int main( int argc, char** argv ) {
 
@@ -22,7 +23,7 @@ int main( int argc, char** argv ) {
 	size_t numFlavours = atoi( argv[2] );
 
 	std::ranlux48 rndGen;
-	ConfigGenerator gen( numSpins, numFlavours, &rndGen );
+	ConfigPerPointGenerator gen( numSpins, numFlavours, &rndGen );
 
 	gen.generateAllowedConfs();
 

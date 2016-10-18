@@ -5,11 +5,11 @@
  *      Author: dschmidt
  */
 
-#include "ConfigGenerator.h"
+#include "ConfigPerPointGenerator.h"
 
 namespace FermiOwn {
 
-ConfigGenerator::ConfigGenerator( const size_t numSpins, const size_t numFlavours, std::ranlux48* randomGenerator ) :
+ConfigPerPointGenerator::ConfigPerPointGenerator( const size_t numSpins, const size_t numFlavours, std::ranlux48* randomGenerator ) :
 	Nf( numFlavours ),
 	dimSpinor( numSpins ),
 	rndGen( randomGenerator )
@@ -17,9 +17,9 @@ ConfigGenerator::ConfigGenerator( const size_t numSpins, const size_t numFlavour
 	if( dimSpinor != 2 ) std::cout << "Warning: ConfigGenerator called with spinor size != 2, this may not be implemented correctly!" << std::endl;
 }
 
-ConfigGenerator::~ConfigGenerator() {}
+ConfigPerPointGenerator::~ConfigPerPointGenerator() {}
 
-void  ConfigGenerator::generateAllowedConfs() {
+void  ConfigPerPointGenerator::generateAllowedConfs() {
 
 	size_t numCols = (Nf*Nf)*dimSpinor;
 	size_t numConfigs = 1;

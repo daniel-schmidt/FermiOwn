@@ -8,8 +8,8 @@
 #include <iostream>
 #include <Eigen/Dense>
 #include "FieldBoolean.h"
-#include "ConfigGenerator.h"
 #include "SlacOperatorMatrix.h"
+#include "../src/Actions/ConfigPerPointGenerator.h"
 
 int main( int argc, char** argv ) {
 	using namespace FermiOwn;
@@ -83,7 +83,7 @@ int main( int argc, char** argv ) {
 	//	std::cout << "Two Flavour deleted determinant: " << std::endl << dslacNf2.det() << std::endl;
 	//	dslacNf2.setFull();
 
-	ConfigGenerator confGen( 2, 2 );
+	ConfigPerPointGenerator confGen( 2, 2 );
 	confGen.generateAllowedConfs();
 	MatrixXb allowedConfs = confGen.getAllConfs();
 

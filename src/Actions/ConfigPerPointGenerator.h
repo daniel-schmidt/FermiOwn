@@ -5,8 +5,8 @@
  *      Author: dschmidt
  */
 
-#ifndef SRC_ACTIONS_CONFIGGENERATOR_H_
-#define SRC_ACTIONS_CONFIGGENERATOR_H_
+#ifndef SRC_ACTIONS_CONFIGPERPOINTGENERATOR_H_
+#define SRC_ACTIONS_CONFIGPERPOINTGENERATOR_H_
 
 #include <Eigen/Dense>
 #include "FieldBoolean.h"
@@ -22,7 +22,7 @@ namespace FermiOwn {
  * This class does not implement the constraints on its own, but uses the methods provided
  * by the FieldBoolean.
  */
-class ConfigGenerator {
+class ConfigPerPointGenerator {
 public:
 	/**
 	 * @brief Constructor setting physical parameters.
@@ -33,12 +33,12 @@ public:
 	 * @param numFlavours is the number of fermion flavours.
 	 * @param randomGenerator is necessary to enable drawing random configurations
 	 */
-	ConfigGenerator( const size_t numSpins, const size_t numFlavours, std::ranlux48* randomGenerator = NULL );
+	ConfigPerPointGenerator( const size_t numSpins, const size_t numFlavours, std::ranlux48* randomGenerator = NULL );
 
 	/**
 	 * @brief Default destructor, doing nothing.
 	 */
-	virtual ~ConfigGenerator();
+	virtual ~ConfigPerPointGenerator();
 
 	/**
 	 * @brief Start computation of all allowed configurations.
@@ -73,11 +73,11 @@ private:
 
 };
 
-inline MatrixXb ConfigGenerator::getAllConfs() {
+inline MatrixXb ConfigPerPointGenerator::getAllConfs() {
 	return allowedConfs;
 }
 
-inline RowVectorXb ConfigGenerator::getRandomConf() {
+inline RowVectorXb ConfigPerPointGenerator::getRandomConf() {
 	if( rndGen == NULL ) {
 		std::cerr << "ConfigGenerator has no random number generator! Cannot draw random configuration." << std::endl;
 		exit(1);
@@ -88,4 +88,4 @@ inline RowVectorXb ConfigGenerator::getRandomConf() {
 
 } /* namespace FermiOwn */
 
-#endif /* SRC_ACTIONS_CONFIGGENERATOR_H_ */
+#endif /* SRC_ACTIONS_CONFIGPERPOINTGENERATOR_H_ */

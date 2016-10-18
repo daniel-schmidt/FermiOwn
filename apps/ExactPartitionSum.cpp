@@ -7,8 +7,9 @@
 
 #include <iostream>
 #include <Eigen/Dense>
+
+#include "ConfigPerPointGenerator.h"
 #include "FieldBoolean.h"
-#include "ConfigGenerator.h"
 #include "WeightFunction.h"
 
 int main( int argc, char** argv ) {
@@ -29,7 +30,7 @@ int main( int argc, char** argv ) {
 	for( int i = 1; i <= 20; i++ ) {
 		double lambda = dlambda*i;
 		FieldBoolean kxiab( latVol, numSpins, Nf, NULL, zeroInit );
-		ConfigGenerator confGen( numSpins, Nf );
+		ConfigPerPointGenerator confGen( numSpins, Nf );
 		WeightFunction weight( kxiab, Nt, Ns, dim, Nf, lambda );
 
 		confGen.generateAllowedConfs();
