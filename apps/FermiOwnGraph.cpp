@@ -13,6 +13,7 @@
 #include "Lattice.h"
 #include "FieldBoolean.h"
 #include "FermiBoolMetropolis.h"
+#include "ConfigGenerator.h"
 
 int main( int argc, char** argv ) {
 
@@ -57,21 +58,28 @@ int main( int argc, char** argv ) {
 //		}
 
 		FermiBoolMetropolis updater( kxiab, lat, lambda/2., Nf, &gen ); //TODO: we are simulating with lambda/2 due to convention in Base...
-//		updater.initializeField();
 
 		double av_k = 0.;
+		auto measure = [&](){
+			double k = kxiab.sumAll()/double(2*V);
+			av_k += k;
+			kfile << k << "\t" << std::endl;
+		};
 
-		for( int measure = 0; measure < numMeasures+numThermal; measure++) {
-			for( int i = 0; i < upPerMeasure; i++ ) {
-				updater.step();
-			}
-			if( measure >= numThermal )
-			{
-				double k = kxiab.sumAll()/double(2*V);
-				av_k += k;
-				kfile << k << "\t" << std::endl;
-			}
-		}
+		ConfigGenerator confGen( numThermal, numMeasures, upPerMeasure, &updater, measure );
+		confGen.run();
+
+//		for( int measure = 0; measure < numMeasures+numThermal; measure++) {
+//			for( int i = 0; i < upPerMeasure; i++ ) {
+//				updater.step();
+//			}
+//			if( measure >= numThermal )
+//			{
+//				double k = kxiab.sumAll()/double(2*V);
+//				av_k += k;
+//				kfile << k << "\t" << std::endl;
+//			}
+//		}
 		av_k/=double(numMeasures);
 		double accrate = updater.getAcceptance();
 		Complex expPhase = 0;
