@@ -17,6 +17,7 @@ include_directories("FermiOwnCommon/src/Actions")
 include_directories("FermiOwnCommon/src/Algorithms")
 include_directories("FermiOwnCommon/src/Data")
 include_directories("FermiOwnCommon/src/Math")
+include_directories("FermiOwnCommon/src/System")
 
 
 add_subdirectory("FermiOwnCommon")

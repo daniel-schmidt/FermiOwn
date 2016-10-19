@@ -10,6 +10,7 @@
 #include <random>
 #include <vector>
 #include <Eigen/Dense>
+#include "Timer.h"
 #include "Lattice.h"
 #include "FieldBoolean.h"
 #include "FermiBoolMetropolis.h"
@@ -23,6 +24,9 @@ int main( int argc, char** argv ) {
 		std::cerr << "Need 7 arguments: Nt, Ns, numThermal, numMeasures, upPerMeasure, coupling, Nf" << std::endl;
 		exit(1);
 	}
+
+	Timer totalTimer;
+	totalTimer.start();
 
 	// read parameters from console
 	size_t dim = 3;
@@ -38,9 +42,7 @@ int main( int argc, char** argv ) {
 	int numSpin = 2;
 	// initialize classes
 	Lattice lat( Nt, Ns, dim );
-
-	// initialize random number generator and distributions
-
+	Timer singleRunTimer;
 #pragma omp parallel for
 	for( int step = 0; step < 10; step++ ) {
 		double lambda = lambdaInitial + (step+1)*dLambda;
@@ -67,8 +69,11 @@ int main( int argc, char** argv ) {
 		};
 
 		ConfigGenerator confGen( numThermal, numMeasures, upPerMeasure, &updater, measure );
-		confGen.run();
 
+		singleRunTimer.start();
+		confGen.run();
+		singleRunTimer.stop();
+		singleRunTimer.printDuration("Creating configs for current parameter");
 //		for( int measure = 0; measure < numMeasures+numThermal; measure++) {
 //			for( int i = 0; i < upPerMeasure; i++ ) {
 //				updater.step();
@@ -86,4 +91,6 @@ int main( int argc, char** argv ) {
 		std::cerr << lambda << "\t" << av_k << "\t" << accrate << "\t" << std::real(expPhase) << "\t" << std::imag(expPhase) << std::endl;
 		kfile.close();
 	}
+	totalTimer.stop();
+	totalTimer.printDuration("Total execution");
 }
