@@ -11,7 +11,7 @@
 #include <set>
 #include "CliffordAlgebra.h"
 #include "FieldBoolean.h"
-#include "WoodburyMatrix.h"
+#include "WoodburyCGMatrix.h"
 
 namespace FermiOwn {
 
@@ -39,7 +39,7 @@ public:
 	virtual ~DSlashUpdater();
 
 	inline const SparseMat & getMatrix();
-	inline const SparseMat & getInverse();
+//	inline const SparseMat & getInverse();
 	inline Complex getDet();
 
 	void calculateUpdateMatrices( const FieldBoolean& kxiab, const FieldBoolean& change );
@@ -78,8 +78,8 @@ private:
 ////		fullUpdated					///< the full operator was updated, but the change was not accepted so far.
 //	} status;						///< keep track of the internal state to prevent missuse
 
-	WoodburyMatrix oldMat;
-	WoodburyMatrix currMat;
+	WoodburyCGMatrix oldMat;
+	WoodburyCGMatrix currMat;
 
 	SparseMat fullOperator;
 
@@ -99,9 +99,9 @@ inline const SparseMat & DSlashUpdater::getMatrix() {
 	return currMat.getMatrix();
 }
 
-inline const SparseMat & DSlashUpdater::getInverse() {
-	return currMat.getInverse();
-}
+//inline const SparseMat & DSlashUpdater::getInverse() {
+//	return currMat.getInverse();
+//}
 
 inline Complex DSlashUpdater::getDet() {
 	return currMat.getDet();
