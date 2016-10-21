@@ -39,7 +39,7 @@ public:
 	virtual ~DSlashUpdater();
 
 	inline const SparseMat & getMatrix();
-	inline const SparseMat & getInverse();
+	inline const Eigen::MatrixXcd & getInverse();
 	inline Complex getDet();
 
 	void calculateUpdateMatrices( const FieldBoolean& kxiab, const FieldBoolean& change );
@@ -99,7 +99,7 @@ inline const SparseMat & DSlashUpdater::getMatrix() {
 	return currMat.getMatrix();
 }
 
-inline const SparseMat & DSlashUpdater::getInverse() {
+inline const Eigen::MatrixXcd & DSlashUpdater::getInverse() {
 	return currMat.getInverse();
 }
 

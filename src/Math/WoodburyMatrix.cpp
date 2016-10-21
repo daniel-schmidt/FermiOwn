@@ -77,9 +77,9 @@ void WoodburyMatrix::setFromCoeffList( const MatCoeffList & coeffList, const boo
 
 	matNeedsUpdate = false;
 
-	Eigen::SparseLU< SparseMat > solver;	//TODO: check, if we can use an SPD solver here for SLAC
+	Eigen::FullPivLU< Eigen::MatrixXcd > solver;	//TODO: check, if we can use an SPD solver here for SLAC
 	solver.compute( mat );
-	if( solver.info() != Eigen::Success ) {
+	if( !solver.isInvertible() ) {
 		std::cerr << "WoodburyMatrix cannot calculate matrix decomposition to obtain determinant." << std::endl;
 		exit(1);
 	}
@@ -87,11 +87,11 @@ void WoodburyMatrix::setFromCoeffList( const MatCoeffList & coeffList, const boo
 	det =  solver.determinant();
 	detNeedsUpdate = false;
 
-	SparseMat id( size, size );
+	Eigen::MatrixXcd id( size, size );
 	id.setIdentity();
 	inv = solver.solve( id );
 
-	if( solver.info() != Eigen::Success ) {
+	if( !solver.isInvertible() ) {
 		std::cerr << "WoodburyMatrix failed to invert the matrix." << std::endl;
 		exit(1);
 	}
@@ -167,10 +167,14 @@ Complex WoodburyMatrix::updateDet() {
 
 		} else {
 			VTimesInv = (*V)*inv;
+//			std::cout << "inv nonzeros: " << inv.nonZeros() << " of "<< inv.size() << std::endl;
+//			std::cout << "V nonzeros: " << V->nonZeros() << " of "<< V->size() << std::endl;
+//			std::cout << "U nonzeros: " << U->nonZeros() << " of "<< U->size() << std::endl;
+//			std::cout << "VTimesInv nonzeros: " << VTimesInv.nonZeros() << " of "<< VTimesInv.size() << std::endl;
 			smallId.resize( V->rows(), U->cols() );
 			smallId.setIdentity();
 			capacitanceMatrixLU.compute( VTimesInv * (*U) + smallId );
-			if( capacitanceMatrixLU.info() == Eigen::Success ) {
+			if( capacitanceMatrixLU.isInvertible() ) {
 				detChange = capacitanceMatrixLU.determinant();
 			} else {
 				detChange = 0.;
@@ -197,21 +201,21 @@ void WoodburyMatrix::updateInverse() {
 			for( size_t rowIndex = 0; rowIndex < rows.size(); rowIndex++ ) {
 				rowmat.col( rowIndex ) = inv.col( rows[rowIndex] );
 			}
-			Eigen::MatrixXcd tmp = rowmat * (submat.inverse() ) * colmat;
-			inv -= tmp.sparseView();
+
+			inv -= rowmat * (submat.inverse() ) * colmat;
 
 			for( size_t index = 0; index < cols.size(); index++ ) {
 				inv.coeffRef( cols[index], rows[index] ) += 1.;
 			}
 		} else {
-			SparseMat capInv = capacitanceMatrixLU.solve( smallId );
-			if( capacitanceMatrixLU.info() == Eigen::Success ) {
+			Eigen::MatrixXcd capInv = capacitanceMatrixLU.solve( smallId );
+			if( capacitanceMatrixLU.isInvertible() ) {
 				inv -= inv * (*U) * capInv * VTimesInv;
 			} else {
 				std::cerr << "Warning: WoodburyMatrix was not able to invert capacitance matrix needed to update inverse matrix!" << std::endl;
 			}
 		}
-		inv.prune( Complex( 0., 0.) ); //could be used to delete entries from matrix that got zero but are still listed as elements, but does a copy of the matrix...
+//		inv.prune( Complex( 0., 0.) ); //could be used to delete entries from matrix that got zero but are still listed as elements, but does a copy of the matrix...
 		invNeedsUpdate = false;
 	}
 }

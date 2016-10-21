@@ -12,7 +12,7 @@
 #include <vector>
 #include <Eigen/Dense>
 #include <Eigen/SparseCore>
-#include <Eigen/SparseLU>
+//#include <Eigen/SparseLU>
 #include "Constants.h"
 
 namespace FermiOwn {
@@ -98,7 +98,7 @@ public:
 	 *
 	 * @return const reference to the inverse of the matrix in an Eigen sparse matrix format.
 	 */
-	inline const SparseMat& getInverse();
+	inline const Eigen::MatrixXcd& getInverse();
 
 	/**
 	 * @brief Prepares update by passing update matrices to the class.
@@ -157,7 +157,7 @@ private:
 	SparseMat mat;					///< the actual matrix storage
 	size_t size;					///< the matrix is of dimension (size x size)
 
-	SparseMat inv;					///< storage for the inverse matrix
+	Eigen::MatrixXcd inv;					///< storage for the inverse matrix
 	Complex det;					///< the determinant of the matrix
 
 	bool matNeedsUpdate;			///< switch to check, if we have to update the matrix
@@ -167,9 +167,9 @@ private:
 	const SparseMat* U;					///< the left update vector for A + U*V
 	const SparseMat* V;					///< the right update vector for A + U*V
 
-	Eigen::SparseLU< SparseMat > capacitanceMatrixLU;	///< a full-pivoted LU decomposition of the matrix 1 + V*inv*U (the capacitance matrix) used to update determinant and inverse
-	SparseMat VTimesInv;			///< temporary storage for the product V*inv, to prevent double evaluation if updating determinant and inverse
-	SparseMat smallId;				///< identitiy matrix in the small subspace, needs to be stored for separate evaluation of determinant and inverse
+	Eigen::FullPivLU< Eigen::MatrixXcd > capacitanceMatrixLU;	///< a full-pivoted LU decomposition of the matrix 1 + V*inv*U (the capacitance matrix) used to update determinant and inverse
+	Eigen::MatrixXcd VTimesInv;			///< temporary storage for the product V*inv, to prevent double evaluation if updating determinant and inverse
+	Eigen::MatrixXcd smallId;				///< identitiy matrix in the small subspace, needs to be stored for separate evaluation of determinant and inverse
 
 	bool deleteOnly;				///< switch on to use faster updates, if only rows/cols are set to zero.
 	std::vector<size_t> rows;
@@ -196,7 +196,7 @@ inline const SparseMat& WoodburyMatrix::getMatrix() {
 	return mat;
 }
 
-inline const SparseMat& WoodburyMatrix::getInverse() {
+inline const Eigen::MatrixXcd & WoodburyMatrix::getInverse() {
 	if( invNeedsUpdate ) updateInverse();
 	return inv;
 }
