@@ -122,8 +122,8 @@ void WoodburyCGMatrix::setUpdateMatricesDeleteOnly( const SparseMat* colMatrix, 
 }
 
 void WoodburyCGMatrix::update() {
-	updateMatrix();
 	updateDet();
+	updateMatrix();
 	updateInverse();
 }
 
@@ -137,7 +137,6 @@ void WoodburyCGMatrix::updateMatrix() {
 
 Complex WoodburyCGMatrix::updateDet() {
 	Complex detChange = 1.;
-	if( matNeedsUpdate ) updateMatrix();
 
 	if( detNeedsUpdate ) {
 		Eigen::BiCGSTAB<SparseMat> solver;
@@ -145,12 +144,16 @@ Complex WoodburyCGMatrix::updateDet() {
 
 		submat.resize( rows.size(), cols.size() );
 		submat.setIdentity();
-		for( int i = 0; i < U->cols(); i++ ) {
-			Eigen::VectorXcd b = U->col(i);
-			Eigen::VectorXcd AU = solver.solve( b );
-			submat += V->col(i) * AU;
-		}
+//		Eigen::MatrixXcd AU( U->rows(), U->cols() );
+//		for( int i = 0; i < U->cols(); i++ ) {
+//			Eigen::VectorXcd b = U->col(i);
+//			AU.col(i) = solver.solve( b );
+//		}
+		Eigen::MatrixXcd AU = solver.solve( Eigen::MatrixXcd(*U) );
+
+		submat += (*V) * AU;
 		detChange = submat.determinant();
+//		std::cout << "AU: " << std::endl << AU << std::endl << "submat:" << std::endl << submat << std::endl << "detChange: " << detChange << std::endl;
 		det *= detChange;
 		detNeedsUpdate = false;
 	}
