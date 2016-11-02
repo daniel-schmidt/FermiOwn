@@ -16,7 +16,7 @@
 #include "Lattice.h"
 #include "FieldBoolean.h"
 #include "MetropolisStep.h"
-#include "ConfigPerPointGenerator.h"
+#include "ConfigPerPointGeneratorTh.h"
 #include "WeightFunction.h"
 
 
@@ -46,7 +46,7 @@ protected:
 	std::set<size_t> changedPoints;
 
 	WeightFunction weightFun;
-	ConfigPerPointGenerator confGen;
+	ConfigPerPointGeneratorTh confGen;
 };
 
 //class FermiBoolMetropolis {

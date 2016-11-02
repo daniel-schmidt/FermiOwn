@@ -8,7 +8,8 @@
 #include <iostream>
 #include <Eigen/Dense>
 
-#include "../src/Actions/ConfigPerPointGenerator.h"
+#include "ConfigPerPointGeneratorTh.h"
+#include "ConfigPerPointGeneratorGN.h"
 
 int main( int argc, char** argv ) {
 
@@ -23,17 +24,29 @@ int main( int argc, char** argv ) {
 	size_t numFlavours = atoi( argv[2] );
 
 	std::ranlux48 rndGen;
-	ConfigPerPointGenerator gen( numSpins, numFlavours, &rndGen );
+	ConfigPerPointGeneratorTh Thgen( numSpins, numFlavours, &rndGen );
 
-	gen.generateAllowedConfs();
+	Thgen.generateAllowedConfs();
 
-	MatrixXb allConfs = gen.getAllConfs();
-	std::cout << "Nf=" << numFlavours << " has " << allConfs.rows() << " allowed configurations:" << std::endl;
+	MatrixXb allConfs = Thgen.getAllConfs();
+	std::cout << "The Thirring model with Nf=" << numFlavours << " has " << allConfs.rows() << " allowed configurations:" << std::endl;
 	std::cout << allConfs << std::endl << std::endl;
 
 	std::cout << "Generating 10 random configurations from list of all configs: " << std::endl;
 	for( int i = 0; i < 10; i++ ) {
-		std::cout << gen.getRandomConf() << std::endl;
+		std::cout << Thgen.getRandomConf() << std::endl;
 	}
+	std::cout << std::endl;
 
+	ConfigPerPointGeneratorGN GNgen( numSpins, numFlavours, &rndGen );
+	GNgen.generateAllowedConfs();
+
+	allConfs = GNgen.getAllConfs();
+	std::cout << "All " << allConfs.rows() << " allowed configurations for the Gross-Neveu model:" << std::endl;
+	std::cout << allConfs << std::endl << std::endl;
+
+	std::cout << "Generating 10 random configurations from list of all configs: " << std::endl;
+	for( int i = 0; i < 10; i++ ) {
+		std::cout << GNgen.getRandomConf() << std::endl;
+	}
 }

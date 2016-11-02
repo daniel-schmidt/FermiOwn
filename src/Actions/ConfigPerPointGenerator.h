@@ -33,19 +33,19 @@ public:
 	 * @param numFlavours is the number of fermion flavours.
 	 * @param randomGenerator is necessary to enable drawing random configurations
 	 */
-	ConfigPerPointGenerator( const size_t numSpins, const size_t numFlavours, std::ranlux48* randomGenerator = NULL );
+	inline ConfigPerPointGenerator( const size_t numSpins, const size_t numFlavours, std::ranlux48* randomGenerator = NULL );
 
 	/**
 	 * @brief Default destructor, doing nothing.
 	 */
-	virtual ~ConfigPerPointGenerator();
+	inline virtual ~ConfigPerPointGenerator();
 
 	/**
 	 * @brief Start computation of all allowed configurations.
 	 *
-	 * This needs currently a huge amount of memory for Nf>3 and fails.
+	 * This depends on the model and must be implemented in derived classes.
 	 */
-	void generateAllowedConfs();
+	virtual void generateAllowedConfs()=0;
 
 	/**
 	 * @brief Get a list of all allowed configurations
@@ -63,7 +63,7 @@ public:
 	 */
 	inline RowVectorXb getRandomConf();
 
-private:
+protected:
 	MatrixXb allowedConfs;		///< matrix containing an allowed config in each row
 	const size_t Nf;			///< the number of flavours
 	const size_t dimSpinor;		///< the number of spinor components, should be always 2, since we work in the irreducible representation
@@ -72,6 +72,16 @@ private:
 	std::uniform_int_distribution<int> int_dist;	///< a random integer distribution ranging from 0 to allowedConfs, for drawing random configurations
 
 };
+
+ConfigPerPointGenerator::ConfigPerPointGenerator( const size_t numSpins, const size_t numFlavours, std::ranlux48* randomGenerator ) :
+	Nf( numFlavours ),
+	dimSpinor( numSpins ),
+	rndGen( randomGenerator )
+{
+	if( dimSpinor != 2 ) std::cout << "Warning: ConfigGenerator called with spinor size != 2, this may not be implemented correctly!" << std::endl;
+}
+
+ConfigPerPointGenerator::~ConfigPerPointGenerator() {}
 
 inline MatrixXb ConfigPerPointGenerator::getAllConfs() {
 	return allowedConfs;
