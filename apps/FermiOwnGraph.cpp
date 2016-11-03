@@ -12,7 +12,7 @@
 #include <Eigen/Dense>
 #include "Timer.h"
 #include "Lattice.h"
-#include "FieldBoolean.h"
+#include "ThirringKField.h"
 #include "FermiBoolMetropolis.h"
 #include "ConfigGenerator.h"
 
@@ -38,8 +38,8 @@ int main( int argc, char** argv ) {
 	int upPerMeasure = atoi( argv[5] );
 	double lambdaInitial = atof( argv[6] );
 	double dLambda = 0.1;
-	int Nf = atof( argv[7] );
-	int numSpin = 2;
+	size_t Nf = atof( argv[7] );
+	size_t numSpin = 2;
 	// initialize classes
 	Lattice lat( Nt, Ns, dim );
 	Timer singleRunTimer;
@@ -50,7 +50,7 @@ int main( int argc, char** argv ) {
 		std::ofstream kfile( "avk" + std::to_string(lambda) + ".dat" );
 
 		// initialize single-flavour part to true, the rest to false
-		FieldBoolean kxiab( lat.getVol(), numSpin, Nf, &gen, zeroInit );
+		ThirringKField kxiab( lat.getVol(), {numSpin, Nf, Nf} );
 //		for( int a = 0; a < Nf; a++ ) {
 //			for( int spin = 0; spin < numSpin; spin++ ) {
 //				for( size_t x = 0; x < lat.getVol(); x++ ) {

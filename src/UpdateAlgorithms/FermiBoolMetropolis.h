@@ -14,7 +14,7 @@
 #include <string>
 #include <set>
 #include "Lattice.h"
-#include "FieldBoolean.h"
+#include "ThirringKField.h"
 #include "MetropolisStep.h"
 #include "ConfigPerPointGeneratorTh.h"
 #include "WeightFunction.h"
@@ -24,7 +24,7 @@ namespace FermiOwn {
 
 class FermiBoolMetropolis: public MetropolisStep {
 public:
-	FermiBoolMetropolis( FieldBoolean& boolField, const Lattice& lattice, double lambda, size_t numFlavours, std::ranlux48* randomGenerator );
+	FermiBoolMetropolis( ThirringKField& boolField, const Lattice& lattice, double lambda, size_t numFlavours, std::ranlux48* randomGenerator );
 	virtual ~FermiBoolMetropolis();
 
 	void initializeField();
@@ -38,8 +38,8 @@ protected:
 
 	double kappa;
 	size_t Nf;
-	FieldBoolean & kxiab;
-	FieldBoolean oldField;
+	ThirringKField & kxiab;
+	ThirringKField oldField;
 	const Lattice& lat;
 
 	std::uniform_int_distribution<int> intV_dist;

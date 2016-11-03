@@ -6,10 +6,11 @@
  */
 
 #include <iostream>
+#include <fstream>
 #include <Eigen/Dense>
 
-#include "ConfigPerPointGenerator.h"
-#include "FieldBoolean.h"
+#include "ConfigPerPointGeneratorTh.h"
+#include "ThirringKField.h"
 #include "WeightFunction.h"
 
 int main( int argc, char** argv ) {
@@ -17,8 +18,8 @@ int main( int argc, char** argv ) {
 	using namespace FermiOwn;
 
 	// TODO: even 2x3x3 for Nf=2 is too large to fit in the memory...
-	size_t Nt = 2;
-	size_t Ns = 3;
+	size_t Nt = 4;
+	size_t Ns = 1;
 	size_t dim = 3;
 	size_t latVol = Nt*Ns*Ns;
 	size_t numSpins = 2;
@@ -29,8 +30,8 @@ int main( int argc, char** argv ) {
 	double dlambda = 0.1;
 	for( int i = 1; i <= 20; i++ ) {
 		double lambda = dlambda*i;
-		FieldBoolean kxiab( latVol, numSpins, Nf, NULL, zeroInit );
-		ConfigPerPointGenerator confGen( numSpins, Nf );
+		ThirringKField kxiab( latVol, {numSpins, Nf, Nf});
+		ConfigPerPointGeneratorTh confGen( numSpins, Nf );
 		WeightFunction weight( kxiab, Nt, Ns, dim, Nf, lambda );
 
 		confGen.generateAllowedConfs();
@@ -63,7 +64,7 @@ int main( int argc, char** argv ) {
 				for( size_t spin = 0; spin < 2; spin++ ) {
 					for( size_t a = 0; a < Nf; a++ ) {
 						for( size_t b = 0; b < Nf; b++ ) {
-							kxiab.setValue( bool(allowedConfs( newConfIndex, spin*Nf*Nf + b*Nf + a)), x, spin, a, b );
+							kxiab.setValue( bool(allowedConfs( newConfIndex, spin*Nf*Nf + b*Nf + a)), x, {spin, a, b} );
 						}
 					}
 				}

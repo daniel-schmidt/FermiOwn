@@ -9,7 +9,7 @@
 
 namespace FermiOwn {
 
-FermiBoolMetropolis::FermiBoolMetropolis( FieldBoolean& boolField, const Lattice & lattice, double lambda, size_t numFlavours, std::ranlux48* randomGenerator ) :
+FermiBoolMetropolis::FermiBoolMetropolis( ThirringKField& boolField, const Lattice & lattice, double lambda, size_t numFlavours, std::ranlux48* randomGenerator ) :
 		MetropolisStep( randomGenerator ),
 		kappa( 2./lambda ),
 		Nf( numFlavours ),

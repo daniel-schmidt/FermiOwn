@@ -14,10 +14,12 @@ WeightFunction::WeightFunction( const ThirringKField& boolField, size_t timeSize
 				initialField( kxiab ),
 				savedState( kxiab ),
 				dslash( timeSize, spatialSize, dim, numFlavours ),
-				V( timeSize*pow(spatialSize, dim) ),
+				V( timeSize*pow( spatialSize, dim-1 ) ),
 				kappa( 1./coupling ),
 				needsKeepDecision( false )
-{}
+{
+	std::cout << "Weight function V=" << V << std::endl;
+	}
 
 WeightFunction::~WeightFunction() {}
 

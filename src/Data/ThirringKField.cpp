@@ -96,7 +96,11 @@ size_t ThirringKField::sumAll() const {
 }
 
 Eigen::ArrayXi ThirringKField::countSummedSpin(size_t x) const {
-	auto row = data.row(x);
+	if( x >= V ) {
+		std::cerr << "Error: Current point x=" << x << " is outside the lattice volume of " << V << std::endl;
+		exit(1);
+	}
+	RowVectorXb row = data.row(x);
 	Eigen::ArrayXi count = Eigen::ArrayXi::Zero( internalRanges[0] + 1 );
 	for( size_t flavour = 0; flavour < internalRanges[1]; flavour++ ) {
 		size_t spinSum = 0;
@@ -104,7 +108,7 @@ Eigen::ArrayXi ThirringKField::countSummedSpin(size_t x) const {
 			spinSum += row( colIndex( {spin, flavour, flavour} ) );
 		}
 		if( spinSum > internalRanges[0] ) {
-			std::cerr << spinSum << " is too much spins counted in FieldBoolean. Should be less than " << internalRanges[0] << std::endl;
+			std::cerr << spinSum << " is too much spins counted in ThirringKField. Should be less than " << internalRanges[0] << std::endl;
 			exit(1);
 		}
 		count[spinSum]++;

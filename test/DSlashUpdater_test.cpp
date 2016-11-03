@@ -5,13 +5,13 @@
  *      Author: dschmidt
  */
 
-#include "FieldBoolean.h"
+#include "ThirringKField.h"
 #include "DSlashUpdater.h"
-#include "../src/Actions/ConfigPerPointGenerator.h"
+#include "ConfigPerPointGeneratorTh.h"
 
 int main( int argc, char** argv ) {
 	using namespace FermiOwn;
-	FieldBoolean bool1( 4, 2, 2, NULL, zeroInit );
+	ThirringKField bool1( 4, {2, 2, 2} );
 	DSlashUpdater dslash( 4, 1, 3, 2 );
 	DSlashUpdater initialDSlash( 4, 1, 3, 2 );
 
@@ -21,8 +21,8 @@ int main( int argc, char** argv ) {
 	bool1.setRow( conf96, 0 );
 	bool1.setRow( conf96, 1 );
 
-	FieldBoolean bool0( 4, 2, 2, NULL, zeroInit );
-	FieldBoolean diff = bool1.different( bool0 );
+	ThirringKField bool0( 4, {2, 2, 2} );
+	ThirringKField diff = bool1.different( bool0 );
 
 	dslash.calculateUpdateMatrices( bool1, diff );
 
@@ -34,12 +34,12 @@ int main( int argc, char** argv ) {
 	std::cout << "Matrix after update: " << std::endl << dslash.getMatrix() << std::endl << std::endl;
 	std::cout << "Inverse after update: " << std::endl << dslash.getInverse() << std::endl << std::endl;
 
-	SparseMat product = (dslash.getMatrix() * dslash.getInverse());
-	SparseMat id( product.rows(), product.cols() );
+	Eigen::MatrixXcd product = (dslash.getMatrix() * dslash.getInverse());
+	Eigen::MatrixXcd id( product.rows(), product.cols() );
 	id.setIdentity();
 	std::cout << "Matrix times its inverse is approximately identity: " << product.isApprox( id ) << std::endl;
 
-	FieldBoolean bool2( 4, 2, 2, NULL, zeroInit );
+	ThirringKField bool2( 4, {2, 2, 2} );
 	RowVectorXb conf80( 8 );
 	conf80 << 0, 0, 1, 0, 0, 1, 0, 0;
 	bool2.setRow( conf80, 0 );
@@ -63,19 +63,19 @@ int main( int argc, char** argv ) {
 
 	std::cout << std::endl << std::endl << "Further tests with generated configs" << std::endl << "========================================="<< std::endl;
 
-	ConfigPerPointGenerator confGen( 2, 2 );
+	ConfigPerPointGeneratorTh confGen( 2, 2 );
 	confGen.generateAllowedConfs();
 	MatrixXb allowedConfs = confGen.getAllConfs();
 
-	FieldBoolean fbool( 4, 2, 2, NULL, zeroInit );
+	ThirringKField fbool( 4, {2, 2, 2} );
 
 	dslash = initialDSlash;
 	DSlashUpdater alwaysReset( 4, 1, 3, 2 );
-	FieldBoolean initialField = fbool;
+	ThirringKField initialField = fbool;
 
 	for( int row = 0; row < allowedConfs.rows(); row++ ) {
 		std::cout << "Testing configuration " << std::endl;
-		FieldBoolean oldField = fbool;
+		ThirringKField oldField = fbool;
 		fbool.setRow( allowedConfs.row( row ), 0 );
 		fbool.setRow( allowedConfs.row( row ), 1 );
 		fbool.Print();
@@ -128,12 +128,12 @@ int main( int argc, char** argv ) {
 
 	std::cout << std::endl << std::endl << "Testing fixed update sequence" << std::endl << "========================================="<< std::endl;;
 
-	fbool = FieldBoolean( 4, 2, 2, NULL, zeroInit );
-	FieldBoolean fboolInitial = fbool;
-	fbool.setValue( 1, 0, 0, 0, 1 );
-	fbool.setValue( 1, 1, 1, 0, 1 );
-	fbool.setValue( 1, 0, 0, 1, 0 );
-	fbool.setValue( 1, 1, 1, 1, 0 );
+	fbool = ThirringKField( 4, {2, 2, 2} );
+	ThirringKField fboolInitial = fbool;
+	fbool.setValue( 1, 0, {0, 0, 1} );
+	fbool.setValue( 1, 1, {1, 0, 1} );
+	fbool.setValue( 1, 0, {0, 1, 0} );
+	fbool.setValue( 1, 1, {1, 1, 0} );
 
 	dslash = initialDSlash;
 	std::cout << "Det before: " << dslash.getDet() << std::endl;
@@ -145,14 +145,14 @@ int main( int argc, char** argv ) {
 	dslash.keep();
 
 	fboolInitial = fbool;
-	fbool.invert( 0, 1, 0, 0 );
-	fbool.invert( 0, 1, 1, 1 );
-	fbool.invert( 1, 0, 0, 0 );
-	fbool.invert( 1, 0, 1, 1 );
-	fbool.invert( 0, 0, 0, 1 );
-	fbool.invert( 0, 0, 1, 0 );
-	fbool.invert( 1, 1, 0, 1 );
-	fbool.invert( 1, 1, 1, 0 );
+	fbool.invert( 0, {1, 0, 0} );
+	fbool.invert( 0, {1, 1, 1} );
+	fbool.invert( 1, {0, 0, 0} );
+	fbool.invert( 1, {0, 1, 1} );
+	fbool.invert( 0, {0, 0, 1} );
+	fbool.invert( 0, {0, 1, 0} );
+	fbool.invert( 1, {1, 0, 1} );
+	fbool.invert( 1, {1, 1, 0} );
 	fbool.Print();
 	diff = fbool.different( fboolInitial );
 
@@ -162,10 +162,10 @@ int main( int argc, char** argv ) {
 	dslash.keep();
 
 	fboolInitial = fbool;
-	fbool.invert( 0, 0, 0, 1 );
-	fbool.invert( 0, 0, 1, 0 );
-	fbool.invert( 1, 1, 0, 1 );
-	fbool.invert( 1, 1, 1, 0 );
+	fbool.invert( 0, {0, 0, 1} );
+	fbool.invert( 0, {0, 1, 0} );
+	fbool.invert( 1, {1, 0, 1} );
+	fbool.invert( 1, {1, 1, 0} );
 	fbool.Print();
 
 	diff = fbool.different( fboolInitial );
@@ -175,10 +175,10 @@ int main( int argc, char** argv ) {
 	dslash.keep();
 
 	fboolInitial = fbool;
-	fbool.invert( 0, 1, 0, 0 );
-	fbool.invert( 0, 1, 1, 1 );
-	fbool.invert( 1, 0, 0, 0 );
-	fbool.invert( 1, 0, 1, 1 );
+	fbool.invert( 0, {1, 0, 0} );
+	fbool.invert( 0, {1, 1, 1} );
+	fbool.invert( 1, {0, 0, 0} );
+	fbool.invert( 1, {0, 1, 1} );
 	fbool.Print();
 	diff = fbool.different( fboolInitial );
 	dslash.calculateUpdateMatrices( fbool, diff );
@@ -186,10 +186,10 @@ int main( int argc, char** argv ) {
 	dslash.keep();
 
 	fboolInitial = fbool;
-	fbool.invert( 0, 0, 0, 1 );
-	fbool.invert( 0, 0, 1, 0 );
-	fbool.invert( 1, 1, 0, 1 );
-	fbool.invert( 1, 1, 1, 0 );
+	fbool.invert( 0, {0, 0, 1} );
+	fbool.invert( 0, {0, 1, 0} );
+	fbool.invert( 1, {1, 0, 1} );
+	fbool.invert( 1, {1, 1, 0} );
 	fbool.Print();
 	diff = fbool.different( fboolInitial );
 	dslash.calculateUpdateMatrices( fbool, diff );
