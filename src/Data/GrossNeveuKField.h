@@ -9,27 +9,27 @@
 #define SRC_DATA_GROSSNEVEUKFIELD_H_
 
 #include <iostream>
+#include <vector>
 
 namespace FermiOwn {
 
 class GrossNeveuKField {
 public:
-	GrossNeveuKField( const size_t latticeVolume, const size_t numberOfSpin, const size_t numberOfFlavours );
+	GrossNeveuKField( const size_t latticeVolume, const std::vector<size_t>& internal );
 	virtual ~GrossNeveuKField();
 
-	inline void setValue( bool val, size_t x, size_t spin, size_t flavour );
-	inline bool getValue( size_t x, size_t spin, size_t flavour ) const;
+	inline void setValue( bool val, size_t x, const std::vector<size_t>& internal );
+	inline bool getValue( size_t x, const std::vector<size_t>& internal ) const;
 	inline void setRow( const RowVectorXb & newRow, size_t x );
-	inline void invert( size_t x, size_t spin, size_t flavour );
+	inline void invert( size_t x, const std::vector<size_t>& internal );
 
 	inline void Print() const;
 
 private:
-	inline size_t colIndex( size_t spin, size_t flavour) const;
+	inline size_t colIndex( const std::vector<size_t>& internal ) const;
 
 	size_t V;
-	size_t numSpin;
-	size_t Nf;
+	const std::vector<size_t> internalRanges;
 	size_t DoFperX;
 
 	MatrixXb data;
@@ -39,32 +39,35 @@ private:
  * Implementation of functions
  **********************************************************/
 
-GrossNeveuKField::GrossNeveuKField( const size_t latticeVolume, const size_t numberOfSpin, const size_t numberOfFlavours ) :
-	V( latticeVolume ),
-	numSpin( numberOfSpin ),
-	Nf( numberOfFlavours ),
-	DoFperX( numberOfSpin*numberOfFlavours ){
+GrossNeveuKField::GrossNeveuKField( const size_t latticeVolume, const std::vector<size_t>& internal ) :
+			V( latticeVolume ),
+			internalRanges( internal ),
+			DoFperX(1)
+{
+	for( size_t internalN : internalRanges ) {
+		DoFperX *= internalN;
+	}
 	data = MatrixXb::Zero( V, DoFperX );
 }
 
 GrossNeveuKField::~GrossNeveuKField() {
 }
 
-void GrossNeveuKField::setValue( bool val, size_t x, size_t spin, size_t flavour ) {
+void GrossNeveuKField::setValue( bool val, size_t x, const std::vector<size_t>& internal ) {
 	//TODO: define preprocessor variable to disable out-of-bounds checks
 	if( x >= V ) {
 		std::cerr << "Error in GrossNeveuKField::setValue: Lattice point " << x << " is outside the volume of " << V << std::endl;
 		exit(1);
 	}
-	data( x, colIndex( spin, flavour ) ) = val;
+	data( x, colIndex( internal) ) = val;
 }
 
-inline bool GrossNeveuKField::getValue( size_t x , size_t spin, size_t flavour ) const {
+inline bool GrossNeveuKField::getValue( size_t x, const std::vector<size_t>& internal ) const {
 	if( x >= V ) {
 		std::cerr << "Error in GrossNeveuKField::getValue: Lattice point " << x << " is outside the volume of " << V << std::endl;
 		exit(1);
 	}
-	return data( x, colIndex( spin, flavour ) );
+	return data( x, colIndex( internal ) );
 }
 
 inline void GrossNeveuKField::setRow( const RowVectorXb & newRow, size_t x ) {
@@ -78,12 +81,12 @@ inline void GrossNeveuKField::setRow( const RowVectorXb & newRow, size_t x ) {
 	data.row(x) = newRow;
 }
 
-inline void GrossNeveuKField::invert( size_t x, size_t spin, size_t flavour ) {
+inline void GrossNeveuKField::invert( size_t x, const std::vector<size_t>& internal) {
 	if( x >= V ) {
 		std::cerr << "Error in GrossNeveuKField::invert: Lattice point " << x << " is outside the volume of " << V << std::endl;
 		exit(1);
 	}
-	data( x, colIndex( spin, flavour ) ) = !data( x, colIndex( spin, flavour ) );
+	data( x, colIndex( internal ) ) = !data( x, colIndex( internal ) );
 }
 
 inline void GrossNeveuKField::Print() const {
@@ -94,10 +97,10 @@ inline void GrossNeveuKField::Print() const {
  * Private functions
  ********************************************************/
 
-inline size_t GrossNeveuKField::colIndex( size_t spin, size_t flavour ) const {
-	size_t idx = numSpin * flavour + spin;
+inline size_t GrossNeveuKField::colIndex( const std::vector<size_t>& internal ) const {
+	size_t idx = internalRanges[0] * internal[1] + internal[0];
 	if( idx >= DoFperX ) {
-		std::cerr << "Index " << idx << " of bound (" << DoFperX << ") in GrossNeveuKField for spin=" << spin << " and flavour=" << flavour << std::endl;
+		std::cerr << "Index " << idx << " of bound (" << DoFperX << ") in GrossNeveuKField for spin=" << internal[0] << " and flavour=" << internal[1] << std::endl;
 		exit(1);
 	}
 	return idx;

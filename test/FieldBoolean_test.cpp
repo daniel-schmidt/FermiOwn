@@ -57,13 +57,17 @@ int main() {
 
 	std::cout << std::endl << "Testing GrossNeveu field:" << std::endl;
 
-	GrossNeveuKField kxia( 2*3*3, 2, 2 );
-	kxia.setValue( 1, 5, 1, 0 );
+	std::vector<size_t> internalMax = {2, 2};
+	GrossNeveuKField kxia( 2*3*3, internalMax );
+	std::vector<size_t> internal = {1, 0};
+	kxia.setValue( 1, 5, internal );
 	RowVectorXb gnrow(4);
 	gnrow << 0, 1, 1, 0;
 	kxia.setRow( gnrow, 7 );
-	kxia.invert( 8, 0, 0 );
-	kxia.invert( 8, 1, 1 );
+	internal = {0, 0};
+	kxia.invert( 8, internal );
+	kxia.invert( 8, {1, 1} );
 	kxia.Print();
-	kxia.setValue( 1, 5, 1, 2 );
+	internal = {1, 2};
+	kxia.setValue( 1, 5, internal);
 }
