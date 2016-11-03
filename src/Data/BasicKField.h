@@ -16,12 +16,13 @@ namespace FermiOwn {
 
 class BasicKField {
 public:
-	BasicKField( const size_t latticeVolume, const std::vector<size_t>& internal );
-	virtual ~BasicKField();
+	inline BasicKField( const size_t latticeVolume, const std::vector<size_t>& internal );
+	inline virtual ~BasicKField();
 
 	inline void setValue( bool val, size_t x, const std::vector<size_t>& internal );
 	inline bool getValue( size_t x, const std::vector<size_t>& internal ) const;
 	inline void setRow( const RowVectorXb & newRow, size_t x );
+	inline void setZero();
 	inline void invert( size_t x, const std::vector<size_t>& internal );
 
 	inline void Print() const;
@@ -30,11 +31,11 @@ protected:
 	virtual size_t colIndex( const std::vector<size_t>& internal ) const =0;
 
 	size_t V;
-	const std::vector<size_t> internalRanges;
+	std::vector<size_t> internalRanges;		//TODO: see, if we can make this const by providing a copy operator for the class
 	size_t DoFperX;
 
+	MatrixXb data; //TODO: make this private again.
 private:
-	MatrixXb data;
 };
 
 /*
@@ -81,6 +82,10 @@ inline void BasicKField::setRow( const RowVectorXb & newRow, size_t x ) {
 		exit(1);
 	}
 	data.row(x) = newRow;
+}
+
+inline void BasicKField::setZero() {
+	data = MatrixXb::Zero( V, DoFperX );
 }
 
 inline void BasicKField::invert( size_t x, const std::vector<size_t>& internal) {
