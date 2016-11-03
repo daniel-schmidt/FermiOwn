@@ -95,22 +95,22 @@ size_t ThirringKField::sumAll() const {
 	return data.count();
 }
 
-//Eigen::ArrayXi ThirringKField::countSummedSpin(size_t x) const {
-//	auto row = data.row(x);
-//	Eigen::ArrayXi count = Eigen::ArrayXi::Zero( internalRanges[0] + 1 );
-//	for( size_t flavour = 0; flavour < internalRanges[1]; flavour++ ) {
-//		size_t spinSum = 0;
-//		for( size_t spin = 0; spin < internalRanges[0]; spin++ ) {
-//			spinSum += row( colIndex( {spin, flavour, flavour} ) );
-//		}
-//		if( spinSum > internalRanges[0] ) {
-//			std::cerr << spinSum << " is too much spins counted in FieldBoolean. Should be less than " << internalRanges[0] << std::endl;
-//			exit(1);
-//		}
-//		count[spinSum]++;
-//	}
-//	return count;
-//}
+Eigen::ArrayXi ThirringKField::countSummedSpin(size_t x) const {
+	auto row = data.row(x);
+	Eigen::ArrayXi count = Eigen::ArrayXi::Zero( internalRanges[0] + 1 );
+	for( size_t flavour = 0; flavour < internalRanges[1]; flavour++ ) {
+		size_t spinSum = 0;
+		for( size_t spin = 0; spin < internalRanges[0]; spin++ ) {
+			spinSum += row( colIndex( {spin, flavour, flavour} ) );
+		}
+		if( spinSum > internalRanges[0] ) {
+			std::cerr << spinSum << " is too much spins counted in FieldBoolean. Should be less than " << internalRanges[0] << std::endl;
+			exit(1);
+		}
+		count[spinSum]++;
+	}
+	return count;
+}
 
 size_t ThirringKField::countOffdiagonal2() const {
 	size_t count = 0;

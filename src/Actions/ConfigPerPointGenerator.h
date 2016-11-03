@@ -8,8 +8,9 @@
 #ifndef SRC_ACTIONS_CONFIGPERPOINTGENERATOR_H_
 #define SRC_ACTIONS_CONFIGPERPOINTGENERATOR_H_
 
+#include <iostream>
 #include <Eigen/Dense>
-#include "FieldBoolean.h"
+#include "Constants.h"
 
 namespace FermiOwn {
 

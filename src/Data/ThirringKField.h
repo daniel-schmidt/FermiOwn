@@ -41,7 +41,7 @@ public:
 	 * @param x is the fixed spacetime point where to sum and count
 	 * @return a vector with bins for 0, ... , Nf each containing the number of kxaa with this value
 	 */
-//	Eigen::ArrayXi countSummedSpin( size_t x ) const;
+	Eigen::ArrayXi countSummedSpin( size_t x ) const;
 
 	/**
 	 * @brief Counts the number of offdiagonal flavours kxab set to 2

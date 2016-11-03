@@ -9,6 +9,7 @@
 #define SRC_ACTIONS_CONFIGPERPOINTGENERATORTH_H_
 
 #include "ConfigPerPointGenerator.h"
+#include "ThirringKField.h"
 
 namespace FermiOwn {
 

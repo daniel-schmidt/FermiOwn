@@ -9,14 +9,14 @@
 #define SRC_ACTIONS_WEIGHTFUNCTION_H_
 
 #include <set>
-#include "FieldBoolean.h"
+#include "ThirringKField.h"
 #include "DSlashUpdater.h"
 
 namespace FermiOwn {
 
 class WeightFunction {
 public:
-	WeightFunction( const FieldBoolean& boolField, size_t timeSize, size_t spatialSize, size_t dim, size_t numFlavours, double coupling );
+	WeightFunction( const ThirringKField& boolField, size_t timeSize, size_t spatialSize, size_t dim, size_t numFlavours, double coupling );
 	virtual ~WeightFunction();
 
 
@@ -42,9 +42,9 @@ private:
 	double getHypergeometricFactor( int flavour );	//TODO: merge this with the two-argument function
 	double getHypergeometricFactor( int n1, int n2 );
 
-	const FieldBoolean & kxiab;							///< The field to work with.
-	FieldBoolean initialField;
-	FieldBoolean savedState;
+	const ThirringKField & kxiab;							///< The field to work with.
+	ThirringKField initialField;
+	ThirringKField savedState;
 	DSlashUpdater dslash;							///< The operator to work with.
 	size_t V;										///< The lattice volume obtained from the field.
 	double kappa;									///< The inverse coupling.

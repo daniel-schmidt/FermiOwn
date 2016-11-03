@@ -9,7 +9,7 @@
 
 namespace FermiOwn {
 
-WeightFunction::WeightFunction( const FieldBoolean& boolField, size_t timeSize, size_t spatialSize, size_t dim, size_t numFlavours, double coupling ) :
+WeightFunction::WeightFunction( const ThirringKField& boolField, size_t timeSize, size_t spatialSize, size_t dim, size_t numFlavours, double coupling ) :
 				kxiab( boolField ),
 				initialField( kxiab ),
 				savedState( kxiab ),

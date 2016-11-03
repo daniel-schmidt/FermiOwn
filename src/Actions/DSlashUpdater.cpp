@@ -120,7 +120,7 @@ DSlashUpdater::~DSlashUpdater() {
 	// TODO Auto-generated destructor stub
 }
 
-void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const FieldBoolean& change ) {
+void DSlashUpdater::calculateUpdateMatrices( const ThirringKField& kxiab, const ThirringKField& change ) {
 	if( changed == true ) std::cerr << "Warning: DSlashUpdater overwrites previously not executed changes. Better use keep/reset before!" << std::endl;
 	// check what changed, and if it requires adding or deleting row/col pairs
 
@@ -136,8 +136,8 @@ void DSlashUpdater::calculateUpdateMatrices( const FieldBoolean& kxiab, const Fi
 		for( size_t flavour2 = 0; flavour2 < Nf; flavour2++ ) {
 			for( size_t spin = 0; spin < dimSpinor; spin++ ) {
 				for( size_t x = 0; x < N; x++ ) {
-					if( change.getValue( x, spin, flavour1, flavour2 ) ) {
-						if( kxiab.getValue( x, spin, flavour1, flavour2 ) ) {
+					if( change.getValue( x, {spin, flavour1, flavour2} ) ) {
+						if( kxiab.getValue( x, {spin, flavour1, flavour2} ) ) {
 							delRows.push_back( matIndex(x, spin, flavour1) );
 							delCols.push_back( matIndex(x, spin, flavour2) );
 						} else {

@@ -33,13 +33,13 @@ void  ConfigPerPointGeneratorTh::generateAllowedConfs() {
 	for( size_t conf = 0; conf < numConfigs; conf++ ) {
 		size_t bits = conf;
 		size_t bits2 = conf;
-		FieldBoolean fConf( 1, dimSpinor, Nf, NULL, zeroInit );
+		ThirringKField fConf( 1, {dimSpinor, Nf, Nf});
 
 		for( size_t spin = 0; spin < 2; spin++ ) {
 			for( size_t a = 0; a < Nf; a++ ) {
 				for( size_t b = 0; b < Nf; b++ ) {
 					if( bits2 % 2 == 1 ) {
-						fConf.setValue( true, 0, spin, a, b );
+						fConf.setValue( true, 0, {spin, a, b} );
 					}
 					bits2 = bits2 >> 1;
 				}

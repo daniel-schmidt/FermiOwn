@@ -10,7 +10,7 @@
 
 #include <set>
 #include "CliffordAlgebra.h"
-#include "FieldBoolean.h"
+#include "ThirringKField.h"
 #include "WoodburyMatrix.h"
 
 namespace FermiOwn {
@@ -42,7 +42,7 @@ public:
 	inline const Eigen::MatrixXcd & getInverse();
 	inline Complex getDet();
 
-	void calculateUpdateMatrices( const FieldBoolean& kxiab, const FieldBoolean& change );
+	void calculateUpdateMatrices( const ThirringKField& kxiab, const ThirringKField& change );
 
 	inline Complex updateDet();
 
