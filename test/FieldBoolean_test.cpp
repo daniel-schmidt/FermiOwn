@@ -7,6 +7,7 @@
 
 #include <random>
 #include "FieldBoolean.h"
+#include "GrossNeveuKField.h"
 
 int main() {
 	using namespace FermiOwn;
@@ -53,4 +54,16 @@ int main() {
 	fbool1.setRow( newRow, 10);
 
 	fbool1.Print();
+
+	std::cout << std::endl << "Testing GrossNeveu field:" << std::endl;
+
+	GrossNeveuKField kxia( 2*3*3, 2, 2 );
+	kxia.setValue( 1, 5, 1, 0 );
+	RowVectorXb gnrow(4);
+	gnrow << 0, 1, 1, 0;
+	kxia.setRow( gnrow, 7 );
+	kxia.invert( 8, 0, 0 );
+	kxia.invert( 8, 1, 1 );
+	kxia.Print();
+	kxia.setValue( 1, 5, 1, 2 );
 }
