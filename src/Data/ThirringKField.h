@@ -8,11 +8,11 @@
 #ifndef SRC_DATA_THIRRINGKFIELD_H_
 #define SRC_DATA_THIRRINGKFIELD_H_
 
-#include "BasicKField.h"
+#include "BasicCloneKField.h"
 
 namespace FermiOwn {
 
-class ThirringKField: public BasicKField {
+class ThirringKField: public BasicCloneKField<ThirringKField> {
 public:
 	ThirringKField( const size_t latticeVolume, const std::vector<size_t>& internal );
 	virtual ~ThirringKField();

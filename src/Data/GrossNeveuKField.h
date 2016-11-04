@@ -9,11 +9,11 @@
 #define SRC_DATA_GROSSNEVEUKFIELD_H_
 
 #include <vector>
-#include "BasicKField.h"
+#include "BasicCloneKField.h"
 
 namespace FermiOwn {
 
-class GrossNeveuKField: public BasicKField {
+class GrossNeveuKField: public BasicCloneKField<GrossNeveuKField> {
 public:
 	GrossNeveuKField( const size_t latticeVolume, const std::vector<size_t>& internal );
 	virtual ~GrossNeveuKField();
@@ -23,7 +23,7 @@ protected:
 };
 
 GrossNeveuKField::GrossNeveuKField( const size_t latticeVolume, const std::vector<size_t>& internal ) :
-		BasicKField( latticeVolume, internal )
+		BasicCloneKField( latticeVolume, internal )
 {}
 
 GrossNeveuKField::~GrossNeveuKField() {};

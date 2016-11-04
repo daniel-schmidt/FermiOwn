@@ -10,7 +10,7 @@
 namespace FermiOwn {
 
 ThirringKField::ThirringKField( const size_t latticeVolume, const std::vector<size_t>& internal ) :
-		BasicKField( latticeVolume, internal )
+		BasicCloneKField( latticeVolume, internal )
 {}
 
 ThirringKField::~ThirringKField() {}

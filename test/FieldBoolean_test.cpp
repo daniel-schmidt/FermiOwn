@@ -52,7 +52,14 @@ int main() {
 	std::cout << newRow << std::endl << "This row should be found in the previous field in line 3 and 11:" << std::endl;
 	fbool1.setRow( newRow, 2);
 	fbool1.setRow( newRow, 10);
+	fbool1.Print();
 
+	BasicKField* fieldPtr = fbool1.clone();
+
+	fbool1.setRow( newRow, 11 );
+	std::cout << "This is a copy of the above field:" << std::endl;
+	fieldPtr->Print();
+	std::cout << "It should be still in the original state, although the origianl field is now: " << std::endl;
 	fbool1.Print();
 
 	std::cout << std::endl << "Testing GrossNeveu field:" << std::endl;
@@ -68,6 +75,15 @@ int main() {
 	kxia.invert( 8, internal );
 	kxia.invert( 8, {1, 1} );
 	kxia.Print();
-	internal = {1, 2};
-	kxia.setValue( 1, 5, internal);
+
+	delete fieldPtr;
+	fieldPtr = kxia.clone();
+	kxia.invert( 9, {1, 1} );
+	std::cout << "Now the field pointer holds a GrossNeveu-Field:" << std::endl;
+	fieldPtr->Print();
+	std::cout << "while the original field changed:" << std::endl;
+	kxia.Print();
+	delete fieldPtr;
+
+//	kxia.setValue( 1, 5, internal);
 }

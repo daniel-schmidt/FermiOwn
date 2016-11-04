@@ -19,6 +19,8 @@ public:
 	inline BasicKField( const size_t latticeVolume, const std::vector<size_t>& internal );
 	inline virtual ~BasicKField();
 
+	virtual BasicKField* clone() const =0;
+
 	inline void setValue( bool val, size_t x, const std::vector<size_t>& internal );
 	inline bool getValue( size_t x, const std::vector<size_t>& internal ) const;
 	inline void setRow( const RowVectorXb & newRow, size_t x );
