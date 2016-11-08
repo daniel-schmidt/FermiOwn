@@ -23,7 +23,8 @@ public:
 		V( timeSize*pow( spatialSize, dim-1 ) ),
 		kappa( 1./coupling ),
 		needsKeepDecision( false )
-	{}
+	{
+	}
 
 	virtual ~BasicWeightFunctionTemplate() {}
 

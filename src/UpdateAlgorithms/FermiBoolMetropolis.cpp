@@ -40,6 +40,7 @@ FermiBoolMetropolis::FermiBoolMetropolis( ThirringKField& boolField, const Latti
 }
 
 FermiBoolMetropolis::~FermiBoolMetropolis() {
+	delete weightFun;
 }
 
 void FermiBoolMetropolis::initializeField() {

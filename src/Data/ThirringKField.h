@@ -12,20 +12,15 @@
 
 namespace FermiOwn {
 
+typedef std::function< size_t( size_t, size_t, size_t ) > matrixIndexFun;
+
 class ThirringKField: public BasicCloneKField<ThirringKField> {
 public:
-	ThirringKField( const size_t latticeVolume, const std::vector<size_t>& internal );
+	ThirringKField( const size_t latticeVolume, const idxVec& internal );
 	virtual ~ThirringKField();
 
-	void enforceConstraint( size_t x, const std::vector<size_t>& internal );
+	void enforceConstraint( size_t x, const idxVec& internal );
 	bool constraintViolated( size_t x) const;
-	/**
-	 * @brief Performs coefficient-wise compare with another field
-	 *
-	 * @param other is a second matrix to compare with
-	 * @return boolean matrix, whose entries are "true", if this field differs from the other, and otherwise "false".
-	 */
-	ThirringKField different( ThirringKField other ) const;
 
 	/**
 	 * @brief Sum over all components

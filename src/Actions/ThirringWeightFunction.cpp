@@ -10,7 +10,8 @@
 namespace FermiOwn {
 
 ThirringWeightFunction::ThirringWeightFunction( const ThirringKField& boolField, size_t timeSize, size_t spatialSize, size_t dim, size_t numFlavours, double coupling ) :
-				BasicWeightFunctionTemplate( boolField, timeSize, spatialSize, dim, numFlavours, coupling )
+				BasicWeightFunctionTemplate( boolField, timeSize, spatialSize, dim, numFlavours, coupling ),
+				change( dslash, kfield )
 {}
 
 ThirringWeightFunction::~ThirringWeightFunction() {}
@@ -26,12 +27,12 @@ Complex ThirringWeightFunction::calculateWeight() {
 	double factor = 1.;
 	for( size_t x = 0; x< V; x++ ) {
 		auto nx = kfield.countSummedSpin( x );
-		factor *= getHypergeometricFactor( nx(1), nx(2) );
+		factor *= getHypergeometricFactor( int(nx(1)), int(nx(2)) );
 	}
 	factor *= std::pow( 2., ntilde );
 	Complex dw = std::pow( Complex(-kappa), double(k)/2. );
 
-	dslash.calculateUpdateMatrices( kfield, kfield.different( initialField ) );
+	dslash.calculateUpdateMatrices( change.calculateDifference( initialField ) );
 	Complex det = dslash.getDet();
 	//	dslash.reset();
 
@@ -55,14 +56,15 @@ Complex ThirringWeightFunction::updateWeight( const std::set< size_t > & changed
 //		std::cout << x << std::endl;
 		Eigen::ArrayXi newNx = kfield.countSummedSpin( x );
 		Eigen::ArrayXi oldNx = savedState.countSummedSpin( x );
-		factor *= getHypergeometricFactor( newNx(1), newNx(2) ) / getHypergeometricFactor( oldNx(1), oldNx(2) );
+		factor *= getHypergeometricFactor( int(newNx(1)), int(newNx(2)) ) / getHypergeometricFactor( int(oldNx(1)), int(oldNx(2)) );
 	}
 
 
 	factor *= std::pow( 2., dntilde );
 	Complex dw = std::pow( Complex(-kappa), double(dk)/2. );
 
-	dslash.calculateUpdateMatrices( kfield, kfield.different( savedState ) );
+//	matrixChanges change = kfield.different( changedAt, savedState );
+	dslash.calculateUpdateMatrices( change.calculateDifference( changedAt, savedState ) );
 	Complex det = dslash.updateDet();
 
 //	kxiab.different( savedState ).Print();

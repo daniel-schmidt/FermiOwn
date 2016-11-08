@@ -132,12 +132,12 @@ size_t ThirringKField::countOffdiagonal2() const {
 	return count;
 }
 
-ThirringKField ThirringKField::different( ThirringKField other ) const {
-	ThirringKField difference = other;
-	difference.setZero();
-	difference.data = data.cwiseNotEqual(other.data);
-	return difference;
-}
+//ThirringKField ThirringKField::different( ThirringKField other ) const {
+//	ThirringKField difference = other;
+//	difference.setZero();
+//	difference.data = data.cwiseNotEqual(other.data);
+//	return difference;
+//}
 
 size_t ThirringKField::colIndex( const std::vector<size_t>& internal ) const {
 	// catching errors

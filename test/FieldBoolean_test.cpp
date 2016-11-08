@@ -40,7 +40,6 @@ int main() {
 	fbool1.invert( 7, {1, 1, 1} );
 	fbool1.invert( 8, {0, 1, 1} );
 	std::cout << "Same values at " << " entries.";
-	(fbool1.different(fbool0)).Print();
 	std::cout << std::endl;
 	fbool0.Print();
 	std::cout << std::endl;

@@ -7,6 +7,7 @@
 
 #include "ThirringKField.h"
 #include "DSlashUpdater.h"
+#include "MatrixChanges.h"
 #include "ConfigPerPointGeneratorTh.h"
 
 int main( int argc, char** argv ) {
@@ -22,9 +23,11 @@ int main( int argc, char** argv ) {
 	bool1.setRow( conf96, 1 );
 
 	ThirringKField bool0( 4, {2, 2, 2} );
-	ThirringKField diff = bool1.different( bool0 );
-
-	dslash.calculateUpdateMatrices( bool1, diff );
+	bool1.Print();
+	bool0.Print();
+	MatrixChanges change( dslash, bool1 );
+	auto diff = change.calculateDifference( bool0 );
+	dslash.calculateUpdateMatrices( diff );
 
 	Complex detChange = dslash.updateDet();
 	Complex currDet = dslash.getDet();
@@ -45,9 +48,9 @@ int main( int argc, char** argv ) {
 	bool2.setRow( conf80, 0 );
 	bool2.setRow( conf80, 1 );
 
-	diff = bool2.different( bool1 );
-
-	dslash.calculateUpdateMatrices( bool2, diff );
+//	diff = bool2.different( bool1 );
+	MatrixChanges change2( dslash, bool2 );
+	dslash.calculateUpdateMatrices( change2.calculateDifference( bool1 ) );
 	detChange = dslash.updateDet();
 	currDet = dslash.getDet();
 	std::cout << "Det changed by newdet=" << detChange << "*olddet and the factor should be 1. Det is now: " << currDet << std::endl;
@@ -72,6 +75,7 @@ int main( int argc, char** argv ) {
 	dslash = initialDSlash;
 	DSlashUpdater alwaysReset( 4, 1, 3, 2 );
 	ThirringKField initialField = fbool;
+	MatrixChanges changefbool( dslash, fbool );
 
 	for( int row = 0; row < allowedConfs.rows(); row++ ) {
 		std::cout << "Testing configuration " << std::endl;
@@ -81,10 +85,10 @@ int main( int argc, char** argv ) {
 		fbool.Print();
 
 		std::cout << "Diff to last accepted: " << std::endl;
-		fbool.different( oldField ).Print();
-
-		dslash.calculateUpdateMatrices( fbool, fbool.different( oldField) );
-		alwaysReset.calculateUpdateMatrices( fbool, fbool.different( initialField ) );
+		diff = changefbool.calculateDifference( oldField );
+		changefbool.Print();
+		dslash.calculateUpdateMatrices( diff );
+		alwaysReset.calculateUpdateMatrices( changefbool.calculateDifference( initialField ) );
 
 		std::cout << dslash.getDet() << " " << alwaysReset.getDet() << std::endl;
 		if( std::fabs( dslash.getDet() ) > ZERO_TOL ) {
@@ -137,10 +141,11 @@ int main( int argc, char** argv ) {
 
 	dslash = initialDSlash;
 	std::cout << "Det before: " << dslash.getDet() << std::endl;
-	diff = fbool.different( fboolInitial );
+	MatrixChanges fboolchange( dslash, fbool );
+	diff = fboolchange.calculateDifference( fboolInitial );
 	fbool.Print();
 	//		diff.Print();
-	dslash.calculateUpdateMatrices( fbool, diff );
+	dslash.calculateUpdateMatrices( diff );
 	std::cout << "Det after first delete: " << dslash.getDet() << std::endl;
 	dslash.keep();
 
@@ -154,9 +159,9 @@ int main( int argc, char** argv ) {
 	fbool.invert( 1, {1, 0, 1} );
 	fbool.invert( 1, {1, 1, 0} );
 	fbool.Print();
-	diff = fbool.different( fboolInitial );
+	diff = fboolchange.calculateDifference( fboolInitial );
 
-	dslash.calculateUpdateMatrices( fbool, diff );
+	dslash.calculateUpdateMatrices( diff );
 	dslash.updateDet();
 	std::cout << "switched diag->off, det: " << dslash.getDet() << std::endl;
 	dslash.keep();
@@ -168,8 +173,9 @@ int main( int argc, char** argv ) {
 	fbool.invert( 1, {1, 1, 0} );
 	fbool.Print();
 
-	diff = fbool.different( fboolInitial );
-	dslash.calculateUpdateMatrices( fbool, diff );
+	diff = fboolchange.calculateDifference( fboolInitial );
+	dslash.calculateUpdateMatrices( diff );
+
 	dslash.updateDet();
 	std::cout << "deleted more, det: " << dslash.getDet() << std::endl;
 	dslash.keep();
@@ -180,8 +186,8 @@ int main( int argc, char** argv ) {
 	fbool.invert( 1, {0, 0, 0} );
 	fbool.invert( 1, {0, 1, 1} );
 	fbool.Print();
-	diff = fbool.different( fboolInitial );
-	dslash.calculateUpdateMatrices( fbool, diff );
+	diff = fboolchange.calculateDifference( fboolInitial );
+	dslash.calculateUpdateMatrices( diff );
 	std::cout << "Re-adding, det again: " << dslash.getDet() << std::endl;
 	dslash.keep();
 
@@ -191,8 +197,8 @@ int main( int argc, char** argv ) {
 	fbool.invert( 1, {1, 0, 1} );
 	fbool.invert( 1, {1, 1, 0} );
 	fbool.Print();
-	diff = fbool.different( fboolInitial );
-	dslash.calculateUpdateMatrices( fbool, diff );
+	diff = fboolchange.calculateDifference( fboolInitial );
+	dslash.calculateUpdateMatrices( diff );
 	std::cout << "Full det again: " << dslash.getDet() << std::endl;
 	dslash.keep();
 }

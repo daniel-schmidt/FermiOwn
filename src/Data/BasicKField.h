@@ -26,6 +26,8 @@ public:
 	inline void setRow( const RowVectorXb & newRow, size_t x );
 	inline void setZero();
 	inline void invert( size_t x, const std::vector<size_t>& internal );
+	inline const idxVec& getInternalRanges() const;
+	inline const size_t getVolume() const;
 
 	inline void Print() const;
 
@@ -33,7 +35,7 @@ protected:
 	virtual size_t colIndex( const std::vector<size_t>& internal ) const =0;
 
 	size_t V;
-	std::vector<size_t> internalRanges;		//TODO: see, if we can make this const by providing a copy operator for the class
+	idxVec internalRanges;		//TODO: see, if we can make this const by providing a copy operator for the class
 	size_t DoFperX;
 
 	MatrixXb data; //TODO: make this private again.
@@ -96,6 +98,14 @@ inline void BasicKField::invert( size_t x, const std::vector<size_t>& internal) 
 		exit(1);
 	}
 	data( x, colIndex( internal ) ) = !data( x, colIndex( internal ) );
+}
+
+inline const idxVec& BasicKField::getInternalRanges() const {
+	return internalRanges;
+}
+
+inline const size_t BasicKField::getVolume() const {
+	return V;
 }
 
 inline void BasicKField::Print() const {

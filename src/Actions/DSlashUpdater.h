@@ -10,10 +10,17 @@
 
 #include <set>
 #include "CliffordAlgebra.h"
-#include "ThirringKField.h"
 #include "WoodburyMatrix.h"
 
+
 namespace FermiOwn {
+
+struct AddDelRowCol {
+	idxVec addRows;
+	idxVec addCols;
+	idxVec delRows;
+	idxVec delCols;
+};
 
 /**
  * @brief This class represents the operator d-slash (gamma^mu partial_mu)
@@ -42,7 +49,8 @@ public:
 	inline const Eigen::MatrixXcd & getInverse();
 	inline Complex getDet();
 
-	void calculateUpdateMatrices( const ThirringKField& kxiab, const ThirringKField& change );
+//	void calculateUpdateMatrices( const ThirringKField& kxiab, const ThirringKField& change );
+	void calculateUpdateMatrices( const AddDelRowCol& changes );
 
 	inline Complex updateDet();
 

@@ -15,16 +15,16 @@ DSlashUpdater::DSlashUpdater() {
 }
 
 DSlashUpdater::DSlashUpdater( size_t Nt, size_t Ns, size_t dim, size_t numFlavours ) :
-																	N(Nt*Ns*Ns),
-																	dimSpinor(2),
-																	Nf(numFlavours),
-																	matSize( N*dimSpinor*Nf ),
-																	oldMat( matSize ),
-																	currMat( matSize ),
-																	currentRows( matSize ),
-																	currentCols( matSize ),
-																	changed( false ),
-																	oldMatNeedsUpdate( true )
+	N(Nt*Ns*Ns),
+	dimSpinor(2),
+	Nf(numFlavours),
+	matSize( N*dimSpinor*Nf ),
+	oldMat( matSize ),
+	currMat( matSize ),
+	currentRows( matSize ),
+	currentCols( matSize ),
+	changed( false ),
+	oldMatNeedsUpdate( true )
 {
 	using namespace Eigen;
 	if( dim != 3 ) {
@@ -120,44 +120,45 @@ DSlashUpdater::~DSlashUpdater() {
 	// TODO Auto-generated destructor stub
 }
 
-void DSlashUpdater::calculateUpdateMatrices( const ThirringKField& kxiab, const ThirringKField& change ) {
+//void DSlashUpdater::calculateUpdateMatrices( const ThirringKField& kxiab, const ThirringKField& change ) {
+void DSlashUpdater::calculateUpdateMatrices( const AddDelRowCol& changes ) {
 	if( changed == true ) std::cerr << "Warning: DSlashUpdater overwrites previously not executed changes. Better use keep/reset before!" << std::endl;
 	// check what changed, and if it requires adding or deleting row/col pairs
 
-	std::vector<size_t> addRows;
-	std::vector<size_t> delRows;
-	std::vector<size_t> addCols;
-	std::vector<size_t> delCols;
+//	std::vector<size_t> addRows;
+//	std::vector<size_t> delRows;
+//	std::vector<size_t> addCols;
+//	std::vector<size_t> delCols;
 	targetRows = currentRows;
 	targetCols = currentCols;
 
 
-	for( size_t flavour1 = 0; flavour1 < Nf; flavour1++ ) {
-		for( size_t flavour2 = 0; flavour2 < Nf; flavour2++ ) {
-			for( size_t spin = 0; spin < dimSpinor; spin++ ) {
-				for( size_t x = 0; x < N; x++ ) {
-					if( change.getValue( x, {spin, flavour1, flavour2} ) ) {
-						if( kxiab.getValue( x, {spin, flavour1, flavour2} ) ) {
-							delRows.push_back( matIndex(x, spin, flavour1) );
-							delCols.push_back( matIndex(x, spin, flavour2) );
-						} else {
-							addRows.push_back( matIndex(x, spin, flavour1) );
-							addCols.push_back( matIndex(x, spin, flavour2) );
-						}
-					}
-				}
-			}
-		}
-	}
+//	for( size_t flavour1 = 0; flavour1 < Nf; flavour1++ ) {
+//		for( size_t flavour2 = 0; flavour2 < Nf; flavour2++ ) {
+//			for( size_t spin = 0; spin < dimSpinor; spin++ ) {
+//				for( size_t x = 0; x < N; x++ ) {
+//					if( change.getValue( x, {spin, flavour1, flavour2} ) ) {
+//						if( kxiab.getValue( x, {spin, flavour1, flavour2} ) ) {
+//							delRows.push_back( matIndex(x, spin, flavour1) );
+//							delCols.push_back( matIndex(x, spin, flavour2) );
+//						} else {
+//							addRows.push_back( matIndex(x, spin, flavour1) );
+//							addCols.push_back( matIndex(x, spin, flavour2) );
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}
 
 
 	//TODO: implement something to find changes that add and delete the same row/col
 	// std::set_intersection seems to need sorted vectors, but we have to keep the order...
 
-	std::vector<size_t> addRowsSorted = addRows;
-	std::vector<size_t> delRowsSorted = delRows;
-	std::vector<size_t> addColsSorted = addCols;
-	std::vector<size_t> delColsSorted = delCols;
+	std::vector<size_t> addRowsSorted = changes.addRows;
+	std::vector<size_t> delRowsSorted = changes.delRows;
+	std::vector<size_t> addColsSorted = changes.addCols;
+	std::vector<size_t> delColsSorted = changes.delCols;
 
 	std::sort( addRowsSorted.begin(), addRowsSorted.end() );
 	std::sort( delRowsSorted.begin(), delRowsSorted.end() );
@@ -165,10 +166,10 @@ void DSlashUpdater::calculateUpdateMatrices( const ThirringKField& kxiab, const 
 	std::sort( delColsSorted.begin(), delColsSorted.end() );
 
 	std::vector<size_t> intersection;
-	std::vector<size_t> trueAddRows = addRows;
-	std::vector<size_t> trueDelRows = delRows;
-	std::vector<size_t> trueAddCols = addCols;
-	std::vector<size_t> trueDelCols = delCols;
+	std::vector<size_t> trueAddRows = changes.addRows;
+	std::vector<size_t> trueDelRows = changes.delRows;
+	std::vector<size_t> trueAddCols = changes.addCols;
+	std::vector<size_t> trueDelCols = changes.delCols;
 
 	std::set_intersection( addRowsSorted.begin(), addRowsSorted.end(), delRowsSorted.begin(), delRowsSorted.end(), std::back_inserter( intersection ) );
 
@@ -182,11 +183,11 @@ void DSlashUpdater::calculateUpdateMatrices( const ThirringKField& kxiab, const 
 //			std::cout << val << " ";
 			trueDelRows.erase( std::remove( trueDelRows.begin(), trueDelRows.end(), val ) );
 			trueAddRows.erase( std::remove( trueAddRows.begin(), trueAddRows.end(), val ) );
-			size_t index = std::find( delRows.begin(), delRows.end(), val ) - delRows.begin();
-			addOnes.insert( idxPair( delRows[index], delCols[index] ) );
+			size_t index = std::find( changes.delRows.begin(), changes.delRows.end(), val ) - changes.delRows.begin();
+			addOnes.insert( idxPair( changes.delRows[index], changes.delCols[index] ) );
 
-			index = std::find( addRows.begin(), addRows.end(), val ) - addRows.begin();
-			rmOnes.insert( idxPair( addRows[index], addCols[index] ) );
+			index = std::find( changes.addRows.begin(), changes.addRows.end(), val ) - changes.addRows.begin();
+			rmOnes.insert( idxPair( changes.addRows[index], changes.addCols[index] ) );
 		}
 //		std::cout << std::endl;
 	}
@@ -201,26 +202,26 @@ void DSlashUpdater::calculateUpdateMatrices( const ThirringKField& kxiab, const 
 			trueDelCols.erase( std::remove( trueDelCols.begin(), trueDelCols.end(), val ) );
 			trueAddCols.erase( std::remove( trueAddCols.begin(), trueAddCols.end(), val ) );
 
-			size_t index = std::find( delCols.begin(), delCols.end(), val ) - delCols.begin();
-			addOnes.insert( idxPair( delRows[index], delCols[index] ) );
+			size_t index = std::find( changes.delCols.begin(), changes.delCols.end(), val ) - changes.delCols.begin();
+			addOnes.insert( idxPair( changes.delRows[index], changes.delCols[index] ) );
 
-			index = std::find( addCols.begin(), addCols.end(), val ) - addCols.begin();
-			rmOnes.insert( idxPair( addRows[index], addCols[index] ) );
+			index = std::find( changes.addCols.begin(), changes.addCols.end(), val ) - changes.addCols.begin();
+			rmOnes.insert( idxPair( changes.addRows[index], changes.addCols[index] ) );
 
 		}
 //		std::cout << std::endl;
 	}
 
-	for( auto col : addCols ) {
+	for( auto col : changes.addCols ) {
 		targetCols.push_back( col );
 	}
-	for( auto row : addRows ) {
+	for( auto row : changes.addRows ) {
 		targetRows.push_back( row );
 	}
-	for( auto col : delCols ) {
+	for( auto col : changes.delCols ) {
 		targetCols.erase( std::remove( targetCols.begin(), targetCols.end(), col ) );
 	}
-	for( auto row : delRows ) {
+	for( auto row : changes.delRows ) {
 		targetRows.erase( std::remove( targetRows.begin(), targetRows.end(), row) );
 	}
 
@@ -277,7 +278,7 @@ void DSlashUpdater::calculateUpdateMatrices( const ThirringKField& kxiab, const 
 
 	//	size_t delRank = delRows.size();
 	//TODO: use a more efficient update, if addRank == 0, to be implemented in WoodburyMatrix
-	size_t addRank = addRows.size() + addCols.size();
+	size_t addRank = changes.addRows.size() + changes.addCols.size();
 	//	size_t updateRank = delRank + addRank;
 
 	size_t updateRank = trueDelRows.size() + trueAddRows.size() + trueDelCols.size() + trueAddCols.size() + rmOnes.size() + addOnes.size();
@@ -327,8 +328,8 @@ void DSlashUpdater::calculateUpdateMatrices( const ThirringKField& kxiab, const 
 				// check, if we already put the update into the row matrix
 				if( std::find( trueDelRows.begin(), trueDelRows.end(), currentRows[j] ) != trueDelRows.end() ) {
 					// find crossing entries from original list, needs to get a 1
-					size_t pairIdx = std::find( delCols.begin(), delCols.end(), trueDelCols[i] ) - delCols.begin();
-					if( delRows[pairIdx] == currentRows[j] )
+					size_t pairIdx = std::find( changes.delCols.begin(), changes.delCols.end(), trueDelCols[i] ) - changes.delCols.begin();
+					if( changes.delRows[pairIdx] == currentRows[j] )
 
 						colCoeffs.push_back( CoeffTriplet( currentRows[j], t, Complex( 1., 0.) ) );
 				} else {
@@ -377,7 +378,7 @@ void DSlashUpdater::calculateUpdateMatrices( const ThirringKField& kxiab, const 
 		if( addRank > 0 ) {
 			currMat.setUpdateMatrices( &colUpdate, &rowUpdate );
 		} else {
-			currMat.setUpdateMatricesDeleteOnly( &colUpdate, &rowUpdate, delCols, delRows );
+			currMat.setUpdateMatricesDeleteOnly( &colUpdate, &rowUpdate, changes.delCols, changes.delRows );
 		}
 
 		changed = true;
