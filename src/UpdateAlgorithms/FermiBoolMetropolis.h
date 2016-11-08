@@ -13,11 +13,12 @@
 #include <fstream>
 #include <string>
 #include <set>
+
+#include "../Actions/ThirringWeightFunction.h"
 #include "Lattice.h"
 #include "ThirringKField.h"
 #include "MetropolisStep.h"
 #include "ConfigPerPointGeneratorTh.h"
-#include "WeightFunction.h"
 
 
 namespace FermiOwn {
@@ -45,7 +46,7 @@ protected:
 	std::uniform_int_distribution<int> intV_dist;
 	std::set<size_t> changedPoints;
 
-	WeightFunction weightFun;
+	ThirringWeightFunction weightFun;
 	ConfigPerPointGeneratorTh confGen;
 };
 

@@ -5,9 +5,10 @@
  *      Author: dschmidt
  */
 
+#include "../src/Actions/ThirringWeightFunction.h"
+
 #include <set>
 #include "ThirringKField.h"
-#include "WeightFunction.h"
 
 int main( int argc, char** argv ) {
 	using namespace FermiOwn;
@@ -37,7 +38,7 @@ int main( int argc, char** argv ) {
 	for( int i = 1; i <= 20; i++ ) {
 		double lambda = dlambda*i;
 		ThirringKField bool0( Nt*Ns*Ns, {dimSpinor, Nf, Nf} );
-		WeightFunction weight( bool0, Nt, Ns, dim, Nf, lambda );
+		ThirringWeightFunction weight( bool0, Nt, Ns, dim, Nf, lambda );
 
 		bool0.setRow( conf96, 0 );
 		bool0.setRow( conf96, 1 );
@@ -63,7 +64,7 @@ int main( int argc, char** argv ) {
 	for( int i = 1; i <= 20; i++ ) {
 		double lambda = dlambda*i;
 		ThirringKField bool0( Nt*Ns*Ns, {dimSpinor, Nf, Nf} );
-		WeightFunction weight( bool0, Nt, Ns, dim, Nf, lambda );
+		ThirringWeightFunction weight( bool0, Nt, Ns, dim, Nf, lambda );
 
 		bool0.setRow( row0, 0 );
 		bool0.setRow( row1, 1 );
@@ -87,7 +88,7 @@ int main( int argc, char** argv ) {
 	std::cout << std::endl << "Testing update sequence" << std::endl;
 	double lambda = dlambda;
 	ThirringKField bool0( Nt*Ns*Ns, {dimSpinor, Nf, Nf} );
-	WeightFunction weight( bool0, Nt, Ns, dim, Nf, lambda );
+	ThirringWeightFunction weight( bool0, Nt, Ns, dim, Nf, lambda );
 
 	bool0.setRow( conf96, 0 );
 	bool0.setRow( conf96, 1 );
@@ -114,7 +115,7 @@ int main( int argc, char** argv ) {
 	std::cout << "weight change: " << weight.updateWeight( changed ) << " should be " << 0.25 << std::endl;
 
 	ThirringKField bool1( Nt*Ns*Ns, {dimSpinor, Nf, Nf} );
-	WeightFunction weight1( bool1, Nt, Ns, dim, Nf, lambda );
+	ThirringWeightFunction weight1( bool1, Nt, Ns, dim, Nf, lambda );
 
 	bool1.setRow( row1, 0 );
 	bool1.setRow( row2, 1 );

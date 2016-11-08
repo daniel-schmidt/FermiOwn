@@ -5,41 +5,33 @@
  *      Author: dschmidt
  */
 
-#include "WeightFunction.h"
+#include "ThirringWeightFunction.h"
 
 namespace FermiOwn {
 
-WeightFunction::WeightFunction( const ThirringKField& boolField, size_t timeSize, size_t spatialSize, size_t dim, size_t numFlavours, double coupling ) :
-				kxiab( boolField ),
-				initialField( kxiab ),
-				savedState( kxiab ),
-				dslash( timeSize, spatialSize, dim, numFlavours ),
-				V( timeSize*pow( spatialSize, dim-1 ) ),
-				kappa( 1./coupling ),
-				needsKeepDecision( false )
-{
-	std::cout << "Weight function V=" << V << std::endl;
-	}
+ThirringWeightFunction::ThirringWeightFunction( const ThirringKField& boolField, size_t timeSize, size_t spatialSize, size_t dim, size_t numFlavours, double coupling ) :
+				BasicWeightFunction( boolField, timeSize, spatialSize, dim, numFlavours, coupling )
+{}
 
-WeightFunction::~WeightFunction() {}
+ThirringWeightFunction::~ThirringWeightFunction() {}
 
-Complex WeightFunction::calculateWeight() {
+Complex ThirringWeightFunction::calculateWeight() {
 	if( needsKeepDecision ) {
 		std::cerr << "Error in calculateWeight(): WeightFunction is not updated properly! Call keep/reset before calculateWeight()." << std::endl;
 		exit(1);
 	}
 
-	size_t k = kxiab.sumAll();
-	size_t ntilde = kxiab.countOffdiagonal2();
+	size_t k = kfield.sumAll();
+	size_t ntilde = kfield.countOffdiagonal2();
 	double factor = 1.;
 	for( size_t x = 0; x< V; x++ ) {
-		auto nx = kxiab.countSummedSpin( x );
+		auto nx = kfield.countSummedSpin( x );
 		factor *= getHypergeometricFactor( nx(1), nx(2) );
 	}
 	factor *= std::pow( 2., ntilde );
 	Complex dw = std::pow( Complex(-kappa), double(k)/2. );
 
-	dslash.calculateUpdateMatrices( kxiab, kxiab.different( initialField ) );
+	dslash.calculateUpdateMatrices( kfield, kfield.different( *initialField ) );
 	Complex det = dslash.getDet();
 	//	dslash.reset();
 
@@ -48,7 +40,7 @@ Complex WeightFunction::calculateWeight() {
 	return factor*dw*det;
 }
 
-Complex WeightFunction::updateWeight( const std::set< size_t > & changedAt ) {
+Complex ThirringWeightFunction::updateWeight( const std::set< size_t > & changedAt ) {
 
 	if( needsKeepDecision ) {
 		std::cerr << "Error in updateWeight(): WeightFunction is not updated properly! Call keep/reset before calculateWeight()." << std::endl;
@@ -104,7 +96,7 @@ Complex WeightFunction::updateWeight( const std::set< size_t > & changedAt ) {
  *=====================================================================*/
 
 
-double WeightFunction::getHypergeometricFactor( int flavour ) {
+double ThirringWeightFunction::getHypergeometricFactor( int flavour ) {
 	switch( flavour ){
 	case 0: return 1.;
 	case 1: return 1.5;
@@ -118,7 +110,7 @@ double WeightFunction::getHypergeometricFactor( int flavour ) {
 	}
 }
 
-double WeightFunction::getHypergeometricFactor( int n1, int n2 ) {
+double ThirringWeightFunction::getHypergeometricFactor( int n1, int n2 ) {
 	if( n1%2==1 ) return 0.;
 	switch( n1 ) {
 	case 0: return getHypergeometricFactor( n2 );

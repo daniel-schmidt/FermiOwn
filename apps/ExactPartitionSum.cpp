@@ -9,9 +9,9 @@
 #include <fstream>
 #include <Eigen/Dense>
 
+#include "../src/Actions/ThirringWeightFunction.h"
 #include "ConfigPerPointGeneratorTh.h"
 #include "ThirringKField.h"
-#include "WeightFunction.h"
 
 int main( int argc, char** argv ) {
 
@@ -32,7 +32,7 @@ int main( int argc, char** argv ) {
 		double lambda = dlambda*i;
 		ThirringKField kxiab( latVol, {numSpins, Nf, Nf});
 		ConfigPerPointGeneratorTh confGen( numSpins, Nf );
-		WeightFunction weight( kxiab, Nt, Ns, dim, Nf, lambda );
+		ThirringWeightFunction weight( kxiab, Nt, Ns, dim, Nf, lambda );
 
 		confGen.generateAllowedConfs();
 		MatrixXb allowedConfs = confGen.getAllConfs();
