@@ -21,13 +21,13 @@ FermiBoolMetropolis::FermiBoolMetropolis( ThirringKField& boolField, const Latti
 //		int2mu_dist( 0, 2*lat.getDim()-1 ),
 //		intNf_dist( 0, numFlavours-1 ),
 //		intSpin_dist( 0, 1 ),
-		weightFun( boolField, lat.getTimeSize(), lat.getSpaceSize(), lat.getDim(), numFlavours, lambda ),
 		confGen( 2, numFlavours, randomGenerator ),
 		weightChange(0.,0.),
 		phase(0.),
 		expPhase(0.,0.),
 		fWeight( "weight" + std::to_string(lambda) + ".dat" )
 {
+	weightFun = new ThirringWeightFunction( boolField, lat.getTimeSize(), lat.getSpaceSize(), lat.getDim(), numFlavours, lambda );
 	confGen.generateAllowedConfs();
 	//	generateAllowedConfs( numFlavours );
 	//	intConfIndex = std::uniform_int_distribution<int>( 0, allowedConfs.rows()-1 );
@@ -177,7 +177,7 @@ void FermiBoolMetropolis::initializeField() {
 void FermiBoolMetropolis::propose() {
 	oldField = kxiab;
 
-	weightFun.saveState();
+	weightFun->saveState();
 
 	// draw random points, which get a new configuration
 	changedPoints.clear();
@@ -190,13 +190,13 @@ void FermiBoolMetropolis::propose() {
 }
 
 double FermiBoolMetropolis::change() {
-	weightChange = weightFun.updateWeight( changedPoints );
+	weightChange = weightFun->updateWeight( changedPoints );
 
 	return std::abs( weightChange );
 }
 
 void FermiBoolMetropolis::accept() {
-	weightFun.keep();
+	weightFun->keep();
 
 	phase += std::arg( weightChange );
 	phase = fmod( phase, 2*PI );
@@ -205,7 +205,7 @@ void FermiBoolMetropolis::accept() {
 
 void FermiBoolMetropolis::reject() {
 	kxiab = oldField;
-	weightFun.reset();
+	weightFun->reset();
 	writeWeightFile();
 }
 

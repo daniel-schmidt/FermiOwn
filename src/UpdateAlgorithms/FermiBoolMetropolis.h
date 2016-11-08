@@ -50,7 +50,8 @@ protected:
 	std::uniform_int_distribution<int> intV_dist;
 	std::set<size_t> changedPoints;
 
-	ThirringWeightFunction weightFun;
+//	ThirringWeightFunction weightFun;
+	BasicWeightFunction* weightFun;
 	ConfigPerPointGeneratorTh confGen;
 
 	Complex weightChange;

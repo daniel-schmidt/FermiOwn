@@ -9,12 +9,13 @@
 #define SRC_ACTIONS_THIRRINGWEIGHTFUNCTION_H_
 
 #include <set>
+
+#include "BasicWeightFunctionTemplate.h"
 #include "ThirringKField.h"
-#include "BasicWeightFunction.h"
 
 namespace FermiOwn {
 
-class ThirringWeightFunction : public BasicWeightFunction<ThirringKField> {
+class ThirringWeightFunction : public BasicWeightFunctionTemplate<ThirringKField> {
 public:
 	ThirringWeightFunction( const ThirringKField& boolField, size_t timeSize, size_t spatialSize, size_t dim, size_t numFlavours, double coupling );
 	virtual ~ThirringWeightFunction();

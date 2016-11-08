@@ -10,7 +10,7 @@
 namespace FermiOwn {
 
 ThirringWeightFunction::ThirringWeightFunction( const ThirringKField& boolField, size_t timeSize, size_t spatialSize, size_t dim, size_t numFlavours, double coupling ) :
-				BasicWeightFunction( boolField, timeSize, spatialSize, dim, numFlavours, coupling )
+				BasicWeightFunctionTemplate( boolField, timeSize, spatialSize, dim, numFlavours, coupling )
 {}
 
 ThirringWeightFunction::~ThirringWeightFunction() {}
