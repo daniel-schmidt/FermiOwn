@@ -31,7 +31,7 @@ Complex ThirringWeightFunction::calculateWeight() {
 	factor *= std::pow( 2., ntilde );
 	Complex dw = std::pow( Complex(-kappa), double(k)/2. );
 
-	dslash.calculateUpdateMatrices( kfield, kfield.different( *initialField ) );
+	dslash.calculateUpdateMatrices( kfield, kfield.different( initialField ) );
 	Complex det = dslash.getDet();
 	//	dslash.reset();
 
@@ -47,13 +47,13 @@ Complex ThirringWeightFunction::updateWeight( const std::set< size_t > & changed
 		exit(1);
 	}
 
-	int dk = kxiab.sumAll() - savedState.sumAll(); //TODO: should be able to obtain from kxiab.different();
-	int dntilde = kxiab.countOffdiagonal2() - savedState.countOffdiagonal2();
+	int dk = kfield.sumAll() - savedState.sumAll(); //TODO: should be able to obtain from kxiab.different();
+	int dntilde = kfield.countOffdiagonal2() - savedState.countOffdiagonal2();
 	double factor = 1.;
 
 	for( size_t x : changedAt ) {
 //		std::cout << x << std::endl;
-		Eigen::ArrayXi newNx = kxiab.countSummedSpin( x );
+		Eigen::ArrayXi newNx = kfield.countSummedSpin( x );
 		Eigen::ArrayXi oldNx = savedState.countSummedSpin( x );
 		factor *= getHypergeometricFactor( newNx(1), newNx(2) ) / getHypergeometricFactor( oldNx(1), oldNx(2) );
 	}
@@ -62,7 +62,7 @@ Complex ThirringWeightFunction::updateWeight( const std::set< size_t > & changed
 	factor *= std::pow( 2., dntilde );
 	Complex dw = std::pow( Complex(-kappa), double(dk)/2. );
 
-	dslash.calculateUpdateMatrices( kxiab, kxiab.different( savedState ) );
+	dslash.calculateUpdateMatrices( kfield, kfield.different( savedState ) );
 	Complex det = dslash.updateDet();
 
 //	kxiab.different( savedState ).Print();

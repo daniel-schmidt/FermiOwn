@@ -14,7 +14,7 @@
 
 namespace FermiOwn {
 
-class ThirringWeightFunction : BasicWeightFunction {
+class ThirringWeightFunction : public BasicWeightFunction<ThirringKField> {
 public:
 	ThirringWeightFunction( const ThirringKField& boolField, size_t timeSize, size_t spatialSize, size_t dim, size_t numFlavours, double coupling );
 	virtual ~ThirringWeightFunction();

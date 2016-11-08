@@ -5,10 +5,9 @@
  *      Author: dschmidt
  */
 
-#include "../src/Actions/ThirringWeightFunction.h"
-
 #include <set>
 #include "ThirringKField.h"
+#include "ThirringWeightFunction.h"
 
 int main( int argc, char** argv ) {
 	using namespace FermiOwn;
