@@ -87,7 +87,7 @@ int main( int argc, char** argv ) {
 //		}
 		av_k/=double(numMeasures);
 		double accrate = updater.getAcceptance();
-		Complex expPhase = 0;
+		Complex expPhase = updater.getAveragePhase();
 		std::cerr << lambda << "\t" << av_k << "\t" << accrate << "\t" << std::real(expPhase) << "\t" << std::imag(expPhase) << std::endl;
 		kfile.close();
 	}

@@ -22,10 +22,11 @@ FermiBoolMetropolis::FermiBoolMetropolis( ThirringKField& boolField, const Latti
 //		intNf_dist( 0, numFlavours-1 ),
 //		intSpin_dist( 0, 1 ),
 		weightFun( boolField, lat.getTimeSize(), lat.getSpaceSize(), lat.getDim(), numFlavours, lambda ),
-		confGen( 2, numFlavours, randomGenerator )
-//		fWeight( "weight" + std::to_string(lambda) + ".dat" ),
-//		phase(0.),
-//		expPhase(0.,0.)
+		confGen( 2, numFlavours, randomGenerator ),
+		weightChange(0.,0.),
+		phase(0.),
+		expPhase(0.,0.),
+		fWeight( "weight" + std::to_string(lambda) + ".dat" )
 {
 	confGen.generateAllowedConfs();
 	//	generateAllowedConfs( numFlavours );
@@ -189,18 +190,34 @@ void FermiBoolMetropolis::propose() {
 }
 
 double FermiBoolMetropolis::change() {
-	Complex weight = weightFun.updateWeight( changedPoints );
+	weightChange = weightFun.updateWeight( changedPoints );
 
-	return std::abs( weight );
+	return std::abs( weightChange );
 }
 
 void FermiBoolMetropolis::accept() {
 	weightFun.keep();
+
+	phase += std::arg( weightChange );
+	phase = fmod( phase, 2*PI );
+	writeWeightFile();
 }
 
 void FermiBoolMetropolis::reject() {
 	kxiab = oldField;
 	weightFun.reset();
+	writeWeightFile();
+}
+
+void FermiBoolMetropolis::writeWeightFile() {
+	Complex currExpPhase = std::exp( I*phase );
+	expPhase += currExpPhase;
+	fWeight << std::real( weightChange ) << "\t" << std::imag( weightChange )
+			<< "\t" << phase << "\t" << std::real( currExpPhase ) << "\t" << std::imag( currExpPhase ) <<std::endl;
+}
+
+Complex FermiBoolMetropolis::getAveragePhase() {
+	return expPhase/double(getStepCount());
 }
 
 } /* namespace FermiOwn */

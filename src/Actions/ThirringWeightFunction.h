@@ -25,57 +25,17 @@ public:
 	 */
 	Complex calculateWeight();
 
-//	void saveState();
-
 	/**
 	 * @brief Calculates the change in weight
 	 * @return returns difference
 	 */
 	Complex updateWeight( const std::set< size_t > & changedAt );
 
-//	inline void keep();
-//	inline void reset();
-
 private:
-
 	double getHypergeometricFactor( int flavour );	//TODO: merge this with the two-argument function
 	double getHypergeometricFactor( int n1, int n2 );
 
-//	const ThirringKField & kxiab;							///< The field to work with.
-//	ThirringKField initialField;
-//	ThirringKField savedState;
-//	DSlashUpdater dslash;							///< The operator to work with.
-//	size_t V;										///< The lattice volume obtained from the field.
-//	double kappa;									///< The inverse coupling.
-//	bool needsKeepDecision;
 };
-
-/*=========================================
- * Inline functions
- *========================================= */
-
-//inline void ThirringWeightFunction::saveState() {
-//	savedState = kxiab;
-//}
-//
-//inline void ThirringWeightFunction::keep() {
-//	if( !needsKeepDecision ) {
-//		std::cerr << "WeightFunction keep called, although not necessary." << std::endl;
-//		exit(1);
-//	}
-//	dslash.keep();
-//	needsKeepDecision = false;
-//}
-//
-//inline void ThirringWeightFunction::reset(){
-//	if( !needsKeepDecision ) {
-//		std::cerr << "WeightFunction reset called, although not necessary." << std::endl;
-//		exit(1);
-//	}
-//	dslash.reset();
-//	needsKeepDecision = false;
-//}
-
 
 } /* namespace FermiOwn */
 

@@ -14,7 +14,7 @@
 #include <string>
 #include <set>
 
-#include "../Actions/ThirringWeightFunction.h"
+#include "ThirringWeightFunction.h"
 #include "Lattice.h"
 #include "ThirringKField.h"
 #include "MetropolisStep.h"
@@ -30,12 +30,16 @@ public:
 
 	void initializeField();
 
+	Complex getAveragePhase();
+
 protected:
 
 	virtual void propose();
 	virtual double change();
 	virtual void accept();
 	virtual void reject();
+
+	void writeWeightFile();
 
 	double kappa;
 	size_t Nf;
@@ -48,6 +52,11 @@ protected:
 
 	ThirringWeightFunction weightFun;
 	ConfigPerPointGeneratorTh confGen;
+
+	Complex weightChange;
+	double phase;
+	Complex expPhase;
+	std::ofstream fWeight;
 };
 
 //class FermiBoolMetropolis {
