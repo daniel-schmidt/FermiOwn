@@ -17,4 +17,14 @@ const idxMap GrossNeveuKField::tally() const {
 	}
 	return map;
 }
+
+const idxMap GrossNeveuKField::tally( const idxSet& xValues ) const {
+	idxMap map;
+	for( size_t x : xValues ) {
+		int kx = data.row( x ).count();
+		map[kx]++;
+	}
+	return map;
+}
+
 } /* end namespace FermiOwn */

@@ -9,7 +9,7 @@
 #include <fstream>
 #include <Eigen/Dense>
 
-#include "../src/Actions/ThirringWeightFunction.h"
+#include "ThirringWeightFunction.h"
 #include "ConfigPerPointGeneratorTh.h"
 #include "ThirringKField.h"
 

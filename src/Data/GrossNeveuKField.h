@@ -8,20 +8,19 @@
 #ifndef SRC_DATA_GROSSNEVEUKFIELD_H_
 #define SRC_DATA_GROSSNEVEUKFIELD_H_
 
-#include <vector>
 #include "BasicCloneKField.h"
 
 namespace FermiOwn {
 
 class GrossNeveuKField: public BasicCloneKField<GrossNeveuKField> {
 public:
-	GrossNeveuKField( const size_t latticeVolume, const std::vector<size_t>& internal ) :
+	GrossNeveuKField( const size_t latticeVolume, const idxVec& internal ) :
 			BasicCloneKField( latticeVolume, internal )
 	{};
 	virtual ~GrossNeveuKField() {};
 
 	const idxMap tally() const;
-
+	const idxMap tally( const idxSet& xValues ) const;
 protected:
 	virtual inline size_t colIndex( const std::vector<size_t>& internal ) const;
 };
@@ -30,7 +29,7 @@ protected:
  * Protected functions
  ********************************************************/
 
-inline size_t GrossNeveuKField::colIndex( const std::vector<size_t>& internal ) const {
+inline size_t GrossNeveuKField::colIndex( const idxVec& internal ) const {
 	size_t idx = internalRanges[0] * internal[1] + internal[0];
 	if( idx >= DoFperX ) {
 		std::cerr << "Index " << idx << " of bound (" << DoFperX << ") in GrossNeveuKField for spin=" << internal[0] << " and flavour=" << internal[1] << std::endl;

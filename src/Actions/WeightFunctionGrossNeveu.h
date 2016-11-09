@@ -34,7 +34,7 @@ public:
 
 private:
 	MatrixChanges<GrossNeveuKField> change;
-	std::vector<double> locWeights;
+	std::vector<Complex> locWeights;	//TODO: should be possible to use double weights together with hermitian slac operator...
 };
 
 } /* namespace FermiOwn */

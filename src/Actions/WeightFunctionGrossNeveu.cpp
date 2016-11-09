@@ -17,7 +17,7 @@ WeightFunctionGrossNeveu::WeightFunctionGrossNeveu( const GrossNeveuKField& bool
 	// generate list of local weights
 	for( size_t kx = 0; kx <= 2*numFlavours; kx += 2 ) {
 		double val = (1.+kx)/2.;
-		locWeights[kx/2] = std::tgamma( val ) * std::pow( kappa, val );
+		locWeights[kx/2] = std::tgamma( val ) * std::pow( Complex(-kappa,0.), val );
 	}
 //	std::cout << "Weights:" << std::endl;
 //	for( double w : locWeights ) std::cout << w << std::endl;
@@ -32,7 +32,7 @@ Complex WeightFunctionGrossNeveu::calculateWeight() {
 		std::cerr << "Error in WeightFunctionGrossNeveu::calculateWeight(): WeightFunction is not updated properly! Call keep/reset before calculateWeight()." << std::endl;
 		exit(1);
 	}
-	double factor = 1.;
+	Complex factor = 1.;
 	idxMap KxNxMap = kfield.tally();
 	for( idxPair kxnx : KxNxMap ) {
 		if( kxnx.first%2 != 0 ) {
@@ -53,11 +53,35 @@ Complex WeightFunctionGrossNeveu::calculateWeight() {
 	return det*factor;
 }
 
-Complex WeightFunctionGrossNeveu::updateWeight( const std::set<size_t>& changedAt ) {
+Complex WeightFunctionGrossNeveu::updateWeight( const idxSet& changedAt ) {
 	if( needsKeepDecision ) {
 		std::cerr << "Error in WeightFunctionGrossNeveu::updateWeight(): WeightFunction is not updated properly! Call keep/reset before calculateWeight()." << std::endl;
 		exit(1);
 	}
+
+	Complex factor = 1.;
+	// multiply weight by new local factors
+	idxMap KxNxMap = kfield.tally( changedAt );
+	for( idxPair kxnx : KxNxMap ) {
+		if( kxnx.first%2 != 0 ) {
+			std::cerr << "In WeightFunctionGrossNeveu::calculateWeight(): Constraint kx even violated! kx = " << kxnx.first << std::endl;
+		}
+		factor *= std::pow( locWeights[kxnx.first/2], kxnx.second );
+	}
+	// divide by the old local factors
+	idxMap KxNxMapOld = savedState.tally( changedAt );
+	for( idxPair kxnx : KxNxMapOld ) {
+		if( kxnx.first%2 != 0 ) {
+			std::cerr << "In WeightFunctionGrossNeveu::calculateWeight(): Constraint kx even violated! kx = " << kxnx.first << std::endl;
+		}
+		factor /= std::pow( locWeights[kxnx.first/2], kxnx.second );
+	}
+	// update determinant
+	dslash.calculateUpdateMatrices( change.calculateDifference( savedState ) );
+	Complex det = dslash.updateDet();
+
+	needsKeepDecision = true;
+	return det*factor;
 }
 
 } /* namespace FermiOwn */

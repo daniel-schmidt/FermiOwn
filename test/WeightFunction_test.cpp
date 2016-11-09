@@ -150,8 +150,29 @@ int main( int argc, char** argv ) {
 
 	for( size_t i = 0; i < testConf.size(); i++ ) {
 		if( std::abs( refConfGN42[i] - testConf[i] ) > 1e-2 ) {
-			std::cerr << "Deviation from reference value found for Config1251." << std::endl;
+			std::cerr << "Deviation from reference value found for GrossNeveu Config42." << std::endl;
 			std::cerr << "Value is " << testConf[i] << " but should be " << refConfGN42[i] << " difference: " << refConfGN42[i]-testConf[i] << std::endl;
 		}
 	}
+
+	std::cout << "Testing update sequence of GrossNeveu weight function:" << std::endl;
+	lambda = dlambda;
+	GrossNeveuKField gnField( Nt*Ns*Ns, {dimSpinor, Nf} );
+	WeightFunctionGrossNeveu gnWeight( gnField, Nt, Ns, dim, Nf, lambda );
+	gnField.setRow( row0, 2);
+	gnField.setRow( row1, 3);
+	std::cout << "Full weight before any update: " << gnWeight.calculateWeight() << " should be " << refConfGN42[0] << std::endl;
+	gnWeight.keep();
+	gnWeight.saveState();
+//	gnWeight.reset();
+	row0 << 0, 0, 1, 1;
+	row1 << 0, 1, 1, 0;
+	row2 = RowVectorXb( 2*Nf );
+	row2 << 1, 0, 0, 1;
+	gnField.setRow( row0, 1 );
+	gnField.setRow( row1, 2 );
+	gnField.setRow( row2, 3 );
+	changed = { 1, 2, 3 };
+//	std::cout << "Full weight before any update: " << gnWeight.calculateWeight( ) << " should be " << refConfGN42[0] << std::endl;
+	std::cout << "Change in weight after update: " << gnWeight.updateWeight( changed ) << " should be 0.900633" << std::endl;
 }
