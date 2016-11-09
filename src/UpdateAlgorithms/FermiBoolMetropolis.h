@@ -25,7 +25,7 @@ namespace FermiOwn {
 
 class FermiBoolMetropolis: public MetropolisStep {
 public:
-	FermiBoolMetropolis( ThirringKField& boolField, const Lattice& lattice, double lambda, size_t numFlavours, std::ranlux48* randomGenerator );
+	FermiBoolMetropolis( BasicKField& boolField, const Lattice& lattice, double lambda, size_t numFlavours, std::ranlux48* randomGenerator );
 	virtual ~FermiBoolMetropolis();
 
 	void initializeField();
@@ -43,8 +43,8 @@ protected:
 
 	double kappa;
 	size_t Nf;
-	ThirringKField & kxiab;
-	ThirringKField oldField;
+	BasicKField & kfield;
+	BasicKField* oldField;
 	const Lattice& lat;
 
 	std::uniform_int_distribution<int> intV_dist;
@@ -52,7 +52,7 @@ protected:
 
 //	ThirringWeightFunction weightFun;
 	BasicWeightFunction* weightFun;
-	ConfigPerPointGeneratorTh confGen;
+	ConfigPerPointGenerator* confGen;
 
 	Complex weightChange;
 	double phase;

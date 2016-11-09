@@ -9,26 +9,33 @@
 
 namespace FermiOwn {
 
-FermiBoolMetropolis::FermiBoolMetropolis( ThirringKField& boolField, const Lattice & lattice, double lambda, size_t numFlavours, std::ranlux48* randomGenerator ) :
+FermiBoolMetropolis::FermiBoolMetropolis( BasicKField& boolField, const Lattice & lattice, double lambda, size_t numFlavours, std::ranlux48* randomGenerator ) :
 		MetropolisStep( randomGenerator ),
 		kappa( 2./lambda ),
 		Nf( numFlavours ),
-		kxiab( boolField ),
-		oldField(kxiab),
+		kfield( boolField ),
+//		oldField(kfield),
 		lat(lattice),
 //		uni_real_dist(),
 		intV_dist( 0, lat.getVol()-1 ),
 //		int2mu_dist( 0, 2*lat.getDim()-1 ),
 //		intNf_dist( 0, numFlavours-1 ),
 //		intSpin_dist( 0, 1 ),
-		confGen( 2, numFlavours, randomGenerator ),
+//		confGen( 2, numFlavours, randomGenerator ),
 		weightChange(0.,0.),
 		phase(0.),
 		expPhase(0.,0.),
 		fWeight( "weight" + std::to_string(lambda) + ".dat" )
 {
-	weightFun = new ThirringWeightFunction( boolField, lat.getTimeSize(), lat.getSpaceSize(), lat.getDim(), numFlavours, lambda );
-	confGen.generateAllowedConfs();
+	oldField = kfield.clone();
+	try {
+		ThirringKField& thfield = dynamic_cast<ThirringKField&>( kfield );
+		weightFun = new ThirringWeightFunction( thfield, lat.getTimeSize(), lat.getSpaceSize(), lat.getDim(), numFlavours, lambda );
+		confGen = new ConfigPerPointGeneratorTh( 2, numFlavours, randomGenerator );
+	} catch( const std::bad_cast& e ) {
+		std::cerr << "HARHAR" << std::endl;
+	}
+	confGen->generateAllowedConfs();
 	//	generateAllowedConfs( numFlavours );
 	//	intConfIndex = std::uniform_int_distribution<int>( 0, allowedConfs.rows()-1 );
 	//
@@ -40,13 +47,15 @@ FermiBoolMetropolis::FermiBoolMetropolis( ThirringKField& boolField, const Latti
 }
 
 FermiBoolMetropolis::~FermiBoolMetropolis() {
+	delete oldField;
 	delete weightFun;
+	delete confGen;
 }
 
 void FermiBoolMetropolis::initializeField() {
 	for( size_t x = 0; x < lat.getVol(); x++ ) {
-		RowVectorXb newConf = confGen.getRandomConf();
-		kxiab.setRow( newConf, x );
+		RowVectorXb newConf = confGen->getRandomConf();
+		kfield.setRow( newConf, x );
 	}
 }
 
@@ -176,7 +185,8 @@ void FermiBoolMetropolis::initializeField() {
 //}
 
 void FermiBoolMetropolis::propose() {
-	oldField = kxiab;
+	delete oldField;
+	oldField = kfield.clone();
 
 	weightFun->saveState();
 
@@ -184,8 +194,8 @@ void FermiBoolMetropolis::propose() {
 	changedPoints.clear();
 	for( int cnt=0; cnt < 2; cnt++ ) {
 		int x = intV_dist(*rnd);
-		RowVectorXb newConf = confGen.getRandomConf();
-		kxiab.setRow( newConf, x );
+		RowVectorXb newConf = confGen->getRandomConf();
+		kfield.setRow( newConf, x );
 		changedPoints.insert( size_t( x ) );
 	}
 }
@@ -205,7 +215,7 @@ void FermiBoolMetropolis::accept() {
 }
 
 void FermiBoolMetropolis::reject() {
-	kxiab = oldField;
+	kfield = *oldField->clone();
 	weightFun->reset();
 	writeWeightFile();
 }
