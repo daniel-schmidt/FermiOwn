@@ -91,10 +91,6 @@ bool ThirringKField::constraintViolated( size_t x ) const {
 	return false;
 }
 
-size_t ThirringKField::sumAll() const {
-	return data.count();
-}
-
 Eigen::ArrayXi ThirringKField::countSummedSpin(size_t x) const {
 	if( x >= V ) {
 		std::cerr << "Error: Current point x=" << x << " is outside the lattice volume of " << V << std::endl;

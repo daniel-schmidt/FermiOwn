@@ -173,7 +173,6 @@ void DSlashUpdater::calculateUpdateMatrices( const AddDelRowCol& changes ) {
 
 	std::set_intersection( addRowsSorted.begin(), addRowsSorted.end(), delRowsSorted.begin(), delRowsSorted.end(), std::back_inserter( intersection ) );
 
-	typedef std::pair< size_t, size_t > idxPair;
 	std::set< idxPair > addOnes;
 	std::set< idxPair > rmOnes;
 

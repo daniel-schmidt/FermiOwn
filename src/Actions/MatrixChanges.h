@@ -10,6 +10,7 @@
 
 #include <set>
 #include "ThirringKField.h"
+#include "GrossNeveuKField.h"
 #include "DSlashUpdater.h"
 
 namespace FermiOwn {
@@ -69,19 +70,30 @@ public:
 		std::cout << "addRows:";
 		for( size_t row : indices.addRows ) std::cout << row << " ";
 		std::cout << std::endl;
-	};
+	}
 
 	AddDelRowCol indices;
 
 private:
+
+	void clearIndices() {
+		indices.delRows.clear();
+		indices.delCols.clear();
+		indices.addRows.clear();
+		indices.addCols.clear();
+	}
+
 	const DSlashUpdater& dslash;
 	const FieldType& kfield;
 	const idxVec& internalRanges;
 	const size_t V;
 };
 
-
+/*
+ * Template instances
+ *********************************************/
 template class MatrixChanges<ThirringKField>;
+template class MatrixChanges<GrossNeveuKField>;
 
 } /* namespace FermiOwn */
 

@@ -23,14 +23,6 @@ public:
 	bool constraintViolated( size_t x) const;
 
 	/**
-	 * @brief Sum over all components
-	 *
-	 * This is the number of entries set true, since the field values can be only 0 or 1.
-	 * @return sum over all components: spacetime, spin, flavour (diagonal and offdiagonal)
-	 */
-	size_t sumAll() const;
-
-	/**
 	 * @brief Sums the field values for each flavour diagonal component over all spins and counts how often each possible value occurs
 	 *
 	 * @param x is the fixed spacetime point where to sum and count

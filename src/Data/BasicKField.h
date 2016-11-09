@@ -29,6 +29,14 @@ public:
 	inline const idxVec& getInternalRanges() const;
 	inline const size_t getVolume() const;
 
+	/**
+	 * @brief Sum over all components
+	 *
+	 * This is the number of entries set true, since the field values can be only 0 or 1.
+	 * @return sum over all components: spacetime, spin, flavour (diagonal and offdiagonal)
+	 */
+	inline const size_t sumAll() const;
+
 	inline void Print() const;
 
 protected:
@@ -106,6 +114,9 @@ inline const idxVec& BasicKField::getInternalRanges() const {
 
 inline const size_t BasicKField::getVolume() const {
 	return V;
+}
+inline const size_t BasicKField::sumAll() const {
+	return data.count();
 }
 
 inline void BasicKField::Print() const {

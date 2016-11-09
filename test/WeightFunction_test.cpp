@@ -8,6 +8,7 @@
 #include <set>
 #include "ThirringKField.h"
 #include "ThirringWeightFunction.h"
+#include "WeightFunctionGrossNeveu.h"
 
 int main( int argc, char** argv ) {
 	using namespace FermiOwn;
@@ -124,4 +125,33 @@ int main( int argc, char** argv ) {
 
 //	weight.reset();
 //	std::cout << "new weight: " << weight.calculateWeight() << " should be " << refConf1251[0] << std::endl;
+
+	std::cout << std::endl << "Testing WeightFunction for GrossNeveu model, field configuration:" << std::endl;
+
+	row0 = RowVectorXb( 2*Nf );
+	row0 << 1, 0, 1, 0;
+	row1 = RowVectorXb( 2*Nf );
+	row1 << 0, 1, 0, 1;
+
+	std::cout << "Testing weight for Configuration 42" << std::endl << "lambda\tRe(weight)\tIm(weight)" << std::endl;
+	for( int i = 1; i <= 20; i++ ) {
+		double lambda = dlambda*i;
+		GrossNeveuKField gnField( Nt*Ns*Ns, {dimSpinor, Nf} );
+		WeightFunctionGrossNeveu gnWeight( gnField, Nt, Ns, dim, Nf, lambda );
+		gnField.setRow( row0, 2);
+		gnField.setRow( row1, 3);
+		Complex weightVal = gnWeight.calculateWeight();
+		std::cerr << lambda << "\t" << std::real(weightVal) << "\t" << std::imag(weightVal) << std::endl;
+		testConf[i-1] = weightVal;
+	}
+
+	std::vector<Complex> refConfGN42 = {440416., 27526., 5437.24, 1720.38, 704.666, 339.827, 183.43,	107.524, 67.1264, 44.0416, 30.081, 21.2392, 15.4202, 11.4644,
+	8.69958, 6.72022, 5.27312, 4.1954, 3.37947, 2.7526};
+
+	for( size_t i = 0; i < testConf.size(); i++ ) {
+		if( std::abs( refConfGN42[i] - testConf[i] ) > 1e-2 ) {
+			std::cerr << "Deviation from reference value found for Config1251." << std::endl;
+			std::cerr << "Value is " << testConf[i] << " but should be " << refConfGN42[i] << " difference: " << refConfGN42[i]-testConf[i] << std::endl;
+		}
+	}
 }

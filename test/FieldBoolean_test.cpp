@@ -73,7 +73,15 @@ int main() {
 	internal = {0, 0};
 	kxia.invert( 8, internal );
 	kxia.invert( 8, {1, 1} );
+	gnrow.setOnes();
+	kxia.setRow( gnrow, 10 );
 	kxia.Print();
+	std::cout << "Tally:" <<std::endl;
+	idxMap map = kxia.tally();
+	for( idxPair ipair : map ) {
+		std::cout << "(" << ipair.first << ": " << ipair.second <<")";
+	}
+	std::cout << std::endl;
 
 	delete fieldPtr;
 	fieldPtr = kxia.clone();

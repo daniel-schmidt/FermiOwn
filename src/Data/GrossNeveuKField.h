@@ -15,18 +15,17 @@ namespace FermiOwn {
 
 class GrossNeveuKField: public BasicCloneKField<GrossNeveuKField> {
 public:
-	GrossNeveuKField( const size_t latticeVolume, const std::vector<size_t>& internal );
-	virtual ~GrossNeveuKField();
+	GrossNeveuKField( const size_t latticeVolume, const std::vector<size_t>& internal ) :
+			BasicCloneKField( latticeVolume, internal )
+	{};
+	virtual ~GrossNeveuKField() {};
+
+	const idxMap tally() const;
 
 protected:
 	virtual inline size_t colIndex( const std::vector<size_t>& internal ) const;
 };
 
-GrossNeveuKField::GrossNeveuKField( const size_t latticeVolume, const std::vector<size_t>& internal ) :
-		BasicCloneKField( latticeVolume, internal )
-{}
-
-GrossNeveuKField::~GrossNeveuKField() {};
 /*
  * Protected functions
  ********************************************************/
