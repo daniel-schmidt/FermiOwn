@@ -25,7 +25,7 @@ int main( int argc, char** argv ) {
 	ThirringKField bool0( 4, {2, 2, 2} );
 	bool1.Print();
 	bool0.Print();
-	MatrixChanges change( dslash, bool1 );
+	MatrixChanges<ThirringKField> change( dslash, bool1 );
 	auto diff = change.calculateDifference( bool0 );
 	dslash.calculateUpdateMatrices( diff );
 
@@ -49,7 +49,7 @@ int main( int argc, char** argv ) {
 	bool2.setRow( conf80, 1 );
 
 //	diff = bool2.different( bool1 );
-	MatrixChanges change2( dslash, bool2 );
+	MatrixChanges<ThirringKField> change2( dslash, bool2 );
 	dslash.calculateUpdateMatrices( change2.calculateDifference( bool1 ) );
 	detChange = dslash.updateDet();
 	currDet = dslash.getDet();
@@ -75,7 +75,7 @@ int main( int argc, char** argv ) {
 	dslash = initialDSlash;
 	DSlashUpdater alwaysReset( 4, 1, 3, 2 );
 	ThirringKField initialField = fbool;
-	MatrixChanges changefbool( dslash, fbool );
+	MatrixChanges<ThirringKField> changefbool( dslash, fbool );
 
 	for( int row = 0; row < allowedConfs.rows(); row++ ) {
 		std::cout << "Testing configuration " << std::endl;
@@ -141,7 +141,7 @@ int main( int argc, char** argv ) {
 
 	dslash = initialDSlash;
 	std::cout << "Det before: " << dslash.getDet() << std::endl;
-	MatrixChanges fboolchange( dslash, fbool );
+	MatrixChanges<ThirringKField> fboolchange( dslash, fbool );
 	diff = fboolchange.calculateDifference( fboolInitial );
 	fbool.Print();
 	//		diff.Print();

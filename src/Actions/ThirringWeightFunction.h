@@ -11,8 +11,8 @@
 #include <set>
 
 #include "BasicWeightFunctionTemplate.h"
-#include "ThirringKField.h"
 #include "MatrixChanges.h"
+#include "ThirringKField.h"
 
 namespace FermiOwn {
 
@@ -37,7 +37,7 @@ private:
 	double getHypergeometricFactor( int flavour );	//TODO: merge this with the two-argument function
 	double getHypergeometricFactor( int n1, int n2 );
 
-	MatrixChanges change;
+	MatrixChanges<ThirringKField> change;
 };
 
 } /* namespace FermiOwn */
