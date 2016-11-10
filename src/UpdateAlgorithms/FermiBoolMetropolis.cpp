@@ -222,7 +222,7 @@ void FermiBoolMetropolis::accept() {
 }
 
 void FermiBoolMetropolis::reject() {
-	kfield = *oldField->clone();
+	kfield = *oldField;
 	weightFun->reset();
 	writeWeightFile();
 }
