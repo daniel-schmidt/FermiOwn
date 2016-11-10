@@ -13,6 +13,7 @@
 #include "Timer.h"
 #include "Lattice.h"
 #include "ThirringKField.h"
+#include "GrossNeveuKField.h"
 #include "FermiBoolMetropolis.h"
 #include "ConfigGenerator.h"
 
@@ -20,8 +21,8 @@ int main( int argc, char** argv ) {
 
 	using namespace FermiOwn;
 
-	if( argc != 8 ) {
-		std::cerr << "Need 7 arguments: Nt, Ns, numThermal, numMeasures, upPerMeasure, coupling, Nf" << std::endl;
+	if( argc != 9 ) {
+		std::cerr << "Need 8 arguments: Nt, Ns, numThermal, numMeasures, upPerMeasure, coupling, Nf, model name (Th or GN)" << std::endl;
 		exit(1);
 	}
 
@@ -40,17 +41,31 @@ int main( int argc, char** argv ) {
 	double dLambda = 0.1;
 	size_t Nf = atof( argv[7] );
 	size_t numSpin = 2;
+
+	char* model = argv[8];
 	// initialize classes
 	Lattice lat( Nt, Ns, dim );
 	Timer singleRunTimer;
 #pragma omp parallel for
 	for( int step = 0; step < 10; step++ ) {
 		double lambda = lambdaInitial + (step+1)*dLambda;
+
 		std::ranlux48 gen;
 		std::ofstream kfile( "avk" + std::to_string(lambda) + ".dat" );
 
 		// initialize single-flavour part to true, the rest to false
-		ThirringKField kxiab( lat.getVol(), {numSpin, Nf, Nf} );
+		BasicKField* kfield;
+		if( model == NULL ) {
+			std::cerr << "You did not pass a model: argument Th or GN missing." << std::endl;
+			exit(1);
+		} if( std::strcmp( model, "Th" ) == 0 ) {
+			kfield = new ThirringKField( lat.getVol(), {numSpin, Nf, Nf} );
+		} else if( std::strcmp( model, "GN" ) == 0 ) {
+			kfield = new GrossNeveuKField( lat.getVol(), {numSpin, Nf} );
+		} else {
+			std::cerr << "Model not known, specify either Th or GN as option!" << std::endl;
+			exit(1);
+		}
 //		for( int a = 0; a < Nf; a++ ) {
 //			for( int spin = 0; spin < numSpin; spin++ ) {
 //				for( size_t x = 0; x < lat.getVol(); x++ ) {
@@ -59,11 +74,11 @@ int main( int argc, char** argv ) {
 //			}
 //		}
 
-		FermiBoolMetropolis updater( kxiab, lat, lambda/2., Nf, &gen ); //TODO: we are simulating with lambda/2 due to convention in Base...
+		FermiBoolMetropolis updater( *kfield, lat, lambda/2., Nf, &gen ); //TODO: we are simulating with lambda/2 due to convention in Base...
 
 		double av_k = 0.;
 		auto measure = [&](){
-			double k = kxiab.sumAll()/double(2*V);
+			double k = kfield->sumAll()/double(2*V);
 			av_k += k;
 			kfile << k << "\t" << std::endl;
 		};
@@ -90,6 +105,7 @@ int main( int argc, char** argv ) {
 		Complex expPhase = updater.getAveragePhase();
 		std::cerr << lambda << "\t" << av_k << "\t" << accrate << "\t" << std::real(expPhase) << "\t" << std::imag(expPhase) << std::endl;
 		kfile.close();
+		delete kfield;
 	}
 	totalTimer.stop();
 	totalTimer.printDuration("Total execution");

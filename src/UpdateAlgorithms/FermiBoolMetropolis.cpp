@@ -10,22 +10,22 @@
 namespace FermiOwn {
 
 FermiBoolMetropolis::FermiBoolMetropolis( BasicKField& boolField, const Lattice & lattice, double lambda, size_t numFlavours, std::ranlux48* randomGenerator ) :
-		MetropolisStep( randomGenerator ),
-		kappa( 2./lambda ),
-		Nf( numFlavours ),
-		kfield( boolField ),
-//		oldField(kfield),
-		lat(lattice),
-//		uni_real_dist(),
-		intV_dist( 0, lat.getVol()-1 ),
-//		int2mu_dist( 0, 2*lat.getDim()-1 ),
-//		intNf_dist( 0, numFlavours-1 ),
-//		intSpin_dist( 0, 1 ),
-//		confGen( 2, numFlavours, randomGenerator ),
-		weightChange(0.,0.),
-		phase(0.),
-		expPhase(0.,0.),
-		fWeight( "weight" + std::to_string(lambda) + ".dat" )
+				MetropolisStep( randomGenerator ),
+				kappa( 2./lambda ),
+				Nf( numFlavours ),
+				kfield( boolField ),
+				//		oldField(kfield),
+				lat(lattice),
+				//		uni_real_dist(),
+				intV_dist( 0, lat.getVol()-1 ),
+				//		int2mu_dist( 0, 2*lat.getDim()-1 ),
+				//		intNf_dist( 0, numFlavours-1 ),
+				//		intSpin_dist( 0, 1 ),
+				//		confGen( 2, numFlavours, randomGenerator ),
+				weightChange(0.,0.),
+				phase(0.),
+				expPhase(0.,0.),
+				fWeight( "weight" + std::to_string(lambda) + ".dat" )
 {
 	oldField = kfield.clone();
 	try {
@@ -33,8 +33,15 @@ FermiBoolMetropolis::FermiBoolMetropolis( BasicKField& boolField, const Lattice 
 		weightFun = new ThirringWeightFunction( thfield, lat.getTimeSize(), lat.getSpaceSize(), lat.getDim(), numFlavours, lambda );
 		confGen = new ConfigPerPointGeneratorTh( 2, numFlavours, randomGenerator );
 	} catch( const std::bad_cast& e ) {
-		std::cerr << "HARHAR" << std::endl;
+		try {
+			GrossNeveuKField& thfield = dynamic_cast<GrossNeveuKField&>( kfield );
+			weightFun = new WeightFunctionGrossNeveu( thfield, lat.getTimeSize(), lat.getSpaceSize(), lat.getDim(), numFlavours, lambda );
+			confGen = new ConfigPerPointGeneratorGN( 2, numFlavours, randomGenerator );
+		} catch( const std::bad_cast& e ) {
+			std::cerr << "MUHARHAR" << std::endl;
+		}
 	}
+
 	confGen->generateAllowedConfs();
 	//	generateAllowedConfs( numFlavours );
 	//	intConfIndex = std::uniform_int_distribution<int>( 0, allowedConfs.rows()-1 );
@@ -224,7 +231,7 @@ void FermiBoolMetropolis::writeWeightFile() {
 	Complex currExpPhase = std::exp( I*phase );
 	expPhase += currExpPhase;
 	fWeight << std::real( weightChange ) << "\t" << std::imag( weightChange )
-			<< "\t" << phase << "\t" << std::real( currExpPhase ) << "\t" << std::imag( currExpPhase ) <<std::endl;
+	<< "\t" << phase << "\t" << std::real( currExpPhase ) << "\t" << std::imag( currExpPhase ) <<std::endl;
 }
 
 Complex FermiBoolMetropolis::getAveragePhase() {

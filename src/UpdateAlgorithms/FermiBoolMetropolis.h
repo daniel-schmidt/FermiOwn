@@ -15,10 +15,13 @@
 #include <set>
 
 #include "ThirringWeightFunction.h"
+#include "WeightFunctionGrossNeveu.h"
 #include "Lattice.h"
 #include "ThirringKField.h"
+#include "GrossNeveuKField.h"
 #include "MetropolisStep.h"
 #include "ConfigPerPointGeneratorTh.h"
+#include "ConfigPerPointGeneratorGN.h"
 
 
 namespace FermiOwn {
