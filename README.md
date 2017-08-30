@@ -2,6 +2,10 @@ Simulation of the irreducible Thirring model after Fierz transformation, rewritt
 
 Tests are provided if sensible...
 
+shared functionality is included in the submodule FermiOwnCommon, clone with git clone --recursive to include it, or after clone:
+git submodule init
+git submodule update --recursive
+
 in console: 
 
 export CPLUS_INCLUDE_PATH="/work/libs/eigen3.2.7/install/include/eigen3"

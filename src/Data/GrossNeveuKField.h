@@ -21,12 +21,12 @@ public:
 
 	const idxMap tally() const;
 	const idxMap tally( const idxSet& xValues ) const;
-protected:
+private:
 	virtual inline size_t colIndex( const std::vector<size_t>& internal ) const;
 };
 
 /*
- * Protected functions
+ * Private functions
  ********************************************************/
 
 inline size_t GrossNeveuKField::colIndex( const idxVec& internal ) const {

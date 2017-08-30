@@ -231,7 +231,7 @@ void FermiBoolMetropolis::writeWeightFile() {
 	Complex currExpPhase = std::exp( I*phase );
 	expPhase += currExpPhase;
 	fWeight << std::real( weightChange ) << "\t" << std::imag( weightChange )
-	<< "\t" << phase << "\t" << std::real( currExpPhase ) << "\t" << std::imag( currExpPhase ) <<std::endl;
+	<< "\t" << phase << "\t" << std::real( currExpPhase ) << "\t" << std::imag( currExpPhase ) << "\t" << kfield.sumAll() <<std::endl;
 }
 
 Complex FermiBoolMetropolis::getAveragePhase() {
